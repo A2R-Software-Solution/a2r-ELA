@@ -1,6 +1,8 @@
 /**
  * App Navigator
  * Main navigation configuration with Stack and Tab navigators
+ *
+ * ✅ FIXED: Removed useAuth() call that was triggering Firebase too early
  */
 
 import React from 'react';
@@ -16,8 +18,8 @@ import SignUpScreen from '../screens/auth/SignUpScreen';
 import HomeScreen from '../screens/home/HomeScreen';
 import EssayEditorScreen from '../screens/Essay/EssayEditorScreen';
 
-// Hooks
-import { useAuth } from '../hooks/useAuth';
+// Direct import for signOut only when needed
+import firebaseAuthRepository from '../auth/FirebaseAuthRepository';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -26,7 +28,8 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 // ============================================================================
 
 const AppNavigator = () => {
-  const { signOut } = useAuth();
+  // ✅ FIX: Don't call useAuth() here - it triggers Firebase too early
+  // Instead, call signOut directly from firebaseAuthRepository when needed
 
   return (
     <NavigationContainer>
@@ -81,17 +84,18 @@ const AppNavigator = () => {
           {({ navigation }) => (
             <HomeScreen
               onLogoutClick={async () => {
-                await signOut();
+                // ✅ Call signOut directly when needed (Firebase is ready by now)
+                await firebaseAuthRepository.signOut();
                 navigation.replace(Routes.SIGN_IN);
               }}
-              onCourseClick={(course) => {
+              onCourseClick={course => {
                 console.log('Course clicked:', course.title);
                 // TODO: Navigate to course details
               }}
-              onFeatureClick={(feature) => {
+              onFeatureClick={feature => {
                 console.log('Feature clicked:', feature.title);
               }}
-              onCategoryClick={(category) => {
+              onCategoryClick={category => {
                 console.log('Category clicked:', category.title);
               }}
               onSeeAllCategories={() => {
@@ -117,9 +121,7 @@ const AppNavigator = () => {
         {/* Essay Editor Screen */}
         <Stack.Screen name={Routes.ESSAY}>
           {({ navigation }) => (
-            <EssayEditorScreen
-              onBackClick={() => navigation.goBack()}
-            />
+            <EssayEditorScreen onBackClick={() => navigation.goBack()} />
           )}
         </Stack.Screen>
       </Stack.Navigator>

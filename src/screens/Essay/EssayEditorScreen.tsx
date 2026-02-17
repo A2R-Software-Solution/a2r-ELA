@@ -1,9 +1,10 @@
 /**
  * Essay Editor Screen
  * Main screen for writing and submitting essays with AI feedback
+ * ✅ UPDATED: Added file upload support with PDF text extraction
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,16 +13,22 @@ import {
   StyleSheet,
   ActivityIndicator,
   Modal,
+  Alert,
 } from 'react-native';
 import { useEssayEditor } from './hooks/useEssayEditor';
 import EssayWritingPad from './components/EssayWritingPad';
 import FeedbackDialog from './components/FeedbackDialog';
+import { FilePreviewChip } from './components/FilePreviewChip';
+import { InputToolbar } from './components/InputToolbar';
+import { FileInfo } from '../../models/FileModels';
 
 interface EssayEditorScreenProps {
   onBackClick: () => void;
 }
 
-const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({ onBackClick }) => {
+const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
+  onBackClick,
+}) => {
   const {
     uiState,
     updateEssayText,
@@ -31,33 +38,74 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({ onBackClick }) =>
     dismissFeedbackDialog,
     dismissErrorDialog,
     retrySubmission,
+    // NEW: File upload functions
+    handleFileSelected,
+    handleRemoveFile,
+    dismissFileError,
   } = useEssayEditor();
 
   const [isWritingExpanded, setIsWritingExpanded] = useState(false);
+
+  // ✅ FIX: Debug back button with logging
+  const handleBackPress = () => {
+    console.log('Back button pressed in EssayEditorScreen');
+    try {
+      onBackClick();
+      console.log('onBackClick executed successfully');
+    } catch (error) {
+      console.error('Error in onBackClick:', error);
+    }
+  };
+
+  // Show file upload error alert
+  useEffect(() => {
+    if (uiState.fileUploadError) {
+      Alert.alert('Upload Error', uiState.fileUploadError, [
+        {
+          text: 'OK',
+          onPress: dismissFileError,
+        },
+      ]);
+    }
+  }, [uiState.fileUploadError, dismissFileError]);
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBackClick} style={styles.headerButton}>
+        <TouchableOpacity
+          onPress={handleBackPress}
+          style={styles.headerButton}
+          activeOpacity={0.7}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
           <Text style={styles.headerIcon}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Essay Writing</Text>
-        <TouchableOpacity onPress={toggleInfoOverlay} style={styles.headerButton}>
+        <TouchableOpacity
+          onPress={toggleInfoOverlay}
+          style={styles.headerButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
           <Text style={styles.headerIcon}>ℹ️</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
         {/* AI Feedback Section */}
-        <View style={[styles.feedbackSection, isWritingExpanded ? styles.feedbackCollapsed : styles.feedbackExpanded]}>
+        <View
+          style={[
+            styles.feedbackSection,
+            isWritingExpanded
+              ? styles.feedbackCollapsed
+              : styles.feedbackExpanded,
+          ]}
+        >
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>AI Feedback</Text>
             {uiState.totalScore !== null && uiState.grade !== null && (
               <View style={styles.scoreChip}>
-                <Text style={styles.scoreText}>
-                  {uiState.totalScore}/100
-                </Text>
+                <Text style={styles.scoreText}>{uiState.totalScore}/100</Text>
                 <Text style={styles.gradeText}>Grade: {uiState.grade}</Text>
               </View>
             )}
@@ -65,33 +113,53 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({ onBackClick }) =>
 
           <View style={styles.divider} />
 
-          <ScrollView style={styles.feedbackContent} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.feedbackContent}
+            showsVerticalScrollIndicator={false}
+          >
             {uiState.isSubmitting ? (
               <View style={styles.centerContent}>
                 <ActivityIndicator size="large" color="#7D55FF" />
-                <Text style={styles.loadingText}>Analyzing your essay with AI...</Text>
+                <Text style={styles.loadingText}>
+                  Analyzing your essay with AI...
+                </Text>
               </View>
             ) : uiState.personalizedFeedback ? (
               <View>
-                <Text style={styles.feedbackText}>{uiState.personalizedFeedback}</Text>
+                <Text style={styles.feedbackText}>
+                  {uiState.personalizedFeedback}
+                </Text>
 
                 {uiState.strengths.length > 0 && (
                   <>
                     <Text style={styles.sectionLabel}>✨ Strengths:</Text>
-                    {uiState.strengths.map((strength, index) => (
-                      <Text key={index} style={styles.listItem}>• {strength}</Text>
-                    ))}
+                    {uiState.strengths.map(
+                      (strength: string, index: number) => (
+                        <Text key={index} style={styles.listItem}>
+                          • {strength}
+                        </Text>
+                      ),
+                    )}
                   </>
                 )}
 
                 {uiState.areasForImprovement.length > 0 && (
                   <>
-                    <Text style={[styles.sectionLabel, { color: '#FF6B6B', marginTop: 12 }]}>
+                    <Text
+                      style={[
+                        styles.sectionLabel,
+                        { color: '#FF6B6B', marginTop: 12 },
+                      ]}
+                    >
                       💡 Areas for Improvement:
                     </Text>
-                    {uiState.areasForImprovement.map((area, index) => (
-                      <Text key={index} style={styles.listItem}>• {area}</Text>
-                    ))}
+                    {uiState.areasForImprovement.map(
+                      (area: string, index: number) => (
+                        <Text key={index} style={styles.listItem}>
+                          • {area}
+                        </Text>
+                      ),
+                    )}
                   </>
                 )}
 
@@ -101,7 +169,9 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({ onBackClick }) =>
                     /* Show detailed feedback - handled by dialog */
                   }}
                 >
-                  <Text style={styles.detailButtonText}>View Detailed Scores</Text>
+                  <Text style={styles.detailButtonText}>
+                    View Detailed Scores
+                  </Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -125,8 +195,15 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({ onBackClick }) =>
           </Text>
         </TouchableOpacity>
 
-        {/* Writing Section */}
-        <View style={[styles.writingSection, isWritingExpanded ? styles.writingExpanded : styles.writingCollapsed]}>
+        {/* Writing Section with File Upload */}
+        <View
+          style={[
+            styles.writingSection,
+            isWritingExpanded
+              ? styles.writingExpanded
+              : styles.writingCollapsed,
+          ]}
+        >
           <View style={styles.writingHeader}>
             <Text style={styles.writingTitle}>Your Essay</Text>
             <Text
@@ -147,6 +224,19 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({ onBackClick }) =>
             </Text>
           )}
 
+          {/* NEW: File Preview Section */}
+          {uiState.uploadedFiles && uiState.uploadedFiles.length > 0 && (
+            <View style={styles.filePreviewContainer}>
+              {uiState.uploadedFiles.map((file: FileInfo) => (
+                <FilePreviewChip
+                  key={file.id}
+                  file={file}
+                  onRemove={handleRemoveFile}
+                />
+              ))}
+            </View>
+          )}
+
           <EssayWritingPad
             text={uiState.essayText}
             onTextChange={updateEssayText}
@@ -154,33 +244,37 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({ onBackClick }) =>
             maxWords={uiState.maxWords}
             wordCount={uiState.wordCount}
           />
+
+          {/* NEW: Input Toolbar with Upload & Send buttons */}
+          <InputToolbar
+            onFileSelected={handleFileSelected}
+            canUploadFiles={
+              uiState.canUploadMoreFiles && !uiState.isFileExtracting
+            }
+            isFileExtracting={uiState.isFileExtracting || false}
+            onSend={submitEssay}
+            canSend={uiState.canSubmit && !uiState.isSubmitting}
+            isSending={uiState.isSubmitting}
+          />
         </View>
 
-        {/* Submit Button */}
-        <TouchableOpacity
-          style={[styles.submitButton, !uiState.canSubmit && styles.submitButtonDisabled]}
-          onPress={submitEssay}
-          disabled={!uiState.canSubmit}
-        >
-          {uiState.isSubmitting ? (
-            <>
-              <ActivityIndicator color="#FFFFFF" size="small" />
-              <Text style={styles.submitButtonText}>  Submitting...</Text>
-            </>
-          ) : (
-            <Text style={styles.submitButtonText}>Submit Essay</Text>
-          )}
-        </TouchableOpacity>
+        {/* OLD Submit Button - REMOVED (now using InputToolbar send button) */}
       </View>
 
       {/* Info Overlay */}
       {uiState.showInfoOverlay && (
-        <Modal visible={true} transparent animationType="fade" onRequestClose={hideInfoOverlay}>
+        <Modal
+          visible={true}
+          transparent
+          animationType="fade"
+          onRequestClose={hideInfoOverlay}
+        >
           <View style={styles.modalOverlay}>
             <View style={styles.infoCard}>
               <Text style={styles.infoTitle}>Essay Writing</Text>
               <Text style={styles.infoDescription}>
-                Write your essay to get AI-powered feedback and scores based on 5 rubrics:
+                Write your essay or upload a PDF to get AI-powered feedback and
+                scores based on 5 rubrics:
               </Text>
 
               <View style={styles.rubricList}>
@@ -191,7 +285,9 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({ onBackClick }) =>
                   '• Grammar & Mechanics',
                   '• Coherence & Clarity',
                 ].map((rubric, index) => (
-                  <Text key={index} style={styles.rubricItem}>{rubric}</Text>
+                  <Text key={index} style={styles.rubricItem}>
+                    {rubric}
+                  </Text>
                 ))}
               </View>
 
@@ -199,8 +295,17 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({ onBackClick }) =>
                 Word limit: {uiState.minWords} - {uiState.maxWords} words
               </Text>
 
-              <TouchableOpacity style={styles.startButton} onPress={hideInfoOverlay}>
-                <Text style={styles.startButtonText}>Start Writing Your Essay</Text>
+              <Text style={styles.infoDescription}>
+                📎 You can upload up to 2 PDF files (max 100KB each)
+              </Text>
+
+              <TouchableOpacity
+                style={styles.startButton}
+                onPress={hideInfoOverlay}
+              >
+                <Text style={styles.startButtonText}>
+                  Start Writing Your Essay
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -208,22 +313,29 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({ onBackClick }) =>
       )}
 
       {/* Feedback Dialog */}
-      {uiState.showFeedbackDialog && uiState.totalScore !== null && uiState.grade !== null && (
-        <FeedbackDialog
-          visible={uiState.showFeedbackDialog}
-          totalScore={uiState.totalScore}
-          grade={uiState.grade}
-          rubricScores={uiState.rubricScores}
-          personalizedFeedback={uiState.personalizedFeedback || ''}
-          strengths={uiState.strengths}
-          areasForImprovement={uiState.areasForImprovement}
-          onDismiss={dismissFeedbackDialog}
-        />
-      )}
+      {uiState.showFeedbackDialog &&
+        uiState.totalScore !== null &&
+        uiState.grade !== null && (
+          <FeedbackDialog
+            visible={uiState.showFeedbackDialog}
+            totalScore={uiState.totalScore}
+            grade={uiState.grade}
+            rubricScores={uiState.rubricScores}
+            personalizedFeedback={uiState.personalizedFeedback || ''}
+            strengths={uiState.strengths}
+            areasForImprovement={uiState.areasForImprovement}
+            onDismiss={dismissFeedbackDialog}
+          />
+        )}
 
       {/* Error Dialog */}
       {uiState.showErrorDialog && uiState.submissionError && (
-        <Modal visible={true} transparent animationType="fade" onRequestClose={dismissErrorDialog}>
+        <Modal
+          visible={true}
+          transparent
+          animationType="fade"
+          onRequestClose={dismissErrorDialog}
+        >
           <View style={styles.modalOverlay}>
             <View style={styles.errorCard}>
               <Text style={styles.errorIcon}>⚠️</Text>
@@ -231,10 +343,16 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({ onBackClick }) =>
               <Text style={styles.errorMessage}>{uiState.submissionError}</Text>
 
               <View style={styles.errorButtons}>
-                <TouchableOpacity style={styles.retryButton} onPress={retrySubmission}>
+                <TouchableOpacity
+                  style={styles.retryButton}
+                  onPress={retrySubmission}
+                >
                   <Text style={styles.retryButtonText}>Retry</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.cancelButton} onPress={dismissErrorDialog}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={dismissErrorDialog}
+                >
                   <Text style={styles.cancelButtonText}>Cancel</Text>
                 </TouchableOpacity>
               </View>
@@ -259,12 +377,16 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#EEEEEE',
+    backgroundColor: '#FFFFFF',
+    zIndex: 1000,
+    elevation: 5,
   },
   headerButton: {
     width: 40,
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1001,
   },
   headerIcon: {
     fontSize: 24,
@@ -414,22 +536,10 @@ const styles = StyleSheet.create({
     color: '#FF0000',
     marginBottom: 4,
   },
-  submitButton: {
-    backgroundColor: '#7D55FF',
-    height: 56,
-    borderRadius: 12,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  submitButtonDisabled: {
-    backgroundColor: '#CCCCCC',
-  },
-  submitButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+  // NEW: File preview container
+  filePreviewContainer: {
+    marginBottom: 12,
+    gap: 8,
   },
   modalOverlay: {
     flex: 1,

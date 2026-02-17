@@ -17,6 +17,24 @@ import {
 } from '../models/EssayModels';
 
 /**
+ * Request for PDF text extraction
+ */
+export interface PdfExtractionRequest {
+  fileName: string;
+  fileData: string; // base64 encoded PDF
+}
+
+/**
+ * Response from PDF text extraction
+ */
+export interface PdfExtractionResponse {
+  success: boolean;
+  text: string;
+  wordCount: number;
+  error?: string;
+}
+
+/**
  * API Service class with all endpoint methods
  */
 class ApiService {
@@ -24,7 +42,7 @@ class ApiService {
    * Submit an essay for evaluation
    */
   async submitEssay(
-    request: EssaySubmissionRequest
+    request: EssaySubmissionRequest,
   ): Promise<AxiosResponse<ApiResponse<EssaySubmissionResponse>>> {
     return apiClient.post(ApiConfig.Endpoints.SUBMIT_ESSAY, request);
   }
@@ -33,7 +51,7 @@ class ApiService {
    * Get a specific essay submission by ID
    */
   async getEssaySubmission(
-    submissionId: string
+    submissionId: string,
   ): Promise<AxiosResponse<ApiResponse<EssaySubmissionResponse>>> {
     return apiClient.get(ApiConfig.Endpoints.GET_ESSAY_SUBMISSION, {
       params: { submission_id: submissionId },
@@ -45,7 +63,7 @@ class ApiService {
    */
   async getUserSubmissions(
     limit: number = 10,
-    category?: string
+    category?: string,
   ): Promise<AxiosResponse<ApiResponse<Record<string, any>>>> {
     return apiClient.get(ApiConfig.Endpoints.GET_USER_SUBMISSIONS, {
       params: {
@@ -77,6 +95,39 @@ class ApiService {
   }
 
   /**
+   * Extract text from PDF file
+   * Sends base64 encoded PDF to backend for text extraction
+   */
+  async extractPdfText(
+    request: PdfExtractionRequest,
+  ): Promise<PdfExtractionResponse> {
+    try {
+      const response: AxiosResponse<ApiResponse<PdfExtractionResponse>> =
+        await apiClient.post(ApiConfig.Endpoints.EXTRACT_PDF_TEXT, request);
+
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      } else {
+        return {
+          success: false,
+          text: '',
+          wordCount: 0,
+          error: response.data.message || 'Failed to extract text from PDF',
+        };
+      }
+    } catch (error: any) {
+      console.error('Error extracting PDF text:', error);
+      return {
+        success: false,
+        text: '',
+        wordCount: 0,
+        error:
+          error.response?.data?.message || 'Failed to extract text from PDF',
+      };
+    }
+  }
+
+  /**
    * Health check endpoint
    */
   async healthCheck(): Promise<AxiosResponse<Record<string, any>>> {
@@ -85,4 +136,5 @@ class ApiService {
 }
 
 // Export singleton instance
-export default new ApiService();
+export const apiService = new ApiService();
+export default apiService;

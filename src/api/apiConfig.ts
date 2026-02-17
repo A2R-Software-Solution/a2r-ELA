@@ -15,6 +15,7 @@ export const ApiConfig = {
     GET_PROGRESS_STATS: 'get_progress_stats',
     GET_CATEGORY_STATS: 'get_category_stats',
     HEALTH_CHECK: 'health_check',
+    EXTRACT_PDF_TEXT: 'extract_pdf_text', // NEW: PDF text extraction endpoint
   },
 
   // Request Timeouts (in milliseconds for React Native)

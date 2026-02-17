@@ -22,3 +22,9 @@ structlog==24.1.*
 # Testing (Optional)
 pytest==7.4.*
 pytest-asyncio==0.21.*
+
+# PDF processing
+PyPDF2
+
+# Utilities
+python-dotenv

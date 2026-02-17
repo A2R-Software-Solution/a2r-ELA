@@ -1,19 +1,44 @@
 /**
  * Firebase Auth Repository
  * Handles authentication using Firebase Auth
- * 
- * Installation required:
- * npm install @react-native-firebase/app @react-native-firebase/auth
+ *
+ * Compatible with RNFirebase v22+
  */
 
-import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+} from '@react-native-firebase/auth';
+import { getApps } from '@react-native-firebase/app';
 import { AuthRepository, Result } from './AuthRepository';
 
 class FirebaseAuthRepository implements AuthRepository {
-  private auth: FirebaseAuthTypes.Module;
+  /**
+   * Resolve auth lazily and safely (important for iOS)
+   */
+  private get auth() {
+    const apps = getApps();
+    if (!apps.length) {
+      throw new Error('Firebase not initialized yet');
+    }
+    return getAuth(apps[0]);
+  }
 
-  constructor() {
-    this.auth = auth();
+  /**
+   * Wait until Firebase Auth is ready and emit login state
+   * Used by Splash screen to avoid iOS race condition
+   */
+  onAuthStateReady(callback: (isLoggedIn: boolean) => void) {
+    const auth = this.auth;
+
+    const unsubscribe = onAuthStateChanged(auth, user => {
+      callback(!!user);
+    });
+
+    return unsubscribe;
   }
 
   /**
@@ -21,8 +46,7 @@ class FirebaseAuthRepository implements AuthRepository {
    */
   async signIn(username: string, password: string): Promise<Result<void>> {
     try {
-      // Firebase requires email format
-      await this.auth.signInWithEmailAndPassword(username, password);
+      await signInWithEmailAndPassword(this.auth, username, password);
       return { success: true, data: undefined };
     } catch (error: any) {
       const errorMessage = this.getErrorMessage(error.code);
@@ -35,8 +59,7 @@ class FirebaseAuthRepository implements AuthRepository {
    */
   async signUp(username: string, password: string): Promise<Result<void>> {
     try {
-      // Create new user with Firebase
-      await this.auth.createUserWithEmailAndPassword(username, password);
+      await createUserWithEmailAndPassword(this.auth, username, password);
       return { success: true, data: undefined };
     } catch (error: any) {
       const errorMessage = this.getSignUpErrorMessage(error.code);
@@ -46,6 +69,7 @@ class FirebaseAuthRepository implements AuthRepository {
 
   /**
    * Check if user is logged in
+   * (Safe to call AFTER auth state is ready)
    */
   isUserLoggedIn(): boolean {
     return this.auth.currentUser !== null;
@@ -55,13 +79,13 @@ class FirebaseAuthRepository implements AuthRepository {
    * Sign out current user
    */
   async signOut(): Promise<void> {
-    await this.auth.signOut();
+    await firebaseSignOut(this.auth);
   }
 
   /**
    * Get current user
    */
-  getCurrentUser(): FirebaseAuthTypes.User | null {
+  getCurrentUser() {
     return this.auth.currentUser;
   }
 
@@ -72,8 +96,7 @@ class FirebaseAuthRepository implements AuthRepository {
     try {
       const user = this.auth.currentUser;
       if (user) {
-        const token = await user.getIdToken();
-        return token;
+        return await user.getIdToken();
       }
       return null;
     } catch (error) {
@@ -127,5 +150,4 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 }
 
-// Export singleton instance
 export default new FirebaseAuthRepository();

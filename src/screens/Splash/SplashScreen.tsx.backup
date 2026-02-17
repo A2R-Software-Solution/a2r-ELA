@@ -1,7 +1,7 @@
 /**
  * Splash Screen
  * Initial loading screen that determines navigation route
- *
+ * 
  * ✅ FIXED: Waits for Firebase Auth to be ready before checking login state
  */
 import React, { useEffect } from 'react';
@@ -23,25 +23,29 @@ const SplashScreen: React.FC<SplashScreenProps> = ({
   useEffect(() => {
     const checkAuthAndNavigate = async () => {
       try {
-        // ✅ Wait for Firebase to be ready FIRST
-        const unsubscribe = firebaseAuthRepository.onAuthStateReady(
-          async isLoggedIn => {
-            unsubscribe();
+        // ✅ FIX: Wait for Firebase Auth to be ready (CRITICAL for iOS)
+        const unsubscribe = firebaseAuthRepository.onAuthStateReady(async (isLoggedIn) => {
+          // Unsubscribe immediately (we only need this once)
+          unsubscribe();
 
-            await new Promise<void>(resolve => setTimeout(resolve, 1500));
-            const hasSeenIntro = await PreferencesManager.hasSeenIntro();
+          // Show splash for minimum 1.5 seconds
+          await new Promise<void>((resolve) => setTimeout(resolve, 1500));
 
-            if (isLoggedIn) {
-              onNavigateToHome();
-            } else if (hasSeenIntro) {
-              onNavigateToSignIn();
-            } else {
-              onNavigateToIntro();
-            }
-          },
-        );
+          // Check if user has seen intro
+          const hasSeenIntro = await PreferencesManager.hasSeenIntro();
+
+          // Navigate based on state
+          if (isLoggedIn) {
+            onNavigateToHome();
+          } else if (hasSeenIntro) {
+            onNavigateToSignIn();
+          } else {
+            onNavigateToIntro();
+          }
+        });
       } catch (error) {
         console.error('Error in splash screen:', error);
+        // Default to intro if error occurs
         onNavigateToIntro();
       }
     };

@@ -3,8 +3,6 @@
  * Route names and parameter types for navigation
  */
 
-import { NavigatorScreenParams } from '@react-navigation/native';
-
 // Root Stack Navigator (Auth Flow)
 export type RootStackParamList = {
   Splash: undefined;
@@ -30,7 +28,7 @@ export const Routes = {
   SIGN_IN: 'SignIn' as const,
   SIGN_UP: 'SignUp' as const,
   MAIN: 'Main' as const,
-  
+
   // Main Screens
   ESSAY: 'Essay' as const, // ← Added Essay route
   HOME: 'Home' as const,

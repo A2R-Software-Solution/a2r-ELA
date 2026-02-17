@@ -36,11 +36,16 @@ from essay.essay_routes import (
     get_streak,
     get_progress_stats,
     get_category_stats,
-    submit_essay_no_auth,      # Add this
-    test_essay_evaluator       # Add this
-
+    submit_essay_no_auth,
+    test_essay_evaluator
 )
 from test_llm import test_llm_connection
+
+# NEW: Import file upload functions
+from file.file_routes import (
+    extract_pdf_text,
+    extract_pdf_text_authenticated,
+)
 
 
 # Health check endpoint
@@ -68,7 +73,9 @@ def health_check(req: https_fn.Request) -> https_fn.Response:
             "get_user_submissions": "GET /get_user_submissions",
             "get_streak": "GET /get_streak",
             "get_progress_stats": "GET /get_progress_stats",
-            "get_category_stats": "GET /get_category_stats"
+            "get_category_stats": "GET /get_category_stats",
+            "extract_pdf_text": "POST /extract_pdf_text",  # NEW
+            "extract_pdf_text_authenticated": "POST /extract_pdf_text_authenticated"  # NEW
         }
     }
     
@@ -89,8 +96,11 @@ __all__ = [
     'get_category_stats',
     'health_check',
     'test_llm_connection',
-    "submit_essay_no_auth",    # Add this
-    "test_essay_evaluator",    # Add this
+    'submit_essay_no_auth',
+    'test_essay_evaluator',
+    # NEW: File upload functions
+    'extract_pdf_text',
+    'extract_pdf_text_authenticated',
 ]
 
 print("E-Learning Essay Backend initialized")

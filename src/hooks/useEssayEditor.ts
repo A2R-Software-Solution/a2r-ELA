@@ -5,15 +5,15 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { DocumentPickerResponse } from 'react-native-document-picker';
-import { EssayUiState, initialEssayUiState } from '../types/EssayUiState';
-import { EssayCategory } from '../../../models/EssayModels';
-import essayRepository from '../../../repositories/EssayRepository';
-import { FileRepository } from '../../../repositories/FileRepository';
-import { Result } from '../../../models/Result';
 import {
-  FileUploadStatus,
-  FILE_UPLOAD_CONFIG,
-} from '../../../models/FileModels';
+  EssayUiState,
+  initialEssayUiState,
+} from 'src/screens/Essay/types/EssayUiState';
+import { EssayCategory } from 'src/models/EssayModels';
+import essayRepository from 'src/repositories/EssayRepository';
+import { FileRepository } from 'src/repositories/FileRepository';
+import { Result } from 'src/models/Result';
+import { FileUploadStatus, FILE_UPLOAD_CONFIG } from 'src/models/FileModels';
 
 export const useEssayEditor = () => {
   const [uiState, setUiState] = useState<EssayUiState>(initialEssayUiState);
@@ -30,7 +30,7 @@ export const useEssayEditor = () => {
   const updateEssayText = useCallback((text: string) => {
     const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
 
-    setUiState(prev => {
+    setUiState((prev: EssayUiState) => {
       const isEssayEmpty = text.trim() === '';
       const isWordCountValid =
         wordCount >= prev.minWords && wordCount <= prev.maxWords;
@@ -76,7 +76,7 @@ export const useEssayEditor = () => {
         break;
     }
 
-    setUiState(prev => ({
+    setUiState((prev: EssayUiState) => ({
       ...prev,
       selectedCategory: category,
       minWords,
@@ -89,7 +89,7 @@ export const useEssayEditor = () => {
    * Toggle info overlay
    */
   const toggleInfoOverlay = useCallback(() => {
-    setUiState(prev => ({
+    setUiState((prev: EssayUiState) => ({
       ...prev,
       showInfoOverlay: !prev.showInfoOverlay,
     }));
@@ -99,7 +99,7 @@ export const useEssayEditor = () => {
    * Hide info overlay
    */
   const hideInfoOverlay = useCallback(() => {
-    setUiState(prev => ({
+    setUiState((prev: EssayUiState) => ({
       ...prev,
       showInfoOverlay: false,
     }));
@@ -121,7 +121,7 @@ export const useEssayEditor = () => {
       );
 
       if (!validation.isValid) {
-        setUiState(prev => ({
+        setUiState((prev: EssayUiState) => ({
           ...prev,
           fileUploadError: validation.error || 'Invalid file',
         }));
@@ -138,7 +138,7 @@ export const useEssayEditor = () => {
       });
 
       // Add file to state with UPLOADING status
-      setUiState(prev => ({
+      setUiState((prev: EssayUiState) => ({
         ...prev,
         uploadedFiles: [...prev.uploadedFiles, fileInfo],
         isFileExtracting: true,
@@ -160,8 +160,7 @@ export const useEssayEditor = () => {
             undefined,
             result.data.text,
           );
-
-          setUiState(prev => {
+          setUiState((prev: EssayUiState) => {
             const updatedFiles = prev.uploadedFiles.map(f =>
               f.id === fileId ? updatedFile : f,
             );
@@ -199,7 +198,7 @@ export const useEssayEditor = () => {
             errorMessage,
           );
 
-          setUiState(prev => ({
+          setUiState((prev: EssayUiState) => ({
             ...prev,
             uploadedFiles: prev.uploadedFiles.map(f =>
               f.id === fileId ? failedFile : f,
@@ -219,7 +218,7 @@ export const useEssayEditor = () => {
           'An error occurred while processing the file',
         );
 
-        setUiState(prev => ({
+        setUiState((prev: EssayUiState) => ({
           ...prev,
           uploadedFiles: prev.uploadedFiles.map(f =>
             f.id === fileId ? failedFile : f,
@@ -236,7 +235,7 @@ export const useEssayEditor = () => {
    * NEW: Remove an uploaded file
    */
   const handleRemoveFile = useCallback((fileId: string) => {
-    setUiState(prev => {
+    setUiState((prev: EssayUiState) => {
       const updatedFiles = prev.uploadedFiles.filter(f => f.id !== fileId);
 
       // Recalculate combined text and word count
@@ -276,7 +275,7 @@ export const useEssayEditor = () => {
 
     // Validate before submitting
     if (!currentState.canSubmit) {
-      setUiState(prev => ({
+      setUiState((prev: EssayUiState) => ({
         ...prev,
         submissionError: `Please write between ${currentState.minWords} and ${currentState.maxWords} words`,
         showErrorDialog: true,
@@ -285,7 +284,7 @@ export const useEssayEditor = () => {
     }
 
     // Set loading state
-    setUiState(prev => ({
+    setUiState((prev: EssayUiState) => ({
       ...prev,
       isSubmitting: true,
       submissionError: null,
