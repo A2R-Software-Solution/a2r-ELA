@@ -3,7 +3,7 @@
  * State interface for Essay Editor screen
  */
 
-import { EssayCategory } from '../../../models/EssayModels';
+import { EssayCategory, PSSARawScores, PSSAConvertedScores } from '../../../models/EssayModels';
 import { RubricScores } from '../../../models/EssayModels';
 import { FileInfo } from '../../../models/FileModels';
 
@@ -11,8 +11,8 @@ import { FileInfo } from '../../../models/FileModels';
  * Essay input mode - either typing or uploading files
  */
 export enum EssayInputMode {
-  TYPING = 'typing', // User is typing text manually
-  UPLOADING = 'uploading', // User is uploading PDF files
+  TYPING = 'typing',
+  UPLOADING = 'uploading',
 }
 
 export interface EssayUiState {
@@ -23,22 +23,47 @@ export interface EssayUiState {
   showInfoOverlay: boolean;
   uploadedFileName: string | null;
 
-  // New fields for backend integration
+  // Category
   selectedCategory: EssayCategory;
   wordCount: number;
+
+  // -------------------------------------------------------------------------
+  // State & Grade — user preference
+  // -------------------------------------------------------------------------
+  selectedState: string;         // e.g. 'PA'
+  selectedGrade: string;         // e.g. '7', 'k', 'prek'
+  stateDisplay: string;          // e.g. 'Pennsylvania'
+  gradeDisplay: string;          // e.g. 'Grade 7'
+  isLoadingPreferences: boolean; // true while fetching from Firestore on mount
+  showPreferencesSheet: boolean; // controls StateSelectorSheet visibility
 
   // Submission state
   isSubmitting: boolean;
   submissionSuccess: boolean;
   submissionError: string | null;
 
-  // Evaluation results
+  // -------------------------------------------------------------------------
+  // Evaluation results — PSSA aligned
+  // -------------------------------------------------------------------------
   totalScore: number | null;
-  grade: string | null;
+  grade: string | null;            // letter grade A-F
+
+  // PSSA specific
+  pssaTotal: number | null;        // raw total out of 20
+  rawScores: PSSARawScores | null; // 1-4 per domain
+  convertedScores: PSSAConvertedScores | null; // 5-20 per domain
+
+  // Legacy alias — kept for backward compat with FeedbackDialog
   rubricScores: RubricScores | null;
+
+  // Feedback
   personalizedFeedback: string | null;
   strengths: string[];
   areasForImprovement: string[];
+
+  // Context shown in feedback dialog
+  gradeBand: string | null;        // e.g. 'Grades 6-8'
+  rubricType: string | null;       // e.g. 'PSSA Writing Domain'
 
   // Streak information
   currentStreak: number;
@@ -53,7 +78,7 @@ export interface EssayUiState {
   showFeedbackDialog: boolean;
   showErrorDialog: boolean;
 
-  // Computed properties (will be calculated in hook)
+  // Computed properties
   isEssayEmpty: boolean;
   isWordCountValid: boolean;
   canSubmit: boolean;
@@ -61,12 +86,12 @@ export interface EssayUiState {
   wordCountText: string;
   streakText: string;
 
-  // NEW: File upload state
-  inputMode: EssayInputMode; // Track if user is typing or uploading
-  uploadedFiles: FileInfo[]; // Array of uploaded PDF files (max 2)
-  isFileExtracting: boolean; // True when extracting text from PDF
-  canUploadMoreFiles: boolean; // True if user can upload more files (< 2)
-  fileUploadError: string | null; // Error message for file operations
+  // File upload state
+  inputMode: EssayInputMode;
+  uploadedFiles: FileInfo[];
+  isFileExtracting: boolean;
+  canUploadMoreFiles: boolean;
+  fileUploadError: string | null;
 }
 
 export const initialEssayUiState: EssayUiState = {
@@ -79,16 +104,30 @@ export const initialEssayUiState: EssayUiState = {
   selectedCategory: EssayCategory.ESSAY_WRITING,
   wordCount: 0,
 
+  // State & grade defaults — overwritten on mount from Firestore
+  selectedState: 'PA',
+  selectedGrade: '6',
+  stateDisplay: 'Pennsylvania',
+  gradeDisplay: 'Grade 6',
+  isLoadingPreferences: true,
+  showPreferencesSheet: false,
+
   isSubmitting: false,
   submissionSuccess: false,
   submissionError: null,
 
+  // Evaluation results
   totalScore: null,
   grade: null,
+  pssaTotal: null,
+  rawScores: null,
+  convertedScores: null,
   rubricScores: null,
   personalizedFeedback: null,
   strengths: [],
   areasForImprovement: [],
+  gradeBand: null,
+  rubricType: null,
 
   currentStreak: 0,
   maxStreak: 0,
@@ -100,7 +139,6 @@ export const initialEssayUiState: EssayUiState = {
   showFeedbackDialog: false,
   showErrorDialog: false,
 
-  // Computed properties
   isEssayEmpty: true,
   isWordCountValid: false,
   canSubmit: false,
@@ -108,7 +146,6 @@ export const initialEssayUiState: EssayUiState = {
   wordCountText: '0/500',
   streakText: '0/365',
 
-  // NEW: File upload initial state
   inputMode: EssayInputMode.TYPING,
   uploadedFiles: [],
   isFileExtracting: false,

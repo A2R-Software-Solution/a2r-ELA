@@ -67,11 +67,11 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
             {rubricScores && (
               <>
                 <Text style={styles.sectionTitle}>Detailed Scores</Text>
-                <RubricScoreItem label="Content & Ideas" score={rubricScores.content_and_ideas} />
-                <RubricScoreItem label="Organization & Structure" score={rubricScores.organization_and_structure} />
-                <RubricScoreItem label="Language & Vocabulary" score={rubricScores.language_and_vocabulary} />
-                <RubricScoreItem label="Grammar & Mechanics" score={rubricScores.grammar_and_mechanics} />
-                <RubricScoreItem label="Coherence & Clarity" score={rubricScores.coherence_and_clarity} />
+                <RubricScoreItem label="Focus" score={rubricScores.focus} />
+                <RubricScoreItem label="Content" score={rubricScores.content} />
+                <RubricScoreItem label="Organization" score={rubricScores.organization} />
+                <RubricScoreItem label="Style" score={rubricScores.style} />
+                <RubricScoreItem label="Conventions" score={rubricScores.conventions} />
               </>
             )}
 

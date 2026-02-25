@@ -10,13 +10,13 @@ import {
   ActivityIndicator,
   Text,
 } from 'react-native';
-import DocumentPicker, {
-  DocumentPickerResponse,
-  types,
-} from 'react-native-document-picker';
+import { pick, isErrorWithCode, errorCodes, types } from '@react-native-documents/picker';
+
+// Infer the picked file type from the pick function's return type
+type PickedFile = Awaited<ReturnType<typeof pick>>[0];
 
 interface FileUploadButtonProps {
-  onFileSelected: (file: DocumentPickerResponse) => void;
+  onFileSelected: (file: PickedFile) => void;
   disabled?: boolean;
   isLoading?: boolean;
   color?: string;
@@ -32,7 +32,7 @@ export const FileUploadButton: React.FC<FileUploadButtonProps> = ({
 }) => {
   const handlePress = async () => {
     try {
-      const result = await DocumentPicker.pick({
+      const result = await pick({
         type: [types.pdf],
         allowMultiSelection: false,
         copyTo: 'cachesDirectory', // Copy to cache for processing
@@ -42,7 +42,7 @@ export const FileUploadButton: React.FC<FileUploadButtonProps> = ({
         onFileSelected(result[0]);
       }
     } catch (err) {
-      if (DocumentPicker.isCancel(err)) {
+      if (isErrorWithCode(err) && err.code === errorCodes.OPERATION_CANCELED) {
         // User cancelled the picker
         console.log('User cancelled file picker');
       } else {

@@ -11,11 +11,9 @@ from firebase_admin import credentials
 # Only initialize if not already initialized
 if not firebase_admin._apps:
     try:
-        # Try to use Application Default Credentials (works in Cloud Functions)
         firebase_admin.initialize_app()
     except Exception as e:
         print(f"Firebase initialization: {e}")
-        # This is okay during deployment - it will work in production
 
 # Import configuration and validate (but don't fail on errors)
 from config.settings import settings
@@ -28,7 +26,6 @@ except ValueError as e:
     print("Set OPENROUTER_API_KEY in Firebase Functions config")
 
 # Import all cloud functions
-# These will be automatically discovered and deployed by Firebase
 from essay.essay_routes import (
     submit_essay,
     get_essay_submission,
@@ -37,16 +34,24 @@ from essay.essay_routes import (
     get_progress_stats,
     get_category_stats,
     submit_essay_no_auth,
-    test_essay_evaluator
+    test_essay_evaluator,
+    # NEW: user preference endpoints
+    save_user_preferences,
+    get_user_preferences,
 )
 from test_llm import test_llm_connection
 
-# NEW: Import file upload functions
+# User profile functions
+from user.user_routes import (
+    get_user_profile,
+    update_user_profile,
+)
+
+# File upload functions
 from file.file_routes import (
     extract_pdf_text,
     extract_pdf_text_authenticated,
 )
-
 
 # Health check endpoint
 from firebase_functions import https_fn, options
@@ -57,52 +62,75 @@ from firebase_functions import https_fn, options
 def health_check(req: https_fn.Request) -> https_fn.Response:
     """
     Health check endpoint to verify service is running
-    
+
     Endpoint: GET /health_check
     """
     import json
-    
+
     health_data = {
-        "status": "healthy",
-        "service": "elearning-essay-backend",
-        "version": "1.0.0",
+        "status":      "healthy",
+        "service":     "elearning-essay-backend",
+        "version":     "1.0.0",
         "environment": settings.ENVIRONMENT,
+        "rubric":      "PSSA Writing Domain (PA)",
         "endpoints": {
-            "submit_essay": "POST /submit_essay",
-            "get_essay_submission": "GET /get_essay_submission",
-            "get_user_submissions": "GET /get_user_submissions",
-            "get_streak": "GET /get_streak",
-            "get_progress_stats": "GET /get_progress_stats",
-            "get_category_stats": "GET /get_category_stats",
-            "extract_pdf_text": "POST /extract_pdf_text",  # NEW
-            "extract_pdf_text_authenticated": "POST /extract_pdf_text_authenticated"  # NEW
+            # Essay
+            "submit_essay":              "POST /submit_essay",
+            "get_essay_submission":      "GET  /get_essay_submission",
+            "get_user_submissions":      "GET  /get_user_submissions",
+            # Progress
+            "get_streak":                "GET  /get_streak",
+            "get_progress_stats":        "GET  /get_progress_stats",
+            "get_category_stats":        "GET  /get_category_stats",
+            # Preferences
+            "save_user_preferences":     "POST /save_user_preferences",
+            "get_user_preferences":      "GET  /get_user_preferences",
+            # User Profile
+            "get_user_profile":          "GET  /get_user_profile",
+            "update_user_profile":       "POST /update_user_profile",
+            # File
+            "extract_pdf_text":          "POST /extract_pdf_text",
+            "extract_pdf_text_authenticated": "POST /extract_pdf_text_authenticated",
+            # Health
+            "health_check":              "GET  /health_check",
         }
     }
-    
+
     return https_fn.Response(
         response=json.dumps(health_data),
         status=200,
         headers={"Content-Type": "application/json"}
     )
 
+
 # Export all functions
 # Firebase will automatically detect these exports
 __all__ = [
+    # Essay
     'submit_essay',
     'get_essay_submission',
     'get_user_submissions',
     'get_streak',
     'get_progress_stats',
     'get_category_stats',
-    'health_check',
-    'test_llm_connection',
     'submit_essay_no_auth',
     'test_essay_evaluator',
-    # NEW: File upload functions
+    # Preferences
+    'save_user_preferences',
+    'get_user_preferences',
+    # User Profile
+    'get_user_profile',
+    'update_user_profile',
+    # File
     'extract_pdf_text',
     'extract_pdf_text_authenticated',
+    # Utils
+    'health_check',
+    'test_llm_connection',
 ]
 
 print("E-Learning Essay Backend initialized")
-print(f"Environment: {settings.ENVIRONMENT}")
-print(f"LLM Model: {settings.OPENROUTER_MODEL}")
+print(f"Environment:     {settings.ENVIRONMENT}")
+print(f"LLM Model:       {settings.OPENROUTER_MODEL}")
+print(f"Rubric:          PSSA Writing Domain")
+print(f"Supported states: {settings.SUPPORTED_STATES}")

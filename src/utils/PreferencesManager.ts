@@ -1,19 +1,28 @@
 /**
  * Preferences Manager
- * Handles local storage using AsyncStorage (React Native equivalent of SharedPreferences)
- * 
- * Installation required: npm install @react-native-async-storage/async-storage
+ * Handles local cache using AsyncStorage.
+ * Firestore is the source of truth — AsyncStorage is a speed cache only.
+ *
+ * Installation: npm install @react-native-async-storage/async-storage
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class PreferencesManager {
   private static readonly PREFS_PREFIX = '@elearning_app:';
-  private static readonly KEY_HAS_SEEN_INTRO = `${PreferencesManager.PREFS_PREFIX}has_seen_intro`;
 
-  /**
-   * Mark intro as seen
-   */
+  // Keys
+  private static readonly KEY_HAS_SEEN_INTRO =
+    `${PreferencesManager.PREFS_PREFIX}has_seen_intro`;
+  private static readonly KEY_USER_STATE =
+    `${PreferencesManager.PREFS_PREFIX}user_state`;
+  private static readonly KEY_USER_GRADE =
+    `${PreferencesManager.PREFS_PREFIX}user_grade`;
+
+  // --------------------------------------------------------------------------
+  // INTRO
+  // --------------------------------------------------------------------------
+
   async markIntroAsSeen(): Promise<void> {
     try {
       await AsyncStorage.setItem(PreferencesManager.KEY_HAS_SEEN_INTRO, 'true');
@@ -23,9 +32,6 @@ class PreferencesManager {
     }
   }
 
-  /**
-   * Check if user has seen intro
-   */
   async hasSeenIntro(): Promise<boolean> {
     try {
       const value = await AsyncStorage.getItem(PreferencesManager.KEY_HAS_SEEN_INTRO);
@@ -36,13 +42,120 @@ class PreferencesManager {
     }
   }
 
+  // --------------------------------------------------------------------------
+  // STATE & GRADE CACHE
+  // Firestore is source of truth. These methods cache locally for speed.
+  // Always sync from Firestore on app start via getUserPreferences API call.
+  // --------------------------------------------------------------------------
+
   /**
-   * Clear all preferences
+   * Cache the user's selected state locally.
+   * Call this AFTER successfully saving to Firestore.
    */
+  async cacheUserState(state: string): Promise<void> {
+    try {
+      await AsyncStorage.setItem(PreferencesManager.KEY_USER_STATE, state);
+    } catch (error) {
+      console.error('Error caching user state:', error);
+    }
+  }
+
+  /**
+   * Cache the user's selected grade locally.
+   * Call this AFTER successfully saving to Firestore.
+   */
+  async cacheUserGrade(grade: string): Promise<void> {
+    try {
+      await AsyncStorage.setItem(PreferencesManager.KEY_USER_GRADE, grade);
+    } catch (error) {
+      console.error('Error caching user grade:', error);
+    }
+  }
+
+  /**
+   * Cache both state and grade in a single operation.
+   */
+  async cacheUserPreferences(state: string, grade: string): Promise<void> {
+    try {
+      await AsyncStorage.multiSet([
+        [PreferencesManager.KEY_USER_STATE, state],
+        [PreferencesManager.KEY_USER_GRADE, grade],
+      ]);
+    } catch (error) {
+      console.error('Error caching user preferences:', error);
+    }
+  }
+
+  /**
+   * Get cached state. Returns null if not cached — caller should
+   * fetch from Firestore in that case.
+   */
+  async getCachedState(): Promise<string | null> {
+    try {
+      return await AsyncStorage.getItem(PreferencesManager.KEY_USER_STATE);
+    } catch (error) {
+      console.error('Error reading cached state:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get cached grade. Returns null if not cached — caller should
+   * fetch from Firestore in that case.
+   */
+  async getCachedGrade(): Promise<string | null> {
+    try {
+      return await AsyncStorage.getItem(PreferencesManager.KEY_USER_GRADE);
+    } catch (error) {
+      console.error('Error reading cached grade:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get both cached state and grade in a single read.
+   * Returns { state: null, grade: null } if not cached.
+   */
+  async getCachedPreferences(): Promise<{ state: string | null; grade: string | null }> {
+    try {
+      const results = await AsyncStorage.multiGet([
+        PreferencesManager.KEY_USER_STATE,
+        PreferencesManager.KEY_USER_GRADE,
+      ]);
+      return {
+        state: results[0][1],
+        grade: results[1][1],
+      };
+    } catch (error) {
+      console.error('Error reading cached preferences:', error);
+      return { state: null, grade: null };
+    }
+  }
+
+  /**
+   * Clear cached state and grade (e.g. on logout)
+   */
+  async clearCachedPreferences(): Promise<void> {
+    try {
+      await AsyncStorage.multiRemove([
+        PreferencesManager.KEY_USER_STATE,
+        PreferencesManager.KEY_USER_GRADE,
+      ]);
+    } catch (error) {
+      console.error('Error clearing cached preferences:', error);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // GENERIC HELPERS
+  // --------------------------------------------------------------------------
+
   async clearPreferences(): Promise<void> {
     try {
       const keys = await AsyncStorage.getAllKeys();
-      const appKeys = keys.filter(key => key.startsWith(PreferencesManager.PREFS_PREFIX));
+      const appKeys = keys.filter(
+        key => key.startsWith(PreferencesManager.PREFS_PREFIX)
+      );
       await AsyncStorage.multiRemove(appKeys);
     } catch (error) {
       console.error('Error clearing preferences:', error);
@@ -50,57 +163,44 @@ class PreferencesManager {
     }
   }
 
-  /**
-   * Generic save method for future preferences
-   */
   async saveString(key: string, value: string): Promise<void> {
     try {
-      await AsyncStorage.setItem(`${PreferencesManager.PREFS_PREFIX}${key}`, value);
+      await AsyncStorage.setItem(
+        `${PreferencesManager.PREFS_PREFIX}${key}`,
+        value
+      );
     } catch (error) {
       console.error(`Error saving ${key}:`, error);
       throw error;
     }
   }
 
-  /**
-   * Generic get method for future preferences
-   */
   async getString(key: string, defaultValue: string = ''): Promise<string> {
     try {
-      const value = await AsyncStorage.getItem(`${PreferencesManager.PREFS_PREFIX}${key}`);
-      return value || defaultValue;
+      const value = await AsyncStorage.getItem(
+        `${PreferencesManager.PREFS_PREFIX}${key}`
+      );
+      return value ?? defaultValue;
     } catch (error) {
       console.error(`Error reading ${key}:`, error);
       return defaultValue;
     }
   }
 
-  /**
-   * Save boolean value
-   */
   async saveBoolean(key: string, value: boolean): Promise<void> {
     await this.saveString(key, value ? 'true' : 'false');
   }
 
-  /**
-   * Get boolean value
-   */
   async getBoolean(key: string, defaultValue: boolean = false): Promise<boolean> {
     const value = await this.getString(key);
     if (value === '') return defaultValue;
     return value === 'true';
   }
 
-  /**
-   * Save number value
-   */
   async saveNumber(key: string, value: number): Promise<void> {
     await this.saveString(key, value.toString());
   }
 
-  /**
-   * Get number value
-   */
   async getNumber(key: string, defaultValue: number = 0): Promise<number> {
     const value = await this.getString(key);
     if (value === '') return defaultValue;
@@ -108,22 +208,15 @@ class PreferencesManager {
     return isNaN(parsed) ? defaultValue : parsed;
   }
 
-  /**
-   * Save object as JSON
-   */
   async saveObject<T>(key: string, value: T): Promise<void> {
     try {
-      const jsonValue = JSON.stringify(value);
-      await this.saveString(key, jsonValue);
+      await this.saveString(key, JSON.stringify(value));
     } catch (error) {
       console.error(`Error saving object ${key}:`, error);
       throw error;
     }
   }
 
-  /**
-   * Get object from JSON
-   */
   async getObject<T>(key: string, defaultValue: T | null = null): Promise<T | null> {
     try {
       const value = await this.getString(key);
@@ -135,12 +228,11 @@ class PreferencesManager {
     }
   }
 
-  /**
-   * Remove specific key
-   */
   async remove(key: string): Promise<void> {
     try {
-      await AsyncStorage.removeItem(`${PreferencesManager.PREFS_PREFIX}${key}`);
+      await AsyncStorage.removeItem(
+        `${PreferencesManager.PREFS_PREFIX}${key}`
+      );
     } catch (error) {
       console.error(`Error removing ${key}:`, error);
       throw error;
@@ -148,5 +240,4 @@ class PreferencesManager {
   }
 }
 
-// Export singleton instance
 export default new PreferencesManager();

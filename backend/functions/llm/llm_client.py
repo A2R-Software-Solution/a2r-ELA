@@ -14,11 +14,10 @@ class LLMClient:
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
-            "HTTP-Referer": "https://github.com/yourusername/e-learning-app",  # Required by OpenRouter
-            "X-Title": "E-Learning Essay App"  # Optional but recommended
+            "HTTP-Referer": "https://github.com/yourusername/e-learning-app",
+            "X-Title": "E-Learning Essay App"
         }
         
-        # Log initialization
         print(f"LLMClient initialized")
         print(f"Base URL: {self.base_url}")
         print(f"Model: {self.model}")
@@ -127,8 +126,6 @@ class LLMClient:
             print(f"Received response from LLM, length: {len(assistant_message)}")
             print(f"Response preview: {assistant_message[:200]}...")
             
-            # Try multiple parsing strategies
-            
             # Strategy 1: Direct JSON parse
             try:
                 evaluation = json.loads(assistant_message)
@@ -153,7 +150,6 @@ class LLMClient:
             if "```" in assistant_message:
                 try:
                     json_start = assistant_message.find("```") + 3
-                    # Skip language identifier if present
                     if assistant_message[json_start:json_start+10].strip().split()[0].isalpha():
                         json_start = assistant_message.find("\n", json_start) + 1
                     json_end = assistant_message.find("```", json_start)
@@ -163,21 +159,43 @@ class LLMClient:
                     return evaluation
                 except Exception as e:
                     print(f"Failed to extract from code block: {str(e)}")
+
+            # Strategy 4: Find first { ... } block in the response
+            try:
+                json_start = assistant_message.find("{")
+                json_end = assistant_message.rfind("}") + 1
+                if json_start != -1 and json_end > json_start:
+                    json_str = assistant_message[json_start:json_end]
+                    evaluation = json.loads(json_str)
+                    print(f"Successfully parsed JSON from raw brace extraction")
+                    return evaluation
+            except Exception as e:
+                print(f"Failed brace extraction: {str(e)}")
             
-            # If all parsing fails, log and return error
+            # All strategies failed — return safe fallback with correct PSSA keys
             print(f"All JSON parsing strategies failed")
             print(f"Raw response: {assistant_message[:500]}")
             return {
-                "raw_response": assistant_message,
-                "error": "Failed to parse JSON response",
-                "rubric_scores": {
-                    "content_and_ideas": 0,
-                    "organization_and_structure": 0,
-                    "language_and_vocabulary": 0,
-                    "grammar_and_mechanics": 0,
-                    "coherence_and_clarity": 0
+                "raw_scores": {          # ✅ correct key matching PSSA domains
+                    "focus": 1,
+                    "content": 1,
+                    "organization": 1,
+                    "style": 1,
+                    "conventions": 1,
                 },
-                "total_score": 0
+                "raw_justifications": {
+                    "focus": "Could not parse LLM response",
+                    "content": "Could not parse LLM response",
+                    "organization": "Could not parse LLM response",
+                    "style": "Could not parse LLM response",
+                    "conventions": "Could not parse LLM response",
+                },
+                "strengths": ["Good effort on completing the essay"],
+                "areas_for_improvement": ["Keep practicing to improve your writing"],
+                "pssa_total": 5,
+                "converted_score": 25,
+                "error": "Failed to parse JSON response",
+                "raw_response": assistant_message,
             }
             
         except Exception as e:
@@ -196,23 +214,24 @@ class LLMClient:
         
         Args:
             essay_text: The student's essay
-            rubric_scores: Dictionary of rubric scores
-            total_score: Total score
+            rubric_scores: Dictionary of domain -> converted scores (5-20)
+            total_score: Total score (25-100)
             
         Returns:
             Personalized feedback text
         """
+        score_lines = "\n".join(
+            f"- {domain.replace('_', ' ').title()}: {score}/20"
+            for domain, score in rubric_scores.items()
+        )
+
         prompt = f"""Based on the following essay evaluation, provide personalized, encouraging feedback for the student.
 
 Essay excerpt: "{essay_text[:200]}..."
 
 Scores:
 - Total Score: {total_score}/100
-- Content & Ideas: {rubric_scores.get('content_and_ideas', 0)}/20
-- Organization: {rubric_scores.get('organization_and_structure', 0)}/20
-- Language: {rubric_scores.get('language_and_vocabulary', 0)}/20
-- Grammar: {rubric_scores.get('grammar_and_mechanics', 0)}/20
-- Coherence: {rubric_scores.get('coherence_and_clarity', 0)}/20
+{score_lines}
 
 Provide:
 1. A brief positive comment about strengths (2-3 sentences)

@@ -11,20 +11,31 @@ import {
   StreakInfo,
   ProgressStats,
   CategoryStats,
+  UserPreferences,
+  SaveUserPreferencesRequest,
 } from '../models/EssayModels';
 
 class EssayRepository {
+
+  // --------------------------------------------------------------------------
+  // ESSAY SUBMISSION
+  // --------------------------------------------------------------------------
+
   /**
-   * Submit an essay for evaluation
+   * Submit an essay for PSSA-aligned evaluation
    */
   async submitEssay(
     essayText: string,
-    category: EssayCategory
+    category: EssayCategory,
+    state: string,
+    grade: string,
   ): Promise<Result<EssaySubmissionResponse>> {
     try {
       const request = {
         essay_text: essayText,
-        category: category,
+        category:   category,
+        state:      state,
+        grade:      grade,
       };
 
       const response = await apiService.submitEssay(request);
@@ -46,12 +57,79 @@ class EssayRepository {
         );
       }
     } catch (error: any) {
-      return Result.error(
-        error,
-        error.message || 'Network error occurred'
-      );
+      return Result.error(error, error.message || 'Network error occurred');
     }
   }
+
+  // --------------------------------------------------------------------------
+  // USER PREFERENCES — State & Grade
+  // --------------------------------------------------------------------------
+
+  /**
+   * Save user's state and grade preferences to Firestore via backend.
+   * Backend is the source of truth — always call this when preferences change.
+   */
+  async saveUserPreferences(
+    state: string,
+    grade: string,
+  ): Promise<Result<UserPreferences>> {
+    try {
+      const request: SaveUserPreferencesRequest = { state, grade };
+      const response = await apiService.saveUserPreferences(request);
+
+      if (response.status >= 200 && response.status < 300) {
+        const body = response.data;
+        if (body.success && body.data) {
+          return Result.success(body.data);
+        } else {
+          return Result.error(
+            new Error(body.error || 'Failed to save preferences'),
+            body.error || 'Unknown error'
+          );
+        }
+      } else {
+        return Result.error(
+          new Error(`HTTP ${response.status}: ${response.statusText}`),
+          `Server error: ${response.statusText}`
+        );
+      }
+    } catch (error: any) {
+      return Result.error(error, error.message || 'Network error occurred');
+    }
+  }
+
+  /**
+   * Get user's saved state and grade preferences from Firestore.
+   * Also returns supported_states and supported_grades lists for the dropdown.
+   */
+  async getUserPreferences(): Promise<Result<UserPreferences>> {
+    try {
+      const response = await apiService.getUserPreferences();
+
+      if (response.status >= 200 && response.status < 300) {
+        const body = response.data;
+        if (body.success && body.data) {
+          return Result.success(body.data);
+        } else {
+          return Result.error(
+            new Error(body.error || 'Failed to get preferences'),
+            body.error || 'Unknown error'
+          );
+        }
+      } else {
+        return Result.error(
+          new Error(`HTTP ${response.status}: ${response.statusText}`),
+          `Server error: ${response.statusText}`
+        );
+      }
+    } catch (error: any) {
+      return Result.error(error, error.message || 'Network error occurred');
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // PROGRESS & STATS
+  // --------------------------------------------------------------------------
 
   /**
    * Get user's current streak information
@@ -77,10 +155,7 @@ class EssayRepository {
         );
       }
     } catch (error: any) {
-      return Result.error(
-        error,
-        error.message || 'Network error occurred'
-      );
+      return Result.error(error, error.message || 'Network error occurred');
     }
   }
 
@@ -108,10 +183,7 @@ class EssayRepository {
         );
       }
     } catch (error: any) {
-      return Result.error(
-        error,
-        error.message || 'Network error occurred'
-      );
+      return Result.error(error, error.message || 'Network error occurred');
     }
   }
 
@@ -139,12 +211,13 @@ class EssayRepository {
         );
       }
     } catch (error: any) {
-      return Result.error(
-        error,
-        error.message || 'Network error occurred'
-      );
+      return Result.error(error, error.message || 'Network error occurred');
     }
   }
+
+  // --------------------------------------------------------------------------
+  // HEALTH CHECK
+  // --------------------------------------------------------------------------
 
   /**
    * Health check to verify backend connectivity

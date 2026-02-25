@@ -1,7 +1,6 @@
 /**
  * API Service
  * Defines all API endpoints and methods
- * TypeScript equivalent of Retrofit ApiService interface
  */
 
 import { AxiosResponse } from 'axios';
@@ -13,20 +12,22 @@ import {
   EssaySubmissionResponse,
   StreakInfo,
   ProgressStats,
+  UserProfile,
+  UpdateUserProfileRequest,
   CategoryStats,
+  UserPreferences,
+  SaveUserPreferencesRequest,
 } from '../models/EssayModels';
 
-/**
- * Request for PDF text extraction
- */
+// ============================================================================
+// PDF MODELS (local to apiService — not essay domain models)
+// ============================================================================
+
 export interface PdfExtractionRequest {
   fileName: string;
   fileData: string; // base64 encoded PDF
 }
 
-/**
- * Response from PDF text extraction
- */
 export interface PdfExtractionResponse {
   success: boolean;
   text: string;
@@ -34,12 +35,18 @@ export interface PdfExtractionResponse {
   error?: string;
 }
 
-/**
- * API Service class with all endpoint methods
- */
+// ============================================================================
+// API SERVICE
+// ============================================================================
+
 class ApiService {
+
+  // --------------------------------------------------------------------------
+  // ESSAY
+  // --------------------------------------------------------------------------
+
   /**
-   * Submit an essay for evaluation
+   * Submit an essay for PSSA-aligned evaluation
    */
   async submitEssay(
     request: EssaySubmissionRequest,
@@ -73,6 +80,32 @@ class ApiService {
     });
   }
 
+  // --------------------------------------------------------------------------
+  // USER PREFERENCES — State & Grade
+  // --------------------------------------------------------------------------
+
+  /**
+   * Save user's state and grade preferences to Firestore.
+   * Backend is the source of truth.
+   */
+  async saveUserPreferences(
+    request: SaveUserPreferencesRequest,
+  ): Promise<AxiosResponse<ApiResponse<UserPreferences>>> {
+    return apiClient.post(ApiConfig.Endpoints.SAVE_USER_PREFERENCES, request);
+  }
+
+  /**
+   * Get user's saved state and grade preferences.
+   * Also returns supported_states and supported_grades for dropdown population.
+   */
+  async getUserPreferences(): Promise<AxiosResponse<ApiResponse<UserPreferences>>> {
+    return apiClient.get(ApiConfig.Endpoints.GET_USER_PREFERENCES);
+  }
+
+  // --------------------------------------------------------------------------
+  // PROGRESS & STATS
+  // --------------------------------------------------------------------------
+
   /**
    * Get user's current streak
    */
@@ -94,9 +127,37 @@ class ApiService {
     return apiClient.get(ApiConfig.Endpoints.GET_CATEGORY_STATS);
   }
 
+  // --------------------------------------------------------------------------
+  // USER PROFILE
+  // --------------------------------------------------------------------------
+
   /**
-   * Extract text from PDF file
-   * Sends base64 encoded PDF to backend for text extraction
+   * Get user profile data from Firestore.
+   * Returns display_name, birthdate, photo_url, created_at, updated_at.
+   * Returns null values for fields not yet set — never throws for missing data.
+   */
+  async getUserProfile(): Promise<AxiosResponse<ApiResponse<UserProfile>>> {
+    return apiClient.get(ApiConfig.Endpoints.GET_USER_PROFILE);
+  }
+
+  /**
+   * Update any combination of user profile fields in Firestore.
+   * All fields are optional — only provided fields are updated.
+   *
+   * To remove photo: pass { photo_url: null }
+   */
+  async updateUserProfile(
+    request: UpdateUserProfileRequest,
+  ): Promise<AxiosResponse<ApiResponse<UserProfile>>> {
+    return apiClient.post(ApiConfig.Endpoints.UPDATE_USER_PROFILE, request);
+  }
+
+  // --------------------------------------------------------------------------
+  // FILE
+  // --------------------------------------------------------------------------
+
+  /**
+   * Extract text from a base64-encoded PDF file
    */
   async extractPdfText(
     request: PdfExtractionRequest,
@@ -109,23 +170,26 @@ class ApiService {
         return response.data.data;
       } else {
         return {
-          success: false,
-          text: '',
+          success:   false,
+          text:      '',
           wordCount: 0,
-          error: response.data.message || 'Failed to extract text from PDF',
+          error:     response.data.message || 'Failed to extract text from PDF',
         };
       }
     } catch (error: any) {
       console.error('Error extracting PDF text:', error);
       return {
-        success: false,
-        text: '',
+        success:   false,
+        text:      '',
         wordCount: 0,
-        error:
-          error.response?.data?.message || 'Failed to extract text from PDF',
+        error:     error.response?.data?.message || 'Failed to extract text from PDF',
       };
     }
   }
+
+  // --------------------------------------------------------------------------
+  // HEALTH
+  // --------------------------------------------------------------------------
 
   /**
    * Health check endpoint

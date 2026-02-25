@@ -20,9 +20,9 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
   return (
     <View style={styles.container}>
       {/* Profile Icon */}
-      <TouchableOpacity onPress={onProfileClick} style={styles.iconButton}>
+      {/* <TouchableOpacity onPress={onProfileClick} style={styles.iconButton}>
         <Text style={styles.icon}>👤</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {/* Greeting */}
       <Text style={styles.greeting}>Hi, {username}</Text>

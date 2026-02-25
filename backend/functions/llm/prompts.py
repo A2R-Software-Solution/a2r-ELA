@@ -1,149 +1,209 @@
-from typing import Dict
+from typing import Dict, Any, List
+from config.rubrics.rubric_service import rubric_service
+from config.settings import settings
+
 
 class EssayPrompts:
     """Prompts for essay evaluation using LLM"""
-    
+
     @staticmethod
-    def get_evaluation_prompt(essay_text: str, category: str = "essay_writing") -> str:
+    def get_evaluation_prompt(
+        essay_text: str,
+        category: str = "essay_writing",
+        state: str = "PA",
+        grade: str = "6",
+    ) -> str:
         """
-        Generate evaluation prompt for the LLM
-        
+        Generate evaluation prompt for the LLM with state-specific rubric.
+
         Args:
             essay_text: The student's essay
-            category: Essay category
-            
+            category:   Essay category
+            state:      State code e.g. 'PA'
+            grade:      Grade string e.g. '5', '8', 'k'
+
         Returns:
-            Formatted prompt string
+            Formatted prompt string with PSSA rubric injected
         """
-        
-        prompt = f"""You are an expert essay evaluator. Evaluate this student essay and assign fair, realistic scores.
+        # Get rubric context for this state + grade
+        try:
+            rubric_ctx = rubric_service.get_rubric_context(state, grade)
+        except ValueError:
+            # Fallback to defaults if invalid state/grade
+            rubric_ctx = rubric_service.get_rubric_context(
+                settings.DEFAULT_STATE,
+                settings.DEFAULT_GRADE
+            )
 
-SCORING RUBRICS (Each worth 20 points):
-1. Content & Ideas: Relevance, depth, and quality of ideas
-2. Organization & Structure: Logical flow and paragraph organization
-3. Language & Vocabulary: Word choice and language quality
-4. Grammar & Mechanics: Spelling, punctuation, and grammar
-5. Coherence & Clarity: Clear expression and readability
+        rubric_block  = rubric_ctx["prompt_block"]
+        scoring_note  = rubric_ctx["scoring_note"]
+        grade_band    = rubric_ctx["grade_band"]
+        rubric_type   = rubric_ctx["rubric_type"]
+        domain_names  = rubric_ctx["domain_names"]  # list of 5 keys
 
-SCORING GUIDELINES:
-- 18-20: Excellent work, minor or no issues
-- 15-17: Good work with some room for improvement
-- 12-14: Satisfactory with several areas to improve
-- 9-11: Needs significant improvement
-- 0-8: Major issues present
+        # Build example JSON with domain keys
+        example_raw = {d: 3 for d in domain_names}
+        example_justifications = {
+            "focus":        "Clear controlling idea with evident task awareness",
+            "content":      "Sufficient development with relevant details",
+            "organization": "Logical order with functional transitions",
+            "style":        "Appropriate word choice and sentence variety",
+            "conventions":  "Sufficient control with few non-interfering errors",
+        }
+        example_strengths = [
+            "Clear and focused controlling idea",
+            "Good use of supporting details",
+            "Appropriate formal style for grade level",
+        ]
+        example_improvements = [
+            "Add more specific examples to strengthen content",
+            "Use more varied transitions between paragraphs",
+            "Review punctuation and capitalization conventions",
+        ]
+        example_pssa_total = sum(example_raw.values())           # 15
+        example_converted  = example_pssa_total * settings.PSSA_CONVERSION_MULTIPLIER  # 75
 
-ESSAY (Category: {category}):
+        import json
+        example_json = json.dumps(
+            {
+                "raw_scores": example_raw,
+                "raw_justifications": example_justifications,
+                "pssa_total": example_pssa_total,
+                "converted_score": example_converted,
+                "strengths": example_strengths,
+                "areas_for_improvement": example_improvements,
+            },
+            indent=4,
+        )
+
+        prompt = f"""You are an expert essay evaluator trained in the {state} {rubric_type}.
+
+You are evaluating a student essay written at the {grade_band} level.
+Category: {category}
+
+{rubric_block}
+
+ESSAY TO EVALUATE:
+\"\"\"
 {essay_text}
+\"\"\"
 
-INSTRUCTIONS:
-Evaluate this essay fairly. Most student essays should score 50-80 points total. Don't give all zeros unless the essay is completely off-topic or unintelligible.
+EVALUATION INSTRUCTIONS:
+1. Read the essay carefully with the grade-band expectations in mind.
+2. Score each of the 5 PSSA domains on a scale of 1 to 4 using the score level descriptors above.
+3. {scoring_note}
+4. Provide a brief justification (1-2 sentences) for each domain score.
+5. List 2-3 specific strengths of the essay.
+6. List 2-3 specific, actionable areas for improvement.
+7. Be fair and realistic — most student essays score between 2 and 3 per domain.
+8. Do NOT give all 1s unless the essay is truly non-scorable.
 
-Return ONLY valid JSON (no markdown, no extra text):
-{{
-    "rubric_scores": {{
-        "content_and_ideas": 15,
-        "organization_and_structure": 14,
-        "language_and_vocabulary": 13,
-        "grammar_and_mechanics": 16,
-        "coherence_and_clarity": 15
-    }},
-    "rubric_justifications": {{
-        "content_and_ideas": "Clear main ideas with good examples",
-        "organization_and_structure": "Well-structured with logical flow",
-        "language_and_vocabulary": "Good word choice, some variety",
-        "grammar_and_mechanics": "Mostly correct with few errors",
-        "coherence_and_clarity": "Ideas connect well and are clear"
-    }},
-    "total_score": 73,
-    "strengths": [
-        "Clear and relevant main topic",
-        "Good organization and structure",
-        "Appropriate language for the topic"
-    ],
-    "areas_for_improvement": [
-        "Add more specific examples",
-        "Vary sentence structure more",
-        "Expand on key points"
-    ]
-}}"""
-        
+IMPORTANT: Return ONLY valid JSON. No markdown, no extra text, no code blocks.
+
+Use exactly this structure (raw scores must be integers 1-4):
+{example_json}
+"""
         return prompt
-    
+
     @staticmethod
     def get_feedback_prompt(
         essay_text: str,
-        rubric_scores: Dict[str, int],
-        total_score: int,
-        strengths: list,
-        areas_for_improvement: list
+        raw_scores: Dict[str, int],
+        converted_score: int,
+        strengths: List[str],
+        areas_for_improvement: List[str],
+        grade: str = "6",
+        state: str = "PA",
     ) -> str:
         """
-        Generate personalized feedback prompt
-        
+        Generate personalized feedback prompt.
+
         Args:
-            essay_text: The student's essay
-            rubric_scores: Dictionary of rubric scores
-            total_score: Total score
-            strengths: List of strengths
+            essay_text:           The student's essay
+            raw_scores:           Dict of domain → raw score (1-4)
+            converted_score:      Total score on 100-point scale
+            strengths:            List of strengths from evaluation
             areas_for_improvement: List of improvement areas
-            
+            grade:                Student's grade
+            state:                State code
+
         Returns:
             Formatted feedback prompt
         """
-        
-        prompt = f"""Generate personalized, encouraging feedback for a student based on their essay evaluation.
+        grade_display = settings.get_grade_display(grade)
+
+        # Format domain scores for prompt
+        score_lines = []
+        for domain in settings.PSSA_DOMAINS:
+            raw  = raw_scores.get(domain, 1)
+            converted = raw * settings.PSSA_CONVERSION_MULTIPLIER
+            label = domain.replace("_", " ").title()
+            score_lines.append(
+                f"  - {label}: {raw}/4 (converted: {converted}/20)"
+            )
+        scores_block = "\n".join(score_lines)
+
+        strengths_block = (
+            "\n".join(f"  - {s}" for s in strengths)
+            if strengths
+            else "  - Good effort on completing the essay"
+        )
+        improvements_block = (
+            "\n".join(f"  - {a}" for a in areas_for_improvement)
+            if areas_for_improvement
+            else "  - Keep practicing to improve"
+        )
+
+        prompt = f"""Generate personalized, encouraging feedback for a {grade_display} student
+based on their {state} PSSA Writing Domain evaluation.
 
 ESSAY EXCERPT:
 \"\"\"{essay_text[:300]}...\"\"\"
 
-EVALUATION RESULTS:
-- Total Score: {total_score}/100
-- Content & Ideas: {rubric_scores.get('content_and_ideas', 0)}/20
-- Organization & Structure: {rubric_scores.get('organization_and_structure', 0)}/20
-- Language & Vocabulary: {rubric_scores.get('language_and_vocabulary', 0)}/20
-- Grammar & Mechanics: {rubric_scores.get('grammar_and_mechanics', 0)}/20
-- Coherence & Clarity: {rubric_scores.get('coherence_and_clarity', 0)}/20
+EVALUATION RESULTS (Total: {converted_score}/100):
+{scores_block}
 
 STRENGTHS:
-{chr(10).join(f'- {s}' for s in strengths) if strengths else '- Good effort on completing the essay'}
+{strengths_block}
 
 AREAS FOR IMPROVEMENT:
-{chr(10).join(f'- {a}' for a in areas_for_improvement) if areas_for_improvement else '- Keep practicing to improve'}
+{improvements_block}
 
 INSTRUCTIONS:
-Create personalized feedback that:
-1. Starts with genuine praise highlighting specific strengths (2-3 sentences)
-2. Provides constructive criticism with actionable steps (2-3 sentences)
-3. Ends with encouragement and motivation (1-2 sentences)
+Write feedback that:
+1. Opens with genuine, specific praise referencing actual strengths (2-3 sentences)
+2. Gives constructive, actionable improvement advice tied to the lowest-scoring domain (2-3 sentences)
+3. Closes with encouragement appropriate for a {grade_display} student (1-2 sentences)
 
-TONE: Supportive, constructive, age-appropriate, encouraging
+TONE: Supportive, constructive, age-appropriate for {grade_display}, encouraging
 LENGTH: 5-7 sentences total
 
-Respond with the feedback text only (no JSON, no labels)."""
-        
+Respond with the feedback text ONLY. No JSON, no labels, no headings."""
+
         return prompt
-    
+
     @staticmethod
     def get_grade_from_score(score: int) -> str:
         """
-        Convert numeric score to letter grade
-        
+        Convert numeric score to letter grade.
+
         Args:
             score: Total score (0-100)
-            
+
         Returns:
             Letter grade (A-F)
         """
-        if score >= 90:
+        if score >= settings.GRADE_THRESHOLDS["A"]:
             return "A"
-        elif score >= 80:
+        elif score >= settings.GRADE_THRESHOLDS["B"]:
             return "B"
-        elif score >= 70:
+        elif score >= settings.GRADE_THRESHOLDS["C"]:
             return "C"
-        elif score >= 60:
+        elif score >= settings.GRADE_THRESHOLDS["D"]:
             return "D"
         else:
             return "F"
+
 
 # Initialize prompts instance
 essay_prompts = EssayPrompts()

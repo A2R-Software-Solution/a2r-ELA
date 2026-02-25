@@ -8,21 +8,36 @@ export const ApiConfig = {
 
   // API Endpoints
   Endpoints: {
-    SUBMIT_ESSAY: 'submit_essay',
+    // Essay
+    SUBMIT_ESSAY:         'submit_essay',
     GET_ESSAY_SUBMISSION: 'get_essay_submission',
     GET_USER_SUBMISSIONS: 'get_user_submissions',
-    GET_STREAK: 'get_streak',
-    GET_PROGRESS_STATS: 'get_progress_stats',
-    GET_CATEGORY_STATS: 'get_category_stats',
+
+    // Progress
+    GET_STREAK:           'get_streak',
+    GET_PROGRESS_STATS:   'get_progress_stats',
+    GET_CATEGORY_STATS:   'get_category_stats',
+
+    // User Preferences — state & grade
+    SAVE_USER_PREFERENCES: 'save_user_preferences',
+    GET_USER_PREFERENCES:  'get_user_preferences',
+
+    // File
+    EXTRACT_PDF_TEXT: 'extract_pdf_text',
+
+    // Health
     HEALTH_CHECK: 'health_check',
-    EXTRACT_PDF_TEXT: 'extract_pdf_text', // NEW: PDF text extraction endpoint
+
+    // User Profile
+    GET_USER_PROFILE:'get_user_profile',
+    UPDATE_USER_PROFILE:'update_user_profile',
   },
 
-  // Request Timeouts (in milliseconds for React Native)
+  // Request Timeouts (in milliseconds)
   Timeouts: {
     CONNECT_TIMEOUT: 30000, // 30 seconds
-    READ_TIMEOUT: 30000, // 30 seconds
-    WRITE_TIMEOUT: 30000, // 30 seconds
+    READ_TIMEOUT:    30000,
+    WRITE_TIMEOUT:   30000,
   },
 } as const;
 

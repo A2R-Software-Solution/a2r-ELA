@@ -9,9 +9,35 @@ import { CategoryUiModel } from '../../../models/ui/CategoryUiModel';
 import { FeatureUiModel } from '../../../models/ui/FeatureUiModel';
 import { CourseUiModel } from '../../../models/ui/CourseUiModel';
 import { StreakUiModel } from '../../../models/ui/StreakUiModel';
+import { useAuth } from '../../../hooks/useAuth';
+import auth from '@react-native-firebase/auth';
+import { profileEvents } from '../../../utils/profileEvents';
 
 export const useHome = () => {
+  const { user } = useAuth();
   const [uiState, setUiState] = useState<HomeUiState>(initialHomeUiState);
+
+  // Sync username on mount and whenever profileEvents emits 'nameChanged'.
+  // We cannot rely on user?.displayName from useAuth because Firebase
+  // mutates the user object in place — React never sees the change.
+  // Instead, useProfile explicitly fires the event after saving.
+  useEffect(() => {
+    const syncName = () => {
+      const currentUser = auth().currentUser;
+      const freshName =
+        currentUser?.displayName ??
+        currentUser?.email?.split('@')[0] ??
+        'Student';
+      setUiState(prev => ({ ...prev, username: freshName }));
+    };
+
+    // Sync immediately on mount
+    syncName();
+
+    // Re-sync whenever name is saved in profile
+    profileEvents.on('nameChanged', syncName);
+    return () => profileEvents.off('nameChanged', syncName);
+  }, [user?.uid]);
 
   // Load home data on mount
   useEffect(() => {
@@ -31,7 +57,7 @@ export const useHome = () => {
         ...cat,
         isSelected: cat.id === category.id,
       }));
-      
+
       return {
         ...prev,
         categories: updatedCategories,
@@ -40,7 +66,6 @@ export const useHome = () => {
   }, []);
 
   const loadHomeData = useCallback(() => {
-    // In a real app, this would come from repository/API
     const categories: CategoryUiModel[] = [
       { id: '1', title: 'All', isSelected: true },
       { id: '2', title: 'Essay Writing', isSelected: false },
@@ -50,23 +75,23 @@ export const useHome = () => {
     ];
 
     const features: FeatureUiModel[] = [
-      { id: '1', title: 'Rank', subtitle: 'Top 10%', iconRes: '🏆', colorRes: null },
-      { id: '2', title: 'Essay Writing', subtitle: 'Advanced', iconRes: '📝', colorRes: null },
-      { id: '3', title: 'ELA', subtitle: 'Intermediate', iconRes: '📚', colorRes: null },
-      { id: '4', title: 'Notes', subtitle: 'Review', iconRes: '📓', colorRes: null },
-      { id: '5', title: 'Quiz', subtitle: 'Practice', iconRes: '❓', colorRes: null },
-      { id: '6', title: 'Courses', subtitle: 'Enrolled', iconRes: '🎓', colorRes: null },
+      { id: '1', title: 'Rank',          subtitle: 'Top 10%',      iconRes: '🏆', colorRes: null },
+      { id: '2', title: 'Essay Writing', subtitle: 'Advanced',     iconRes: '📝', colorRes: null },
+      { id: '3', title: 'ELA',           subtitle: 'Intermediate', iconRes: '📚', colorRes: null },
+      { id: '4', title: 'Notes',         subtitle: 'Review',       iconRes: '📓', colorRes: null },
+      { id: '5', title: 'Quiz',          subtitle: 'Practice',     iconRes: '❓', colorRes: null },
+      { id: '6', title: 'Courses',       subtitle: 'Enrolled',     iconRes: '🎓', colorRes: null },
     ];
 
     const recentCourses: CourseUiModel[] = [
-      { id: '1', title: 'Advanced Essay Writing', category: 'Writing', duration: '2h 30m', progress: 75 },
-      { id: '2', title: 'ELA Comprehension', category: 'Reading', duration: '3h 15m', progress: 60 },
-      { id: '3', title: 'Grammar Mastery', category: 'Language', duration: '4h 45m', progress: 40 },
+      { id: '1', title: 'Advanced Essay Writing', category: 'Writing',  duration: '2h 30m', progress: 75 },
+      { id: '2', title: 'ELA Comprehension',      category: 'Reading',  duration: '3h 15m', progress: 60 },
+      { id: '3', title: 'Grammar Mastery',        category: 'Language', duration: '4h 45m', progress: 40 },
     ];
 
     const streak: StreakUiModel = {
-      currentStreak: 90,
-      totalDays: 365,
+      currentStreak:      90,
+      totalDays:          365,
       progressPercentage: 90 / 365,
     };
 

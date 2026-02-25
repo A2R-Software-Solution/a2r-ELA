@@ -7,7 +7,7 @@ import React from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { FileUploadButton } from './FileUploadButton';
 import { CompactSendButton } from './CompactSendButton';
-import { DocumentPickerResponse } from 'react-native-document-picker';
+import { DocumentPickerResponse } from '@react-native-documents/picker';
 
 interface InputToolbarProps {
   // File upload props
