@@ -18,6 +18,9 @@ export const ApiConfig = {
     GET_PROGRESS_STATS:   'get_progress_stats',
     GET_CATEGORY_STATS:   'get_category_stats',
 
+    // Gamification 
+    GET_GAMIFICATION:     'get_gamification',
+
     // User Preferences — state & grade
     SAVE_USER_PREFERENCES: 'save_user_preferences',
     GET_USER_PREFERENCES:  'get_user_preferences',
@@ -29,8 +32,8 @@ export const ApiConfig = {
     HEALTH_CHECK: 'health_check',
 
     // User Profile
-    GET_USER_PROFILE:'get_user_profile',
-    UPDATE_USER_PROFILE:'update_user_profile',
+    GET_USER_PROFILE:    'get_user_profile',
+    UPDATE_USER_PROFILE: 'update_user_profile',
   },
 
   // Request Timeouts (in milliseconds)

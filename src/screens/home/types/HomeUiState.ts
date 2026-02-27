@@ -7,6 +7,7 @@ import { StreakUiModel } from '../../../models/ui/StreakUiModel';
 import { CategoryUiModel } from '../../../models/ui/CategoryUiModel';
 import { FeatureUiModel } from '../../../models/ui/FeatureUiModel';
 import { CourseUiModel } from '../../../models/ui/CourseUiModel';
+import { GamificationData } from '../../../models/GamificationModels';
 
 export enum HomeTab {
   HOME = 'HOME',
@@ -23,6 +24,12 @@ export interface HomeUiState {
   features: FeatureUiModel[];
   recentCourses: CourseUiModel[];
   isLoading: boolean;
+
+  // Gamification
+  xp: number;
+  level: number;
+  levelName: string;
+  isLoadingXp: boolean;
 }
 
 export const initialHomeUiState: HomeUiState = {
@@ -37,4 +44,10 @@ export const initialHomeUiState: HomeUiState = {
   features: [],
   recentCourses: [],
   isLoading: false,
+
+  //Gamification
+  xp: 0,
+  level: 1,
+  levelName: 'Beginner Writer',
+  isLoadingXp: false,
 };

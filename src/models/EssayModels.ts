@@ -3,6 +3,8 @@
  * Updated to support PSSA Writing Domain rubric and state/grade preferences
  */
 
+import { RewardsUpdate } from './GamificationModels';
+
 // ============================================================================
 // REQUEST MODELS
 // ============================================================================
@@ -112,6 +114,9 @@ export interface EssaySubmissionResponse {
   category: string;
   submitted_at: string;
   progress?: ProgressUpdate | null;
+
+  // Gamification rewards earned from this submission (if any)
+  rewards?: RewardsUpdate | null;
 }
 
 export interface ProgressUpdate {

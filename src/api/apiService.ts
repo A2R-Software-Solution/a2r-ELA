@@ -3,6 +3,9 @@
  * Defines all API endpoints and methods
  */
 
+import {
+  GamificationData,
+} from '../models/GamificationModels';
 import { AxiosResponse } from 'axios';
 import { apiClient } from './apiClient';
 import { ApiConfig } from './apiConfig';
@@ -125,6 +128,16 @@ class ApiService {
    */
   async getCategoryStats(): Promise<AxiosResponse<ApiResponse<CategoryStats>>> {
     return apiClient.get(ApiConfig.Endpoints.GET_CATEGORY_STATS);
+  }
+  // --------------------------------------------------------------------------
+  // GAMIFICATION
+  // --------------------------------------------------------------------------
+
+  /**
+   * Get user's current XP and level data
+   */
+  async getGamification(): Promise<AxiosResponse<ApiResponse<GamificationData>>> {
+    return apiClient.get(ApiConfig.Endpoints.GET_GAMIFICATION);
   }
 
   // --------------------------------------------------------------------------

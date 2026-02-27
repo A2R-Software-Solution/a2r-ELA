@@ -10,6 +10,7 @@ from utils.validator import essay_validator
 from llm.evaluator import essay_evaluator
 from config.settings import settings
 import traceback
+from gamification.reward_engine import reward_engine
 
 
 class EssayService:
@@ -154,9 +155,19 @@ class EssayService:
             submission_ref.set(submission_data)
             submission_id = submission_ref.id
             print(f"Saved submission: {submission_id}")
+            
+            # ------------------------------------------------------------------
+            # Step 7: Process gamification rewards
+            # ------------------------------------------------------------------
+            print(f"Step 6: Processing gamification rewards")
+            rewards = reward_engine.process_essay_submission(
+                user_id,
+                evaluation_results.get("raw_scores", {})
+            )
+            print(f"Rewards processed: {rewards}")
 
             # ------------------------------------------------------------------
-            # Step 6: Build and return API response
+            # Step 8: Build and return API response
             # ------------------------------------------------------------------
             response = {
                 "submission_id":    submission_id,
@@ -188,6 +199,9 @@ class EssayService:
                 "word_count":   word_count,
                 "category":     category,
                 "submitted_at": timestamp.isoformat(),
+                
+                #gamification rewards
+                "rewards":      rewards,
             }
 
             return response

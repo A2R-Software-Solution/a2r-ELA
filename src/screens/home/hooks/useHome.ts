@@ -12,6 +12,8 @@ import { StreakUiModel } from '../../../models/ui/StreakUiModel';
 import { useAuth } from '../../../hooks/useAuth';
 import auth from '@react-native-firebase/auth';
 import { profileEvents } from '../../../utils/profileEvents';
+import { apiService } from '../../../api/apiService';
+import { getXpProgressPercent, getLevelUpMessage } from '../../../models/GamificationModels';
 
 export const useHome = () => {
   const { user } = useAuth();
@@ -42,6 +44,27 @@ export const useHome = () => {
   // Load home data on mount
   useEffect(() => {
     loadHomeData();
+    loadGamification();
+  }, []);
+
+  const loadGamification = useCallback(async () => {
+    try {
+      setUiState(prev => ({ ...prev, isLoadingXp: true }));
+      const response = await apiService.getGamification();
+      const data = response.data.data;
+      if (data) {
+        setUiState(prev => ({
+          ...prev,
+          xp:          data.xp,
+          level:       data.level,
+          levelName:   data.level_name,
+          isLoadingXp: false,
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to load gamification data:', error);
+      setUiState(prev => ({ ...prev, isLoadingXp: false }));
+    }
   }, []);
 
   const onTabSelected = useCallback((tab: HomeTab) => {

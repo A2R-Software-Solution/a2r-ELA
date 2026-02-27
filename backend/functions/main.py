@@ -38,6 +38,8 @@ from essay.essay_routes import (
     # NEW: user preference endpoints
     save_user_preferences,
     get_user_preferences,
+    # Gamification
+    get_gamification,
 )
 from test_llm import test_llm_connection
 
@@ -93,6 +95,8 @@ def health_check(req: https_fn.Request) -> https_fn.Response:
             "extract_pdf_text_authenticated": "POST /extract_pdf_text_authenticated",
             # Health
             "health_check":              "GET  /health_check",
+            #Gamification
+            "get_gamification":          "GET  /get_gamification",
         }
     }
 
@@ -127,6 +131,8 @@ __all__ = [
     # Utils
     'health_check',
     'test_llm_connection',
+    # Gamification
+    'get_gamification',
 ]
 
 print("E-Learning Essay Backend initialized")

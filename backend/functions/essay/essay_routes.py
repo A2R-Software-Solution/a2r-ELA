@@ -443,6 +443,42 @@ def submit_essay_no_auth(req: https_fn.Request) -> https_fn.Response:
             status=500
         )
 
+# ------------------------------------------------------------------------------
+# GAMIFICATION
+# ------------------------------------------------------------------------------
+
+@https_fn.on_request(cors=cors_options)
+@require_auth
+def get_gamification(req: https_fn.Request, user_id: str) -> https_fn.Response:
+    """
+    Get user's current XP and level data.
+
+    Endpoint: GET /get_gamification
+    Headers:  Authorization: Bearer <firebase_token>
+    """
+    if req.method == "OPTIONS":
+        return https_fn.Response(status=204)
+
+    if req.method != "GET":
+        return response_builder.error("Method not allowed", status=405)
+
+    try:
+        from gamification.reward_engine import reward_engine
+
+        data = reward_engine.get_or_create_gamification(user_id)
+
+        return response_builder.success(
+            data={
+                "xp":         data.get("xp", 0),
+                "level":      data.get("level", 1),
+                "level_name": data.get("level_name", "Beginner Writer"),
+            },
+            message="Gamification data retrieved successfully"
+        )
+
+    except Exception as e:
+        print(f"Error in get_gamification: {str(e)}")
+        return response_builder.internal_error("Failed to retrieve gamification data")
 
 @https_fn.on_request(cors=cors_options)
 def test_essay_evaluator(req: https_fn.Request) -> https_fn.Response:
@@ -483,3 +519,4 @@ def test_essay_evaluator(req: https_fn.Request) -> https_fn.Response:
             }),
             status=500
         )
+        

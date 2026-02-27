@@ -104,6 +104,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             onSeeAllCategories={onSeeAllCategories}
             onNotificationClick={onNotificationClick}
             onProfileClick={onProfileClick}
+            xp={uiState.xp}                      
+            level={uiState.level}                 
+            levelName={uiState.levelName}         
+            isLoadingXp={uiState.isLoadingXp}     
           />
         )}
 
@@ -147,6 +151,11 @@ interface HomeContentProps {
   onSeeAllCategories: () => void;
   onNotificationClick: () => void;
   onProfileClick: () => void;
+  // Gamification props
+  xp: number;
+  level: number;
+  levelName: string;
+  isLoadingXp: boolean;
 }
 
 const HomeContent: React.FC<HomeContentProps> = ({
@@ -161,6 +170,10 @@ const HomeContent: React.FC<HomeContentProps> = ({
   onSeeAllCategories,
   onNotificationClick,
   onProfileClick,
+  xp,
+  level,
+  levelName,
+  isLoadingXp
 }) => (
   <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
     <HomeHeader
@@ -169,8 +182,10 @@ const HomeContent: React.FC<HomeContentProps> = ({
       onNotificationClick={onNotificationClick}
     />
     <StreakCard
-      currentStreak={streak.currentStreak}
-      totalDays={streak.totalDays}
+      xp={xp}
+      level={level}
+      levelName={levelName}
+      isLoadingXp={isLoadingXp}
     />
     <CategorySection
       categories={categories}

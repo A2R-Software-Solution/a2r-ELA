@@ -110,6 +110,26 @@ class Settings:
     COLLECTION_USER_PROGRESS: str = "user_progress"
     COLLECTION_ESSAY_SUBMISSIONS: str = "essay_submissions"
     COLLECTION_USER_PREFERENCES: str = "user_preferences"   # NEW — stores state/grade
+    COLLECTION_GAMIFICATION: str = "gamification"      # NEW — stores XP, level, rewards history
+    
+    # -------------------------------------------------------------------------
+    # Gamification — XP & Levels
+    # -------------------------------------------------------------------------
+    LEVEL_THRESHOLDS: Dict[int, tuple] = {
+        1: (0,     999,   "Beginner Writer"),
+        2: (1000,  4999,  "Word Explorer"),
+        3: (5000,  14999, "Story Builder"),
+        4: (15000, 29999, "Essay Master"),
+        5: (30000, 99999, "Writing Legend"),
+    }
+
+    XP_VALUES: Dict[str, int] = {
+        "essay_base":     50,
+        "domain_perfect": 25,
+        "streak_daily":   10,
+        "streak_7_day":   150,
+        "streak_30_day":  500,
+    }
 
     # -------------------------------------------------------------------------
     # LLM Configuration
