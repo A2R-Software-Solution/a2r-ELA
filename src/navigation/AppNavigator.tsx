@@ -120,10 +120,13 @@ const AppNavigator = () => {
 
         {/* Essay Editor Screen */}
         <Stack.Screen name={Routes.ESSAY}>
-          {({ navigation }) => (
-            <EssayEditorScreen onBackClick={() => navigation.goBack()} />
-          )}
-        </Stack.Screen>
+        {({ navigation }) => (
+          <EssayEditorScreen
+            onBackClick={() => navigation.goBack()}
+            onPlayNow={() => navigation.goBack()}
+          />
+        )}
+      </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );

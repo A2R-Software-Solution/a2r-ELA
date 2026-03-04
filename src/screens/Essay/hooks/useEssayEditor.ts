@@ -16,14 +16,11 @@ import {
   FILE_UPLOAD_CONFIG,
 } from '../../../models/FileModels';
 import preferencesManager from '../../../utils/PreferencesManager';
+import { tabEvents } from '../../../utils/tabEvents';    // ← new
 
 // Infer the picked file type from the pick function's return type
 type PickedFile = Awaited<ReturnType<typeof pick>>[0];
 
-/**
- * Safely get the URI from a picked file, preferring copyUri when available.
- * Handles the union type between DocumentPickerResponse and DocumentPickerResponseOpenLongTerm.
- */
 const getFileUri = (file: PickedFile): string => {
   if ('copyUri' in file && file.copyUri) {
     return file.copyUri as string;
@@ -31,61 +28,75 @@ const getFileUri = (file: PickedFile): string => {
   return (file.uri as string) ?? '';
 };
 
-export const useEssayEditor = () => {
+// ============================================================================
+// HOOK RETURN TYPE
+// ============================================================================
+
+export interface UseEssayEditorReturn {
+  uiState: EssayUiState;
+  loadPreferences: () => Promise<void>;
+  savePreferences: (state: string, grade: string) => Promise<void>;
+  openPreferencesSheet: () => void;
+  closePreferencesSheet: () => void;
+  updateEssayText: (text: string) => void;
+  updateCategory: (category: EssayCategory) => void;
+  submitEssay: () => Promise<void>;
+  loadStreak: () => Promise<void>;
+  toggleInfoOverlay: () => void;
+  hideInfoOverlay: () => void;
+  dismissFeedbackDialog: () => void;
+  dismissErrorDialog: () => void;
+  retrySubmission: () => void;
+  handleFileSelected: (file: PickedFile) => Promise<void>;
+  handleRemoveFile: (fileId: string) => void;
+  dismissFileError: () => void;
+  onPlayNow: () => void;      // ← new: navigates back + switches to Playground
+  uploadDocument: (fileName: string) => void;
+  startUploading: () => void;
+}
+
+export const useEssayEditor = (): UseEssayEditorReturn => {
   const [uiState, setUiState] = useState<EssayUiState>(initialEssayUiState);
 
-  // Load streak and preferences on mount
   useEffect(() => {
     loadStreak();
     loadPreferences();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // --------------------------------------------------------------------------
-  // PREFERENCES — State & Grade
+  // PREFERENCES
   // --------------------------------------------------------------------------
 
-  /**
-   * Load user's state and grade preferences.
-   * Strategy: try local cache first (fast), then sync from Firestore (truth).
-   */
   const loadPreferences = useCallback(async () => {
     setUiState(prev => ({ ...prev, isLoadingPreferences: true }));
 
     try {
-      // Step 1: Load from local cache for instant UI update
       const cached = await preferencesManager.getCachedPreferences();
       if (cached.state && cached.grade) {
         setUiState(prev => ({
           ...prev,
-          selectedState: cached.state!,
-          selectedGrade: cached.grade!,
-          stateDisplay: getStateDisplayLabel(cached.state!),
-          gradeDisplay: getGradeDisplayLabel(cached.grade!),
+          selectedState:        cached.state!,
+          selectedGrade:        cached.grade!,
+          stateDisplay:         getStateDisplayLabel(cached.state!),
+          gradeDisplay:         getGradeDisplayLabel(cached.grade!),
           isLoadingPreferences: false,
         }));
       }
 
-      // Step 2: Always sync from Firestore to stay in truth
       const result = await essayRepository.getUserPreferences();
 
       if (Result.isSuccess(result) && result.data) {
         const prefs = result.data;
-
-        // Update state with Firestore values
         setUiState(prev => ({
           ...prev,
-          selectedState: prefs.state,
-          selectedGrade: prefs.grade,
-          stateDisplay:  prefs.state_display,
-          gradeDisplay:  prefs.grade_display,
+          selectedState:        prefs.state,
+          selectedGrade:        prefs.grade,
+          stateDisplay:         prefs.state_display,
+          gradeDisplay:         prefs.grade_display,
           isLoadingPreferences: false,
         }));
-
-        // Update local cache with Firestore values
         await preferencesManager.cacheUserPreferences(prefs.state, prefs.grade);
       } else {
-        // Firestore failed — keep cached values or defaults
         setUiState(prev => ({ ...prev, isLoadingPreferences: false }));
       }
     } catch {
@@ -93,48 +104,30 @@ export const useEssayEditor = () => {
     }
   }, []);
 
-  /**
-   * Save user's state and grade selection.
-   * Saves to Firestore (source of truth) + caches locally.
-   */
   const savePreferences = useCallback(async (state: string, grade: string) => {
-    // Optimistic UI update immediately
     setUiState(prev => ({
       ...prev,
-      selectedState:       state,
-      selectedGrade:       grade,
-      stateDisplay:        getStateDisplayLabel(state),
-      gradeDisplay:        getGradeDisplayLabel(grade),
+      selectedState:        state,
+      selectedGrade:        grade,
+      stateDisplay:         getStateDisplayLabel(state),
+      gradeDisplay:         getGradeDisplayLabel(grade),
       showPreferencesSheet: false,
     }));
 
     try {
-      // Save to Firestore
       const result = await essayRepository.saveUserPreferences(state, grade);
-
       if (Result.isSuccess(result)) {
-        // Cache locally after confirmed save
         await preferencesManager.cacheUserPreferences(state, grade);
-      } else {
-        console.warn('Failed to save preferences to Firestore:', result);
-        // Keep optimistic UI — user sees their choice even if save failed
       }
     } catch (error) {
       console.error('Error saving preferences:', error);
-      // Still keep optimistic UI
     }
   }, []);
 
-  /**
-   * Open the state/grade selector sheet
-   */
   const openPreferencesSheet = useCallback(() => {
     setUiState(prev => ({ ...prev, showPreferencesSheet: true }));
   }, []);
 
-  /**
-   * Close the state/grade selector sheet without saving
-   */
   const closePreferencesSheet = useCallback(() => {
     setUiState(prev => ({ ...prev, showPreferencesSheet: false }));
   }, []);
@@ -143,14 +136,11 @@ export const useEssayEditor = () => {
   // ESSAY TEXT
   // --------------------------------------------------------------------------
 
-  /**
-   * Update essay text and calculate word count
-   */
   const updateEssayText = useCallback((text: string) => {
     const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
 
     setUiState(prev => {
-      const isEssayEmpty    = text.trim() === '';
+      const isEssayEmpty     = text.trim() === '';
       const isWordCountValid = wordCount >= prev.minWords && wordCount <= prev.maxWords;
       const canSubmit        = !isEssayEmpty && isWordCountValid && !prev.isSubmitting;
       const wordCountProgress = Math.min(wordCount / prev.maxWords, 1);
@@ -168,9 +158,6 @@ export const useEssayEditor = () => {
     });
   }, []);
 
-  /**
-   * Update selected category and adjust word limits
-   */
   const updateCategory = useCallback((category: EssayCategory) => {
     let minWords = 50;
     let maxWords = 500;
@@ -195,9 +182,6 @@ export const useEssayEditor = () => {
   // SUBMISSION
   // --------------------------------------------------------------------------
 
-  /**
-   * Submit essay to backend for PSSA-aligned evaluation
-   */
   const submitEssay = useCallback(async () => {
     const currentState = uiState;
 
@@ -212,13 +196,12 @@ export const useEssayEditor = () => {
 
     setUiState(prev => ({
       ...prev,
-      isSubmitting: true,
-      submissionError: null,
+      isSubmitting:      true,
+      submissionError:   null,
       submissionSuccess: false,
     }));
 
     try {
-      // Pass state and grade with every submission
       const result = await essayRepository.submitEssay(
         currentState.essayText,
         currentState.selectedCategory,
@@ -236,7 +219,7 @@ export const useEssayEditor = () => {
 
         setUiState(prev => ({
           ...prev,
-          isSubmitting: false,
+          isSubmitting:      false,
           submissionSuccess: true,
 
           // Scores
@@ -245,41 +228,45 @@ export const useEssayEditor = () => {
           pssaTotal:       data.pssa_total,
           rawScores:       data.raw_scores,
           convertedScores: data.converted_scores,
-          rubricScores:    data.rubric_scores,  // legacy alias
+          rubricScores:    data.rubric_scores,
 
           // Feedback
           personalizedFeedback: data.personalized_feedback,
           strengths:            data.strengths,
           areasForImprovement:  data.areas_for_improvement,
 
-          // PSSA context for feedback dialog
-          gradeBand:   data.grade_band ?? null,
-          rubricType:  data.rubric_type ?? null,
+          // PSSA context
+          gradeBand:  data.grade_band  ?? null,
+          rubricType: data.rubric_type ?? null,
 
           // Streak
           currentStreak: data.progress?.current_streak ?? prev.currentStreak,
           maxStreak:     data.progress?.max_streak     ?? prev.maxStreak,
           streakText:    `${data.progress?.current_streak ?? prev.currentStreak}/365`,
 
+          // ── Gamification (Phase 2 + 3) ──────────────────────────────────
+          rewards:        data.rewards        ?? null,   // ← new: XP + badges
+          gameSuggestion: data.game_suggestion ?? null,  // ← new: practice tip
+
           showFeedbackDialog: true,
           aiResponse,
 
-          // Clear essay and files after submission
-          essayText:        '',
-          wordCount:        0,
-          uploadedFiles:    [],
+          // Reset essay
+          essayText:          '',
+          wordCount:          0,
+          uploadedFiles:      [],
           canUploadMoreFiles: true,
-          isEssayEmpty:     true,
-          isWordCountValid: false,
-          canSubmit:        false,
-          wordCountText:    '0/500',
-          wordCountProgress: 0,
+          isEssayEmpty:       true,
+          isWordCountValid:   false,
+          canSubmit:          false,
+          wordCountText:      '0/500',
+          wordCountProgress:  0,
         }));
 
       } else if (Result.isError(result)) {
         setUiState(prev => ({
           ...prev,
-          isSubmitting:   false,
+          isSubmitting:    false,
           submissionError: result.message,
           showErrorDialog: true,
         }));
@@ -287,12 +274,25 @@ export const useEssayEditor = () => {
     } catch (error: any) {
       setUiState(prev => ({
         ...prev,
-        isSubmitting:   false,
+        isSubmitting:    false,
         submissionError: error.message || 'An error occurred',
         showErrorDialog: true,
       }));
     }
   }, [uiState]);
+
+  // --------------------------------------------------------------------------
+  // PLAY NOW  ← new
+  // Navigation bridge: close essay screen then switch HomeScreen to Playground.
+  // EssayEditorScreen passes this to FeedbackDialog which passes it to
+  // the [Play Now] button. The actual navigation.goBack() is called from
+  // EssayEditorScreen's onPlayNow prop (wired in AppNavigator).
+  // tabEvents.emit fires first so HomeScreen is ready before goBack animates.
+  // --------------------------------------------------------------------------
+
+  const onPlayNow = useCallback(() => {
+    tabEvents.emit('switchTab', 'PLAYGROUND');
+  }, []);
 
   // --------------------------------------------------------------------------
   // STREAK
@@ -401,11 +401,11 @@ export const useEssayEditor = () => {
           );
 
           setUiState(prev => {
-            const updatedFiles   = prev.uploadedFiles.map(f =>
+            const updatedFiles  = prev.uploadedFiles.map(f =>
               f.id === fileId ? updatedFile : f
             );
-            const combinedText   = FileRepository.combineExtractedText(updatedFiles);
-            const wordCount      = FileRepository.getTotalWordCount(updatedFiles);
+            const combinedText  = FileRepository.combineExtractedText(updatedFiles);
+            const wordCount     = FileRepository.getTotalWordCount(updatedFiles);
 
             return {
               ...prev,
@@ -492,34 +492,23 @@ export const useEssayEditor = () => {
 
   return {
     uiState,
-
-    // Preferences
     loadPreferences,
     savePreferences,
     openPreferencesSheet,
     closePreferencesSheet,
-
-    // Essay
     updateEssayText,
     updateCategory,
     submitEssay,
-
-    // Streak
     loadStreak,
-
-    // Dialogs
     toggleInfoOverlay,
     hideInfoOverlay,
     dismissFeedbackDialog,
     dismissErrorDialog,
     retrySubmission,
-
-    // Files
     handleFileSelected,
     handleRemoveFile,
     dismissFileError,
-
-    // Legacy
+    onPlayNow,          // ← new
     uploadDocument,
     startUploading,
   };

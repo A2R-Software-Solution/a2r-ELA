@@ -3,9 +3,10 @@
  * State interface for Essay Editor screen
  */
 
-import { EssayCategory, PSSARawScores, PSSAConvertedScores } from '../../../models/EssayModels';
+import { EssayCategory, PSSARawScores, PSSAConvertedScores, GameSuggestion } from '../../../models/EssayModels';
 import { RubricScores } from '../../../models/EssayModels';
 import { FileInfo } from '../../../models/FileModels';
+import { RewardsUpdate } from '../../../models/GamificationModels';
 
 /**
  * Essay input mode - either typing or uploading files
@@ -92,6 +93,9 @@ export interface EssayUiState {
   isFileExtracting: boolean;
   canUploadMoreFiles: boolean;
   fileUploadError: string | null;
+
+  rewards:        RewardsUpdate | null;
+  gameSuggestion: GameSuggestion | null;
 }
 
 export const initialEssayUiState: EssayUiState = {
@@ -151,4 +155,7 @@ export const initialEssayUiState: EssayUiState = {
   isFileExtracting: false,
   canUploadMoreFiles: true,
   fileUploadError: null,
+
+  rewards: null,
+  gameSuggestion: null,
 };

@@ -26,10 +26,12 @@ import { GradeOption, StateOption } from '../../models/EssayModels';
 
 interface EssayEditorScreenProps {
   onBackClick: () => void;
+  onPlayNow?:  () => void;
 }
 
 const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
   onBackClick,
+  onPlayNow,
 }) => {
   const {
     uiState,
@@ -48,6 +50,7 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
     savePreferences,
     openPreferencesSheet,
     closePreferencesSheet,
+    onPlayNow: hookPlayNow,
   } = useEssayEditor();
 
   const [isWritingExpanded, setIsWritingExpanded] = useState(false);
@@ -83,6 +86,12 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
     } catch (error) {
       console.error('Error in onBackClick:', error);
     }
+  };
+
+  // Emit tab switch first, then navigate back to HomeScreen
+  const handlePlayNow = () => {
+    hookPlayNow();   // emits tabEvents → HomeScreen switches to Playground
+    onPlayNow?.();  // navigation.goBack() wired in AppNavigator
   };
 
   // Show file upload error alert
@@ -368,6 +377,9 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
             personalizedFeedback={uiState.personalizedFeedback || ''}
             strengths={uiState.strengths}
             areasForImprovement={uiState.areasForImprovement}
+            newBadges={uiState.rewards?.newly_unlocked_badges ?? []}   // ← Phase 2 fix
+            gameSuggestion={uiState.gameSuggestion ?? null}            // ← Phase 3
+            onPlayNow={handlePlayNow}                                  // ← Phase 3
             onDismiss={dismissFeedbackDialog}
           />
         )}

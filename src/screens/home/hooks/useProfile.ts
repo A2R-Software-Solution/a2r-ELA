@@ -11,6 +11,7 @@
  *   - EssayModels.ts         (response types: ProgressStats, UserPreferences)
  *   - ProfileUiModel.ts      (assembled model + all helper functions)
  *   - ProfileUiState.ts      (state shape + initialProfileUiState)
+ *   - GamificationModels.ts  (BadgeDefinition, EMPTY_BADGE_PROGRESS)
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -42,12 +43,13 @@ import {
   getEssayCategoryDisplayName,
   stringToEssayCategory,
 } from '../../../models/EssayModels';
+import { BadgeDefinition, EMPTY_BADGE_PROGRESS } from '../../../models/GamificationModels';
 
 // ============================================================================
 // CONSTANTS
 // ============================================================================
 
-// Birthdate MM/DD/YY format
+// Birthdate MM/DD/YYYY format
 const BIRTHDATE_REGEX = /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/(\d{4})$/;
 
 // Max base64 size — 800KB stays safely under Firestore 1MB doc limit
@@ -108,17 +110,24 @@ export const useProfile = (): UseProfileReturn => {
   }, []);
 
   // --------------------------------------------------------------------------
-  // LOAD PROFILE — 4 parallel API calls
+  // LOAD PROFILE — 5 parallel API calls
   // --------------------------------------------------------------------------
   const loadProfile = useCallback(async () => {
     setUiState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const [statsRes, prefsRes, submissionsRes, userProfileRes] = await Promise.all([
+      const [
+        statsRes,
+        prefsRes,
+        submissionsRes,
+        userProfileRes,
+        gamificationRes,      // ← new: badge + XP data
+      ] = await Promise.all([
         apiService.getProgressStats(),
         apiService.getUserPreferences(),
         apiService.getUserSubmissions(5),
         apiService.getUserProfile(),
+        apiService.getGamification(),  // ← new
       ]);
 
       if (!statsRes.data.success || !statsRes.data.data) {
@@ -130,15 +139,22 @@ export const useProfile = (): UseProfileReturn => {
       if (!submissionsRes.data.success || !submissionsRes.data.data) {
         throw new Error('Failed to load recent essays');
       }
-      // userProfile allowed to have null data — first time user has no document yet
+      // userProfile and gamification are allowed to have null data — never throw for these
 
-      const stats       = statsRes.data.data;
-      const prefs       = prefsRes.data.data;
-      const submissions = (submissionsRes.data.data as any).submissions ?? [];
-      const userProfile = userProfileRes.data?.data ?? null;
+      const stats         = statsRes.data.data;
+      const prefs         = prefsRes.data.data;
+      const submissions   = (submissionsRes.data.data as any).submissions ?? [];
+      const userProfile   = userProfileRes.data?.data ?? null;
+      const gamification  = gamificationRes.data?.data ?? null;
 
       setStateOptions(prefs.supported_states ?? []);
       setGradeOptions(prefs.supported_grades ?? []);
+
+      // ------------------------------------------------------------------
+      // Badge progress — fall back to EMPTY_BADGE_PROGRESS if API fails
+      // ------------------------------------------------------------------
+      const badgeProgress: BadgeDefinition[] =
+        gamification?.badge_progress ?? EMPTY_BADGE_PROGRESS;
 
       // ------------------------------------------------------------------
       // Identity — Firebase Auth
@@ -158,8 +174,8 @@ export const useProfile = (): UseProfileReturn => {
       // ------------------------------------------------------------------
       // Stats
       // ------------------------------------------------------------------
-      const categoryStats   = stats.category_stats ?? {};
-      const totalEssays     = stats.total_essays_submitted ?? 0;
+      const categoryStats = stats.category_stats ?? {};
+      const totalEssays   = stats.total_essays_submitted ?? 0;
 
       const avgScore = totalEssays === 0 ? 0 : Math.round(
         (
@@ -193,7 +209,7 @@ export const useProfile = (): UseProfileReturn => {
       }));
 
       // ------------------------------------------------------------------
-      // Assemble
+      // Assemble profile model
       // ------------------------------------------------------------------
       const profile: ProfileUiModel = {
         uid:             user?.uid ?? '',
@@ -217,6 +233,7 @@ export const useProfile = (): UseProfileReturn => {
       setUiState(prev => ({
         ...prev,
         profile,
+        badgeProgress,   // ← populate badge grid
         isLoading: false,
         error: null,
       }));
@@ -304,19 +321,13 @@ export const useProfile = (): UseProfileReturn => {
     setUiState(prev => ({ ...prev, isSavingName: true }));
 
     try {
-      // Update Firebase Auth displayName
       const currentUser = auth().currentUser;
       if (currentUser) {
         await currentUser.updateProfile({ displayName: trimmed });
-        // Do NOT call reload() here — it triggers onAuthStateChanged which
-        // causes loadProfile to re-run and overwrite local optimistic state.
-        // useHome reads displayName directly via its own useEffect below.
       }
 
-      // Sync to Firestore
       await apiService.updateUserProfile({ display_name: trimmed });
 
-      // Optimistic local update
       setUiState(prev => {
         if (!prev.profile) return prev;
         return {
@@ -331,7 +342,6 @@ export const useProfile = (): UseProfileReturn => {
         };
       });
 
-      // Notify useHome to sync the new name immediately
       profileEvents.emit('nameChanged');
 
     } catch (error) {
@@ -460,10 +470,10 @@ export const useProfile = (): UseProfileReturn => {
       'Profile Photo',
       'Choose an option',
       [
-        { text: 'Take Photo',           onPress: () => _processAndSaveImage('camera') },
-        { text: 'Choose from Gallery',  onPress: () => _processAndSaveImage('library') },
-        { text: 'Remove Photo',         style: 'destructive', onPress: _removePhoto },
-        { text: 'Cancel',               style: 'cancel' },
+        { text: 'Take Photo',          onPress: () => _processAndSaveImage('camera') },
+        { text: 'Choose from Gallery', onPress: () => _processAndSaveImage('library') },
+        { text: 'Remove Photo',        style: 'destructive', onPress: _removePhoto },
+        { text: 'Cancel',              style: 'cancel' },
       ],
     );
   }, [_processAndSaveImage, _removePhoto]);

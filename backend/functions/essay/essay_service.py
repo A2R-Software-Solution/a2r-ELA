@@ -3,7 +3,7 @@ Essay Service
 Manages essay submissions, evaluations, and user grade/state preferences.
 """
 
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from datetime import datetime
 from firebase_admin import firestore
 from utils.validator import essay_validator
@@ -13,11 +13,49 @@ import traceback
 from gamification.reward_engine import reward_engine
 
 
+# ─── Game Suggestion Map ──────────────────────────────────────────────────────
+# Maps each PSSA domain to a suggested game and a reason string.
+# When a student scores <= 2 on a domain, they see this suggestion
+# in the FeedbackDialog with a [Play Now] button to the Playground tab.
+# game_name should match whatever you name the game in the Playground screen.
+
+DOMAIN_GAME_MAP = {
+    "focus": {
+        "game_name":    "Focus Quest",
+        "domain_label": "Focus",
+        "reason":       "Practising Focus will help you stay on topic and strengthen your thesis.",
+    },
+    "content": {
+        "game_name":    "Content Builder",
+        "domain_label": "Content",
+        "reason":       "Content Builder will help you develop richer ideas and stronger evidence.",
+    },
+    "organization": {
+        "game_name":    "Structure Sprint",
+        "domain_label": "Organization",
+        "reason":       "Structure Sprint will help you arrange your ideas in a clear, logical order.",
+    },
+    "style": {
+        "game_name":    "Style Studio",
+        "domain_label": "Style",
+        "reason":       "Style Studio will help you vary your sentences and choose stronger words.",
+    },
+    "conventions": {
+        "game_name":    "Grammar Galaxy",
+        "domain_label": "Conventions",
+        "reason":       "Grammar Galaxy will help you master punctuation, spelling, and grammar.",
+    },
+}
+
+# Score threshold — suggest a game if any domain is at or below this value
+SUGGESTION_THRESHOLD = 2
+
+
 class EssayService:
     """Service for managing essay submissions and evaluations"""
 
     def __init__(self):
-        self._db = None
+        self._db       = None
         self.validator = essay_validator
         self.evaluator = essay_evaluator
 
@@ -45,15 +83,15 @@ class EssayService:
             essay_data: Dictionary containing:
                             essay_text  — required
                             category    — required
-                            state       — optional (defaults to user pref or PA)
-                            grade       — optional (defaults to user pref or 6)
+                            state       — optional
+                            grade       — optional
 
         Returns:
-            Evaluation results with submission ID
+            Evaluation results including game_suggestion
         """
         try:
             # ------------------------------------------------------------------
-            # Step 1: Validate core essay fields
+            # Step 1: Validate
             # ------------------------------------------------------------------
             print(f"Step 1: Validating submission for user {user_id}")
             is_valid, error_msg, sanitized_data = self.validator.validate_submission_data(
@@ -69,8 +107,7 @@ class EssayService:
             word_count = sanitized_data["word_count"]
 
             # ------------------------------------------------------------------
-            # Step 2: Extract and validate state + grade
-            # Falls back to defaults if missing or invalid
+            # Step 2: Resolve state + grade
             # ------------------------------------------------------------------
             state = self._resolve_state(essay_data.get("state", ""))
             grade = self._resolve_grade(essay_data.get("grade", ""))
@@ -79,7 +116,7 @@ class EssayService:
                   f"Category={category}, Words={word_count}")
 
             # ------------------------------------------------------------------
-            # Step 3: Evaluate the essay with PSSA rubric
+            # Step 3: Evaluate essay
             # ------------------------------------------------------------------
             print(f"Step 3: Evaluating essay")
             try:
@@ -99,47 +136,31 @@ class EssayService:
 
             # ------------------------------------------------------------------
             # Step 4: Build Firestore document
-            # Stores BOTH raw PSSA scores and converted scores as agreed
             # ------------------------------------------------------------------
             print(f"Step 4: Preparing Firestore document")
             timestamp = datetime.utcnow()
 
-            submission_data = {
-                # User info
-                "user_id":       user_id,
+            raw_scores = evaluation_results.get("raw_scores", {})
 
-                # Essay content
+            submission_data = {
+                "user_id":       user_id,
                 "essay_text":    essay_text,
                 "category":      category,
                 "word_count":    word_count,
-
-                # State / grade context
                 "state":         state,
                 "student_grade": grade,
                 "grade_band":    evaluation_results.get("grade_band", ""),
                 "rubric_type":   evaluation_results.get("rubric_type", "PSSA Writing Domain"),
-
-                # PSSA raw scores (1-4 per domain) — for teacher reports / analytics
-                "raw_scores": evaluation_results.get("raw_scores", {}),
-
-                # Converted domain scores (5-20 per domain)
-                "converted_scores": evaluation_results.get("converted_scores", {}),
-
-                # Totals
-                "pssa_total":      evaluation_results.get("pssa_total", 0),   # out of 20
-                "converted_score": evaluation_results.get("converted_score", 0),  # out of 100
-                "total_score":     evaluation_results.get("converted_score", 0),  # alias
-
-                # Grade letter
-                "grade": evaluation_results.get("grade", "F"),
-
-                # Justifications and feedback
-                "rubric_justifications": evaluation_results.get("rubric_justifications", {}),
-                "strengths":             evaluation_results.get("strengths", []),
-                "areas_for_improvement": evaluation_results.get("areas_for_improvement", []),
-                "personalized_feedback": evaluation_results.get("personalized_feedback", ""),
-
-                # Timestamps
+                "raw_scores":              raw_scores,
+                "converted_scores":        evaluation_results.get("converted_scores", {}),
+                "pssa_total":              evaluation_results.get("pssa_total", 0),
+                "converted_score":         evaluation_results.get("converted_score", 0),
+                "total_score":             evaluation_results.get("converted_score", 0),
+                "grade":                   evaluation_results.get("grade", "F"),
+                "rubric_justifications":   evaluation_results.get("rubric_justifications", {}),
+                "strengths":               evaluation_results.get("strengths", []),
+                "areas_for_improvement":   evaluation_results.get("areas_for_improvement", []),
+                "personalized_feedback":   evaluation_results.get("personalized_feedback", ""),
                 "submitted_at": timestamp,
                 "created_at":   timestamp,
             }
@@ -155,14 +176,29 @@ class EssayService:
             submission_ref.set(submission_data)
             submission_id = submission_ref.id
             print(f"Saved submission: {submission_id}")
-            
+
+            # ------------------------------------------------------------------
+            # Step 6: Generate game suggestion from raw scores
+            # ------------------------------------------------------------------
+            print(f"Step 6: Generating game suggestion")
+            game_suggestion = self._get_game_suggestion(raw_scores)
+            if game_suggestion:
+                print(f"Game suggestion: {game_suggestion['game_name']} "
+                      f"(weak domain: {game_suggestion['domain']} "
+                      f"score: {game_suggestion['score']})")
+            else:
+                print("No game suggestion — all domains scored > 2")
+
             # ------------------------------------------------------------------
             # Step 7: Process gamification rewards
+            # Note: streak_bonus_xp is passed in from essay_routes after
+            #       progress_service runs. We default to 0 here and let
+            #       essay_routes call apply_streak_bonus() separately.
             # ------------------------------------------------------------------
-            print(f"Step 6: Processing gamification rewards")
+            print(f"Step 7: Processing gamification rewards")
             rewards = reward_engine.process_essay_submission(
                 user_id,
-                evaluation_results.get("raw_scores", {})
+                raw_scores,
             )
             print(f"Rewards processed: {rewards}")
 
@@ -179,7 +215,7 @@ class EssayService:
                 "grade":            evaluation_results.get("grade", "F"),
 
                 # PSSA domain scores
-                "raw_scores":       evaluation_results.get("raw_scores", {}),
+                "raw_scores":       raw_scores,
                 "converted_scores": evaluation_results.get("converted_scores", {}),
                 "rubric_scores":    evaluation_results.get("converted_scores", {}),
 
@@ -199,9 +235,12 @@ class EssayService:
                 "word_count":   word_count,
                 "category":     category,
                 "submitted_at": timestamp.isoformat(),
-                
-                #gamification rewards
-                "rewards":      rewards,
+
+                # Gamification
+                "rewards":          rewards,
+
+                # Practice suggestion — null if all domains >= 3
+                "game_suggestion":  game_suggestion,
             }
 
             return response
@@ -215,6 +254,59 @@ class EssayService:
             raise
 
     # --------------------------------------------------------------------------
+    # GAME SUGGESTION
+    # --------------------------------------------------------------------------
+
+    def _get_game_suggestion(
+        self,
+        raw_scores: Dict[str, int],
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Find the weakest PSSA domain and return a game suggestion.
+
+        Only returns a suggestion if the weakest domain scored
+        <= SUGGESTION_THRESHOLD (2). If all domains are >= 3,
+        returns None — no suggestion needed.
+
+        Tiebreak: if multiple domains share the lowest score,
+        the first one in PSSA_DOMAINS order wins.
+
+        Args:
+            raw_scores: { focus: 1-4, content: 1-4, ... }
+
+        Returns:
+            Game suggestion dict or None
+        """
+        if not raw_scores:
+            return None
+
+        # Find the domain with the lowest score
+        weakest_domain = None
+        weakest_score  = 5  # higher than max possible (4)
+
+        for domain in settings.PSSA_DOMAINS:
+            score = raw_scores.get(domain, 0)
+            if score < weakest_score:
+                weakest_score  = score
+                weakest_domain = domain
+
+        # Only suggest if the weakest domain is at or below the threshold
+        if weakest_domain is None or weakest_score > SUGGESTION_THRESHOLD:
+            return None
+
+        game_info = DOMAIN_GAME_MAP.get(weakest_domain)
+        if not game_info:
+            return None
+
+        return {
+            "domain":       weakest_domain,
+            "domain_label": game_info["domain_label"],
+            "score":        weakest_score,
+            "game_name":    game_info["game_name"],
+            "reason":       game_info["reason"],
+        }
+
+    # --------------------------------------------------------------------------
     # USER PREFERENCES — State & Grade
     # --------------------------------------------------------------------------
 
@@ -224,17 +316,7 @@ class EssayService:
         state: str,
         grade: str,
     ) -> Dict[str, Any]:
-        """
-        Save a user's state and grade preference to Firestore.
-
-        Args:
-            user_id: Firebase user ID
-            state:   State code e.g. 'PA'
-            grade:   Grade string e.g. '7'
-
-        Returns:
-            Saved preferences dict
-        """
+        """Save a user's state and grade preference to Firestore."""
         resolved_state = self._resolve_state(state)
         resolved_grade = self._resolve_grade(grade)
 
@@ -253,16 +335,7 @@ class EssayService:
         return prefs
 
     def get_user_preferences(self, user_id: str) -> Dict[str, Any]:
-        """
-        Retrieve a user's saved state and grade preferences.
-
-        Args:
-            user_id: Firebase user ID
-
-        Returns:
-            Preferences dict with state and grade,
-            or defaults if not set
-        """
+        """Retrieve a user's saved state and grade preferences."""
         doc = self.db.collection(
             settings.COLLECTION_USER_PREFERENCES
         ).document(user_id).get()
@@ -274,14 +347,13 @@ class EssayService:
                 "grade": data.get("grade", settings.DEFAULT_GRADE),
             }
 
-        # Return defaults if user has never set preferences
         return {
             "state": settings.DEFAULT_STATE,
             "grade": settings.DEFAULT_GRADE,
         }
 
     # --------------------------------------------------------------------------
-    # EXISTING METHODS (unchanged)
+    # EXISTING METHODS — unchanged
     # --------------------------------------------------------------------------
 
     def get_submission(
@@ -289,16 +361,7 @@ class EssayService:
         submission_id: str,
         user_id: str,
     ) -> Dict[str, Any]:
-        """
-        Retrieve an essay submission.
-
-        Args:
-            submission_id: Submission document ID
-            user_id:       User ID (for authorization)
-
-        Returns:
-            Submission data dict
-        """
+        """Retrieve an essay submission."""
         submission_ref = self.db.collection(
             settings.COLLECTION_ESSAY_SUBMISSIONS
         ).document(submission_id)
@@ -321,17 +384,7 @@ class EssayService:
         limit: int = 10,
         category: str = None,
     ) -> list:
-        """
-        Get user's essay submissions.
-
-        Args:
-            user_id:  User ID
-            limit:    Maximum number of submissions to return
-            category: Optional category filter
-
-        Returns:
-            List of submissions
-        """
+        """Get user's essay submissions."""
         query = (
             self.db.collection(settings.COLLECTION_ESSAY_SUBMISSIONS)
             .where("user_id", "==", user_id)
@@ -347,7 +400,6 @@ class EssayService:
             submission_data = doc.to_dict()
             submission_data["submission_id"] = doc.id
 
-            # Convert Firestore timestamps to ISO strings so they are JSON serializable
             for field in ["submitted_at", "created_at", "updated_at"]:
                 if field in submission_data and hasattr(submission_data[field], "isoformat"):
                     submission_data[field] = submission_data[field].isoformat()
@@ -361,35 +413,15 @@ class EssayService:
     # --------------------------------------------------------------------------
 
     def _resolve_state(self, state: str) -> str:
-        """
-        Validate state or fall back to default.
-
-        Args:
-            state: Raw state string from request
-
-        Returns:
-            Valid state code
-        """
         if state and settings.is_valid_state(state):
             return state.upper().strip()
-        print(f"Invalid or missing state '{state}', "
-              f"defaulting to {settings.DEFAULT_STATE}")
+        print(f"Invalid or missing state '{state}', defaulting to {settings.DEFAULT_STATE}")
         return settings.DEFAULT_STATE
 
     def _resolve_grade(self, grade: str) -> str:
-        """
-        Validate grade or fall back to default.
-
-        Args:
-            grade: Raw grade string from request
-
-        Returns:
-            Valid grade string
-        """
         if grade and settings.is_valid_grade(str(grade)):
             return str(grade).lower().strip()
-        print(f"Invalid or missing grade '{grade}', "
-              f"defaulting to {settings.DEFAULT_GRADE}")
+        print(f"Invalid or missing grade '{grade}', defaulting to {settings.DEFAULT_GRADE}")
         return settings.DEFAULT_GRADE
 
 

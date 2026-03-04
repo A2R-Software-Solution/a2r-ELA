@@ -2,15 +2,17 @@
  * Home Screen
  * Main home screen with tabs and content sections.
  *
- * Changes from original:
- *   - ProfileContent replaced with fully assembled ProfileScreen
- *   - useProfile hook wired in
- *   - StateSelectorSheet integrated for grade/state editing
- *   - ProfileHeader receives name/birthdate/photo edit props
+ * Changes from Phase 1:
+ *   - BadgeCollection imported and placed between StatsRow and RecentEssaysList
+ *   - uiState.badgeProgress passed to BadgeCollection
  *   - All other tabs (HOME, PLAYGROUND, INBOX) completely unchanged
+ *
+ * Changes from Phase 3:
+ *   - tabEvents imported
+ *   - useEffect subscribes to switchTab event to support [Play Now] navigation
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';                              // ← Phase 3: added useEffect
 import {
   View,
   Text,
@@ -31,8 +33,10 @@ import BottomNavigationBar from './components/BottomNavigationBar';
 import StateSelectorSheet from './../Essay/components/StateSelectorSheet';
 import ProfileHeader from './components/ProfileHeader';
 import StatsRow from './components/StatsRow';
+import BadgeCollection from './components/BadgeCollection';
 import RecentEssaysList from './components/RecentEssaysList';
 import ProfileSettingsSection from './components/ProfileSettingsSection';
+import { tabEvents } from '../../utils/tabEvents';                     // ← Phase 3
 import { CourseUiModel } from '../../models/ui/CourseUiModel';
 import { FeatureUiModel } from '../../models/ui/FeatureUiModel';
 import { CategoryUiModel } from '../../models/ui/CategoryUiModel';
@@ -73,6 +77,25 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   // Profile hook — initialized here so state persists across tab switches
   const profile = useProfile();
 
+  // ── Phase 3: Tab switch listener ─────────────────────────────────────────
+  // Receives 'switchTab' events emitted by useEssayEditor.onPlayNow()
+  // when the student taps [Play Now] in FeedbackDialog.
+  // navigation.goBack() fires first (AppNavigator), then this switches the tab.
+  useEffect(() => {
+    const handleSwitchTab = (tab: string) => {
+      switch (tab) {
+        case 'PLAYGROUND': onTabSelected(HomeTab.PLAYGROUND); break;
+        case 'HOME':       onTabSelected(HomeTab.HOME);       break;
+        case 'INBOX':      onTabSelected(HomeTab.INBOX);      break;
+        case 'PROFILE':    onTabSelected(HomeTab.PROFILE);    break;
+        default: break;
+      }
+    };
+
+    tabEvents.on('switchTab', handleSwitchTab);
+    return () => tabEvents.off('switchTab', handleSwitchTab); // cleanup on unmount
+  }, [onTabSelected]);
+
   const handleFeatureClick = (feature: FeatureUiModel) => {
     if (feature.title === 'Essay Writing') {
       onEssayWritingClick();
@@ -104,10 +127,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             onSeeAllCategories={onSeeAllCategories}
             onNotificationClick={onNotificationClick}
             onProfileClick={onProfileClick}
-            xp={uiState.xp}                      
-            level={uiState.level}                 
-            levelName={uiState.levelName}         
-            isLoadingXp={uiState.isLoadingXp}     
+            xp={uiState.xp}
+            level={uiState.level}
+            levelName={uiState.levelName}
+            isLoadingXp={uiState.isLoadingXp}
           />
         )}
 
@@ -151,7 +174,6 @@ interface HomeContentProps {
   onSeeAllCategories: () => void;
   onNotificationClick: () => void;
   onProfileClick: () => void;
-  // Gamification props
   xp: number;
   level: number;
   levelName: string;
@@ -173,7 +195,7 @@ const HomeContent: React.FC<HomeContentProps> = ({
   xp,
   level,
   levelName,
-  isLoadingXp
+  isLoadingXp,
 }) => (
   <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
     <HomeHeader
@@ -215,7 +237,7 @@ const InboxContent: React.FC = () => (
 );
 
 // ============================================================================
-// PROFILE SCREEN
+// PROFILE SCREEN — unchanged
 // ============================================================================
 
 interface ProfileScreenProps {
@@ -294,8 +316,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
           onBirthdateSave={onBirthdateSave}
         />
 
+        {/* Essays submitted / streak / avg score */}
         <StatsRow stats={profile.stats} />
 
+        {/* ── Badge Collection ── */}
+        <BadgeCollection badges={uiState.badgeProgress} />
+
+        {/* Recent essays list */}
         <RecentEssaysList
           essays={profile.recentEssays}
           onSeeAllClick={onSeeAllEssaysClick}
@@ -325,7 +352,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
 };
 
 // ============================================================================
-// STYLES
+// STYLES — unchanged
 // ============================================================================
 
 const styles = StyleSheet.create({
