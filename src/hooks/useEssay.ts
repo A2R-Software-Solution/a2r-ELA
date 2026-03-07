@@ -19,7 +19,9 @@ interface UseEssayReturn {
   error: string | null;
   submitEssay: (
     essayText: string,
-    category: EssayCategory
+    category: EssayCategory,
+    state: string,
+    grade: string
   ) => Promise<EssaySubmissionResponse | null>;
   getStreak: () => Promise<StreakInfo | null>;
   getProgressStats: () => Promise<ProgressStats | null>;
@@ -38,13 +40,15 @@ export const useEssay = (): UseEssayReturn => {
   const submitEssay = useCallback(
     async (
       essayText: string,
-      category: EssayCategory
+      category: EssayCategory,
+      state: string,
+      grade: string
     ): Promise<EssaySubmissionResponse | null> => {
       try {
         setIsLoading(true);
         setError(null);
 
-        const result = await essayRepository.submitEssay(essayText, category);
+        const result = await essayRepository.submitEssay(essayText, category, state, grade);
 
         if (Result.isSuccess(result)) {
           return result.data;

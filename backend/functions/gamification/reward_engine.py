@@ -72,6 +72,22 @@ BADGE_DEFINITIONS = [
         "condition_type":  "total_xp",
         "condition_value": 500,
     },
+    {
+        "id":              "grammar_champion",
+        "name":            "Grammar Champion",
+        "description":     "Complete Bug Catcher with a perfect score",
+        "icon":            "🐛",
+        "condition_type":  "game_perfect",
+        "condition_value": "bug_catcher",
+    },
+    {
+        "id":              "master_navigator",
+        "name":            "Master Navigator",
+        "description":     "Complete Jumbled Story with a perfect score",
+        "icon":            "🧭",
+        "condition_type":  "game_perfect",
+        "condition_value": "jumbled_story",
+    },
 ]
 
 
@@ -146,6 +162,7 @@ class RewardEngine:
         new_total_xp: int,
         new_level: int,
         total_essays: int,
+        game_scores: Dict[str, int] = None,
     ) -> List[Dict[str, Any]]:
         """
         Check all badge conditions and return newly unlocked badges.
@@ -161,6 +178,7 @@ class RewardEngine:
         Returns:
             List of newly unlocked badge dicts
         """
+        game_scores = game_scores or {}
         newly_unlocked = []
 
         for badge in BADGE_DEFINITIONS:
@@ -190,6 +208,9 @@ class RewardEngine:
 
             elif condition_type == "total_xp":
                 unlocked = new_total_xp >= condition_val
+            
+            elif condition_type == "game_perfect":
+                unlocked = game_scores.get(condition_val, 0) >= 100
 
             if unlocked:
                 print(f"  Badge unlocked: {badge_id} ({badge['name']})")
@@ -201,6 +222,52 @@ class RewardEngine:
                 })
 
         return newly_unlocked
+    
+    def calculate_game_xp(
+        self,
+        game_id: str,
+        score: int,
+        time_taken: int =None,
+        lives_remaining: int = None,
+    ) -> int:
+        """
+        Calculate XP earned from a mini-game submission.
+
+    Bug Catcher  (bug_catcher):
+        Base: 20 XP
+        +10  if score >= 80
+        +10  if score == 100
+        +10  if lives_remaining == 3 (no lives lost)
+
+    Jumbled Story (jumbled_story):
+        Base: 20 XP
+        +10  if score >= 80
+        +10  if score == 100
+        +10  speed bonus if time_taken <= 30 seconds
+
+    Max possible: 50 XP  (matches XP range 20-50 in spec)
+    
+        """
+        xp = 20  # base for any game attempt
+
+        if game_id == "bug_catcher":
+            if score >= 80:
+                xp += 10
+            if score == 100:
+                xp += 10
+            if lives_remaining is not None and lives_remaining == 3:
+                xp += 10
+
+        elif game_id == "jumbled_story":
+            if score >= 80:
+                xp += 10
+            if score == 100:
+                xp += 10
+            if time_taken is not None and time_taken <= 30:
+                xp += 10
+
+        print(f"Game XP earned — game: {game_id}, score: {score}, xp: {xp}")
+        return xp
 
     def build_badge_progress(
         self,
@@ -356,6 +423,7 @@ class RewardEngine:
                 new_total_xp=new_total_xp,
                 new_level=new_level,
                 total_essays=new_total_essays,
+                game_scores = {}
             )
 
             badges_earned += [b["id"] for b in newly_unlocked]
@@ -443,6 +511,7 @@ class RewardEngine:
                 new_total_xp=new_total_xp,
                 new_level=new_level,
                 total_essays=total_essays,
+                game_scores = {}
             )
 
             badges_earned += [b["id"] for b in newly_unlocked]

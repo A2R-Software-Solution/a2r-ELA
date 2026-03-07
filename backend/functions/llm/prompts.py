@@ -183,6 +183,74 @@ Respond with the feedback text ONLY. No JSON, no labels, no headings."""
         return prompt
 
     @staticmethod
+    def get_bug_catcher_prompt() -> str:
+        """
+        Generate a prompt for the LLM to create a Bug Catcher game level.
+        Returns a paragraph split into words with exactly 5 seeded errors.
+        """
+        prompt = """You are a creative writing teacher creating an educational grammar game for middle school students.
+
+Generate a short paragraph (15-20 words) about any everyday topic (school, nature, sports, food, animals, etc.).
+The paragraph must contain exactly 5 errors — a mix of spelling, grammar, and punctuation mistakes.
+
+Return ONLY valid JSON in exactly this structure, no markdown, no extra text:
+
+{
+    "words": ["The", "dog", "runned", "quickly", "threw", ...],
+    "errors": [
+        {"id": "e1", "wordIndex": 2,  "word": "runned", "fix": "ran",     "type": "grammar"},
+        {"id": "e2", "wordIndex": 4,  "word": "threw",  "fix": "through", "type": "spelling"},
+        {"id": "e3", "wordIndex": 8,  "word": "dont",   "fix": "don't",   "type": "punctuation"},
+        {"id": "e4", "wordIndex": 11, "word": "there",  "fix": "their",   "type": "spelling"},
+        {"id": "e5", "wordIndex": 14, "word": "was",    "fix": "were",    "type": "grammar"}
+    ]
+}
+
+Rules:
+1. "words" must be the full paragraph split into individual word tokens (include punctuation attached to words e.g. "quickly,")
+2. "errors" must have exactly 5 entries
+3. "wordIndex" must be the exact index of that word in the "words" array (0-based)
+4. "type" must be one of: "spelling", "grammar", "punctuation"
+5. The errors must be subtle enough to be a fun challenge but not too obscure
+6. Do NOT return markdown, code blocks, or any text outside the JSON"""
+
+        return prompt
+
+    @staticmethod
+    def get_jumbled_story_prompt() -> str:
+        """
+        Generate a prompt for the LLM to create a Jumbled Story game level.
+        Returns a 6-sentence story with a correctIndex for each sentence.
+        """
+        prompt = """You are a creative writing teacher creating an educational story ordering game for middle school students.
+
+Write a short story with exactly 6 sentences about any engaging everyday topic (an adventure, a problem solved, a fun event, etc.).
+The sentences must have a clear logical order that students can figure out.
+
+Return ONLY valid JSON in exactly this structure, no markdown, no extra text:
+
+{
+    "title": "The Lost Puppy",
+    "sentences": [
+        {"id": "s1", "text": "Emma was walking home from school when she heard a faint whimpering sound.", "correctIndex": 0},
+        {"id": "s2", "text": "She followed the sound and found a small puppy stuck under a bush.",          "correctIndex": 1},
+        {"id": "s3", "text": "Emma gently pulled the puppy free and checked if it was hurt.",              "correctIndex": 2},
+        {"id": "s4", "text": "She noticed a tag on its collar with a phone number.",                       "correctIndex": 3},
+        {"id": "s5", "text": "Emma called the number and the owner arrived within minutes.",               "correctIndex": 4},
+        {"id": "s6", "text": "The owner thanked Emma and she walked home feeling proud.",                  "correctIndex": 5}
+    ]
+}
+
+Rules:
+1. Exactly 6 sentences
+2. "correctIndex" must be 0-5 representing the correct position in the story
+3. Each sentence must clearly belong in its numbered position
+4. The story must have a clear beginning, middle, and end
+5. Do NOT return markdown, code blocks, or any text outside the JSON"""
+
+        return prompt
+
+    @staticmethod
     def get_grade_from_score(score: int) -> str:
         """
         Convert numeric score to letter grade.

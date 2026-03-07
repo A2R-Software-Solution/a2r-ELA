@@ -40,6 +40,7 @@ import { tabEvents } from '../../utils/tabEvents';                     // ← Ph
 import { CourseUiModel } from '../../models/ui/CourseUiModel';
 import { FeatureUiModel } from '../../models/ui/FeatureUiModel';
 import { CategoryUiModel } from '../../models/ui/CategoryUiModel';
+import PlaygroundScreen from '../Playground/PlaygroundScreen';
 
 // ============================================================================
 // HOME SCREEN PROPS — unchanged
@@ -224,11 +225,7 @@ const HomeContent: React.FC<HomeContentProps> = ({
 // PLACEHOLDER TABS — unchanged
 // ============================================================================
 
-const PlaygroundContent: React.FC = () => (
-  <View style={styles.placeholderContainer}>
-    <Text style={styles.placeholderText}>Playground Screen</Text>
-  </View>
-);
+const PlaygroundContent: React.FC = () => <PlaygroundScreen/>;
 
 const InboxContent: React.FC = () => (
   <View style={styles.placeholderContainer}>

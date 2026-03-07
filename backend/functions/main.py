@@ -42,6 +42,8 @@ from essay.essay_routes import (
     get_gamification,
 )
 from test_llm import test_llm_connection
+from gamification.game_routes import submit_game_result
+
 
 # User profile functions
 from user.user_routes import (
@@ -97,6 +99,7 @@ def health_check(req: https_fn.Request) -> https_fn.Response:
             "health_check":              "GET  /health_check",
             #Gamification
             "get_gamification":          "GET  /get_gamification",
+            "submit_game_result":        "POST /submit_game_result",
         }
     }
 
@@ -133,6 +136,7 @@ __all__ = [
     'test_llm_connection',
     # Gamification
     'get_gamification',
+    'submit_game_result',
 ]
 
 print("E-Learning Essay Backend initialized")

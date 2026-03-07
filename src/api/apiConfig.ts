@@ -34,6 +34,8 @@ export const ApiConfig = {
     // User Profile
     GET_USER_PROFILE:    'get_user_profile',
     UPDATE_USER_PROFILE: 'update_user_profile',
+
+    SUBMIT_GAME_RESULT: '/submit_game_result',
   },
 
   // Request Timeouts (in milliseconds)
