@@ -1,10 +1,13 @@
 /**
  * Home Header Component
  * Displays user greeting and action buttons
+ *
+ * ✅ FIXED: Added useSafeAreaInsets() so header respects iPhone dynamic island / notch
  */
 
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface HomeHeaderProps {
   username: string;
@@ -14,16 +17,13 @@ interface HomeHeaderProps {
 
 const HomeHeader: React.FC<HomeHeaderProps> = ({
   username,
-  onProfileClick = () => {},
   onNotificationClick = () => {},
 }) => {
-  return (
-    <View style={styles.container}>
-      {/* Profile Icon */}
-      {/* <TouchableOpacity onPress={onProfileClick} style={styles.iconButton}>
-        <Text style={styles.icon}>👤</Text>
-      </TouchableOpacity> */}
+  // ✅ FIX: Get the top inset (dynamic island / notch height)
+  const insets = useSafeAreaInsets();
 
+  return (
+    <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
       {/* Greeting */}
       <Text style={styles.greeting}>Hi, {username}</Text>
 
@@ -40,7 +40,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingBottom: 12,
+    backgroundColor: '#FFFFFF',
   },
   iconButton: {
     width: 40,
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#000000',
-    marginLeft: 12,
+    marginLeft: 4,
   },
 });
 

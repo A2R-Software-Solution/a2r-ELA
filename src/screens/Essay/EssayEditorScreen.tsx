@@ -2,6 +2,7 @@
  * Essay Editor Screen
  * Main screen for writing and submitting essays with AI feedback
  * ✅ UPDATED: Added PSSA state/grade preference selection + file upload support
+ * ✅ FIXED: Header now respects iPhone dynamic island / notch via safe area insets
  */
 
 import React, { useState, useEffect } from 'react';
@@ -15,6 +16,7 @@ import {
   Modal,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEssayEditor } from './hooks/useEssayEditor';
 import EssayWritingPad from './components/EssayWritingPad';
 import FeedbackDialog from './components/FeedbackDialog';
@@ -26,7 +28,7 @@ import { GradeOption, StateOption } from '../../models/EssayModels';
 
 interface EssayEditorScreenProps {
   onBackClick: () => void;
-  onPlayNow?:  () => void;
+  onPlayNow?: () => void;
 }
 
 const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
@@ -42,21 +44,20 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
     dismissFeedbackDialog,
     dismissErrorDialog,
     retrySubmission,
-    // File upload
     handleFileSelected,
     handleRemoveFile,
     dismissFileError,
-    // Preferences
     savePreferences,
     openPreferencesSheet,
     closePreferencesSheet,
     onPlayNow: hookPlayNow,
   } = useEssayEditor();
 
+  // ✅ FIX: Get safe area insets for dynamic island / notch
+  const insets = useSafeAreaInsets();
+
   const [isWritingExpanded, setIsWritingExpanded] = useState(false);
 
-  // State/grade options — normally these come from backend via getUserPreferences
-  // For now hardcoded as fallback — will be replaced with real data from API
   const [stateOptions] = useState<StateOption[]>([
     { code: 'PA', label: 'Pennsylvania' },
   ]);
@@ -79,22 +80,18 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
   ]);
 
   const handleBackPress = () => {
-    console.log('Back button pressed in EssayEditorScreen');
     try {
       onBackClick();
-      console.log('onBackClick executed successfully');
     } catch (error) {
       console.error('Error in onBackClick:', error);
     }
   };
 
-  // Emit tab switch first, then navigate back to HomeScreen
   const handlePlayNow = () => {
-    hookPlayNow();   // emits tabEvents → HomeScreen switches to Playground
-    onPlayNow?.();  // navigation.goBack() wired in AppNavigator
+    hookPlayNow();
+    onPlayNow?.();
   };
 
-  // Show file upload error alert
   useEffect(() => {
     if (uiState.fileUploadError) {
       Alert.alert('Upload Error', uiState.fileUploadError, [
@@ -105,8 +102,8 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+      {/* ✅ FIX: paddingTop now uses insets.top so header clears dynamic island */}
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity
           onPress={handleBackPress}
           style={styles.headerButton}
@@ -117,8 +114,6 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
         </TouchableOpacity>
 
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Essay Writing</Text>
-          {/* NEW: State & Grade Display */}
           <TouchableOpacity
             onPress={openPreferencesSheet}
             style={styles.gradeChip}
@@ -160,7 +155,6 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
             )}
           </View>
 
-          {/* NEW: Show rubric type and grade band if available */}
           {uiState.rubricType && uiState.gradeBand && (
             <Text style={styles.rubricBadge}>
               {uiState.rubricType} • {uiState.gradeBand}
@@ -189,11 +183,13 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
                 {uiState.strengths.length > 0 && (
                   <>
                     <Text style={styles.sectionLabel}>✨ Strengths:</Text>
-                    {uiState.strengths.map((strength: string, index: number) => (
-                      <Text key={index} style={styles.listItem}>
-                        • {strength}
-                      </Text>
-                    ))}
+                    {uiState.strengths.map(
+                      (strength: string, index: number) => (
+                        <Text key={index} style={styles.listItem}>
+                          • {strength}
+                        </Text>
+                      ),
+                    )}
                   </>
                 )}
 
@@ -207,20 +203,17 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
                     >
                       💡 Areas for Improvement:
                     </Text>
-                    {uiState.areasForImprovement.map((area: string, index: number) => (
-                      <Text key={index} style={styles.listItem}>
-                        • {area}
-                      </Text>
-                    ))}
+                    {uiState.areasForImprovement.map(
+                      (area: string, index: number) => (
+                        <Text key={index} style={styles.listItem}>
+                          • {area}
+                        </Text>
+                      ),
+                    )}
                   </>
                 )}
 
-                <TouchableOpacity
-                  style={styles.detailButton}
-                  onPress={() => {
-                    /* Show detailed feedback - handled by FeedbackDialog */
-                  }}
-                >
+                <TouchableOpacity style={styles.detailButton}>
                   <Text style={styles.detailButtonText}>
                     View Detailed Scores
                   </Text>
@@ -247,11 +240,13 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
           </Text>
         </TouchableOpacity>
 
-        {/* Writing Section with File Upload */}
+        {/* Writing Section */}
         <View
           style={[
             styles.writingSection,
-            isWritingExpanded ? styles.writingExpanded : styles.writingCollapsed,
+            isWritingExpanded
+              ? styles.writingExpanded
+              : styles.writingCollapsed,
           ]}
         >
           <View style={styles.writingHeader}>
@@ -274,7 +269,6 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
             </Text>
           )}
 
-          {/* File Preview Section */}
           {uiState.uploadedFiles && uiState.uploadedFiles.length > 0 && (
             <View style={styles.filePreviewContainer}>
               {uiState.uploadedFiles.map((file: FileInfo) => (
@@ -295,10 +289,11 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
             wordCount={uiState.wordCount}
           />
 
-          {/* Input Toolbar with Upload & Send buttons */}
           <InputToolbar
             onFileSelected={handleFileSelected}
-            canUploadFiles={uiState.canUploadMoreFiles && !uiState.isFileExtracting}
+            canUploadFiles={
+              uiState.canUploadMoreFiles && !uiState.isFileExtracting
+            }
             isFileExtracting={uiState.isFileExtracting || false}
             onSend={submitEssay}
             canSend={uiState.canSubmit && !uiState.isSubmitting}
@@ -307,7 +302,7 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
         </View>
       </View>
 
-      {/* NEW: State & Grade Selector Bottom Sheet */}
+      {/* State & Grade Selector Bottom Sheet */}
       <StateSelectorSheet
         isVisible={uiState.showPreferencesSheet}
         onClose={closePreferencesSheet}
@@ -322,7 +317,7 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
       {/* Info Overlay */}
       {uiState.showInfoOverlay && (
         <Modal
-          visible={true}
+          visible
           transparent
           animationType="fade"
           onRequestClose={hideInfoOverlay}
@@ -335,30 +330,35 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
                 based on {uiState.stateDisplay} PSSA standards for{' '}
                 {uiState.gradeDisplay}.
               </Text>
-
               <View style={styles.rubricList}>
                 <Text style={styles.rubricHeader}>
                   📝 PSSA Writing Domains:
                 </Text>
-                {['• Focus', '• Content', '• Organization', '• Style', '• Conventions'].map(
-                  (rubric, index) => (
-                    <Text key={index} style={styles.rubricItem}>
-                      {rubric}
-                    </Text>
-                  ),
-                )}
+                {[
+                  '• Focus',
+                  '• Content',
+                  '• Organization',
+                  '• Style',
+                  '• Conventions',
+                ].map((rubric, index) => (
+                  <Text key={index} style={styles.rubricItem}>
+                    {rubric}
+                  </Text>
+                ))}
               </View>
-
               <Text style={styles.wordLimitText}>
                 Word limit: {uiState.minWords} - {uiState.maxWords} words
               </Text>
-
               <Text style={styles.infoDescription}>
                 📎 You can upload up to 2 PDF files (max 100KB each)
               </Text>
-
-              <TouchableOpacity style={styles.startButton} onPress={hideInfoOverlay}>
-                <Text style={styles.startButtonText}>Start Writing Your Essay</Text>
+              <TouchableOpacity
+                style={styles.startButton}
+                onPress={hideInfoOverlay}
+              >
+                <Text style={styles.startButtonText}>
+                  Start Writing Your Essay
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -377,9 +377,9 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
             personalizedFeedback={uiState.personalizedFeedback || ''}
             strengths={uiState.strengths}
             areasForImprovement={uiState.areasForImprovement}
-            newBadges={uiState.rewards?.newly_unlocked_badges ?? []}   // ← Phase 2 fix
-            gameSuggestion={uiState.gameSuggestion ?? null}            // ← Phase 3
-            onPlayNow={handlePlayNow}                                  // ← Phase 3
+            newBadges={uiState.rewards?.newly_unlocked_badges ?? []}
+            gameSuggestion={uiState.gameSuggestion ?? null}
+            onPlayNow={handlePlayNow}
             onDismiss={dismissFeedbackDialog}
           />
         )}
@@ -387,7 +387,7 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
       {/* Error Dialog */}
       {uiState.showErrorDialog && uiState.submissionError && (
         <Modal
-          visible={true}
+          visible
           transparent
           animationType="fade"
           onRequestClose={dismissErrorDialog}
@@ -397,12 +397,17 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
               <Text style={styles.errorIcon}>⚠️</Text>
               <Text style={styles.errorTitle}>Submission Error</Text>
               <Text style={styles.errorMessage}>{uiState.submissionError}</Text>
-
               <View style={styles.errorButtons}>
-                <TouchableOpacity style={styles.retryButton} onPress={retrySubmission}>
+                <TouchableOpacity
+                  style={styles.retryButton}
+                  onPress={retrySubmission}
+                >
                   <Text style={styles.retryButtonText}>Retry</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.cancelButton} onPress={dismissErrorDialog}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={dismissErrorDialog}
+                >
                   <Text style={styles.cancelButtonText}>Cancel</Text>
                 </TouchableOpacity>
               </View>
@@ -424,19 +429,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#EEEEEE',
     backgroundColor: '#FFFFFF',
-    zIndex: 1000,
-    elevation: 5,
+    // ✅ paddingTop is now set dynamically via insets in JSX above
   },
   headerButton: {
     width: 40,
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1001,
   },
   headerIcon: {
     fontSize: 24,
@@ -445,11 +448,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  // NEW: Grade chip in header
   gradeChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -457,7 +455,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    marginTop: 4,
     gap: 4,
   },
   gradeChipText: {
@@ -478,12 +475,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
   },
-  feedbackExpanded: {
-    flex: 1.4,
-  },
-  feedbackCollapsed: {
-    flex: 0.6,
-  },
+  feedbackExpanded: { flex: 1.4 },
+  feedbackCollapsed: { flex: 0.6 },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -511,7 +504,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  // NEW: Rubric type badge
   rubricBadge: {
     fontSize: 11,
     color: '#6B7280',
@@ -522,9 +514,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
     marginVertical: 12,
   },
-  feedbackContent: {
-    flex: 1,
-  },
+  feedbackContent: { flex: 1 },
   centerContent: {
     flex: 1,
     justifyContent: 'center',
@@ -578,9 +568,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     gap: 4,
   },
-  toggleIcon: {
-    fontSize: 14,
-  },
+  toggleIcon: { fontSize: 14 },
   toggleText: {
     fontSize: 14,
     color: '#7D55FF',
@@ -591,12 +579,8 @@ const styles = StyleSheet.create({
     padding: 16,
     marginTop: 8,
   },
-  writingExpanded: {
-    flex: 1.2,
-  },
-  writingCollapsed: {
-    flex: 0.6,
-  },
+  writingExpanded: { flex: 1.2 },
+  writingCollapsed: { flex: 0.6 },
   writingHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -622,7 +606,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -685,15 +669,8 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
   },
-  errorIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  errorTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
+  errorIcon: { fontSize: 48, marginBottom: 16 },
+  errorTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 12 },
   errorMessage: {
     fontSize: 14,
     textAlign: 'center',

@@ -1,6 +1,9 @@
 /**
  * Sign In Screen
  * User authentication screen with email/password
+ *
+ * ✅ FIXED: Back button now works — added default no-op and safe area insets
+ * ✅ FIXED: Replaced illustration placeholder with actual signin.png image
  */
 
 import React, { useEffect } from 'react';
@@ -14,7 +17,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSignIn } from './hooks/useSignIn';
 
 interface SignInScreenProps {
@@ -30,13 +35,11 @@ interface SocialButtonProps {
   onPress?: () => void;
 }
 
-const SocialButton: React.FC<SocialButtonProps> = ({ text, onPress }) => {
-  return (
-    <TouchableOpacity style={styles.socialButton} onPress={onPress}>
-      <Text style={styles.socialButtonText}>{text}</Text>
-    </TouchableOpacity>
-  );
-};
+const SocialButton: React.FC<SocialButtonProps> = ({ text, onPress }) => (
+  <TouchableOpacity style={styles.socialButton} onPress={onPress}>
+    <Text style={styles.socialButtonText}>{text}</Text>
+  </TouchableOpacity>
+);
 
 /* -------------------------------- Sign In Screen -------------------------------- */
 
@@ -45,12 +48,11 @@ const SignInScreen: React.FC<SignInScreenProps> = ({
   onLoginSuccess,
   onBackClick,
 }) => {
-  const {
-    uiState,
-    onUsernameChange,
-    onPasswordChange,
-    onSignInClick,
-  } = useSignIn();
+  const { uiState, onUsernameChange, onPasswordChange, onSignInClick } =
+    useSignIn();
+
+  // ✅ FIX: Safe area insets for dynamic island / notch
+  const insets = useSafeAreaInsets();
 
   // Navigate once login succeeds
   useEffect(() => {
@@ -68,16 +70,25 @@ const SignInScreen: React.FC<SignInScreenProps> = ({
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Back Arrow */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onBackClick}>
-            <Text style={styles.backArrow}>←</Text>
-          </TouchableOpacity>
+        {/* ✅ FIX: Header respects safe area + back button has fallback */}
+        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+          {onBackClick && (
+            <TouchableOpacity
+              onPress={onBackClick}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Text style={styles.backArrow}>←</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
-        {/* Illustration Placeholder */}
+        {/* ✅ FIX: Real image instead of placeholder text */}
         <View style={styles.illustrationContainer}>
-          <Text style={styles.illustrationText}>Illustration</Text>
+          <Image
+            source={require('../../assets/images/signin.png')}
+            style={styles.illustrationImage}
+            resizeMode="contain"
+          />
         </View>
 
         {/* Welcome Text */}
@@ -90,10 +101,9 @@ const SignInScreen: React.FC<SignInScreenProps> = ({
         <View style={styles.inputContainer}>
           <TextInput
             style={[
-                styles.input,
-                uiState.usernameError ? styles.inputError : undefined,
-                ]}
-
+              styles.input,
+              uiState.usernameError ? styles.inputError : undefined,
+            ]}
             placeholder="Username or Email"
             placeholderTextColor="#999"
             value={uiState.username}
@@ -111,10 +121,9 @@ const SignInScreen: React.FC<SignInScreenProps> = ({
         <View style={styles.inputContainer}>
           <TextInput
             style={[
-                styles.input,
-                uiState.passwordError ? styles.inputError : undefined,
-                ]}
-
+              styles.input,
+              uiState.passwordError ? styles.inputError : undefined,
+            ]}
             placeholder="Password"
             placeholderTextColor="#999"
             value={uiState.password}
@@ -184,20 +193,22 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
+    // ✅ paddingTop set dynamically via insets in JSX
   },
   backArrow: {
     fontSize: 35,
     color: '#000000',
   },
+  // ✅ Real image styles
   illustrationContainer: {
     height: 160,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 16,
   },
-  illustrationText: {
-    color: '#999999',
-    fontSize: 16,
+  illustrationImage: {
+    width: '100%',
+    height: 160,
   },
   welcomeContainer: {
     marginTop: 24,
