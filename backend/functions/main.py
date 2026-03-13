@@ -44,6 +44,11 @@ from essay.essay_routes import (
 from test_llm import test_llm_connection
 from gamification.game_routes import submit_game_result
 
+# Leaderboard functions
+from leaderboard.leaderboard_routes import (
+    get_grade_leaderboard,
+    get_state_leaderboard,
+)
 
 # User profile functions
 from user.user_routes import (
@@ -97,9 +102,12 @@ def health_check(req: https_fn.Request) -> https_fn.Response:
             "extract_pdf_text_authenticated": "POST /extract_pdf_text_authenticated",
             # Health
             "health_check":              "GET  /health_check",
-            #Gamification
+            # Gamification
             "get_gamification":          "GET  /get_gamification",
             "submit_game_result":        "POST /submit_game_result",
+            # Leaderboard
+            "get_grade_leaderboard":     "GET  /get_grade_leaderboard",
+            "get_state_leaderboard":     "GET  /get_state_leaderboard",
         }
     }
 
@@ -137,6 +145,9 @@ __all__ = [
     # Gamification
     'get_gamification',
     'submit_game_result',
+    # Leaderboard
+    'get_grade_leaderboard',
+    'get_state_leaderboard',
 ]
 
 print("E-Learning Essay Backend initialized")

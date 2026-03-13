@@ -21,6 +21,7 @@ import {
   UserPreferences,
   SaveUserPreferencesRequest,
 } from '../models/EssayModels';
+import { LeaderboardResponse } from '../models/LeaderboardModels';
 
 // ============================================================================
 // PDF MODELS (local to apiService — not essay domain models)
@@ -32,10 +33,10 @@ export interface PdfExtractionRequest {
 }
 
 export interface PdfExtractionResponse {
-  success: boolean;
-  text: string;
+  success:   boolean;
+  text:      string;
   wordCount: number;
-  error?: string;
+  error?:    string;
 }
 
 // ============================================================================
@@ -129,6 +130,7 @@ class ApiService {
   async getCategoryStats(): Promise<AxiosResponse<ApiResponse<CategoryStats>>> {
     return apiClient.get(ApiConfig.Endpoints.GET_CATEGORY_STATS);
   }
+
   // --------------------------------------------------------------------------
   // GAMIFICATION
   // --------------------------------------------------------------------------
@@ -138,6 +140,38 @@ class ApiService {
    */
   async getGamification(): Promise<AxiosResponse<ApiResponse<GamificationData>>> {
     return apiClient.get(ApiConfig.Endpoints.GET_GAMIFICATION);
+  }
+
+  // --------------------------------------------------------------------------
+  // LEADERBOARD
+  // --------------------------------------------------------------------------
+
+  /**
+   * Get top 10 users in the same grade as the current user, ranked by XP.
+   * Grade is read from user's saved preferences on the backend.
+   *
+   * @param gradeOverride  Optional grade string to override saved preference
+   */
+  async getGradeLeaderboard(
+    gradeOverride?: string,
+  ): Promise<AxiosResponse<ApiResponse<LeaderboardResponse>>> {
+    return apiClient.get(ApiConfig.Endpoints.GET_GRADE_LEADERBOARD, {
+      params: gradeOverride ? { grade: gradeOverride } : {},
+    });
+  }
+
+  /**
+   * Get top 10 users in the same state as the current user, ranked by XP.
+   * State is read from user's saved preferences on the backend.
+   *
+   * @param stateOverride  Optional state code to override saved preference e.g. "PA"
+   */
+  async getStateLeaderboard(
+    stateOverride?: string,
+  ): Promise<AxiosResponse<ApiResponse<LeaderboardResponse>>> {
+    return apiClient.get(ApiConfig.Endpoints.GET_STATE_LEADERBOARD, {
+      params: stateOverride ? { state: stateOverride } : {},
+    });
   }
 
   // --------------------------------------------------------------------------

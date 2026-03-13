@@ -18,7 +18,7 @@ export const ApiConfig = {
     GET_PROGRESS_STATS:   'get_progress_stats',
     GET_CATEGORY_STATS:   'get_category_stats',
 
-    // Gamification 
+    // Gamification
     GET_GAMIFICATION:     'get_gamification',
 
     // User Preferences — state & grade
@@ -35,7 +35,12 @@ export const ApiConfig = {
     GET_USER_PROFILE:    'get_user_profile',
     UPDATE_USER_PROFILE: 'update_user_profile',
 
+    // Game
     SUBMIT_GAME_RESULT: '/submit_game_result',
+
+    // Leaderboard
+    GET_GRADE_LEADERBOARD: 'get_grade_leaderboard',
+    GET_STATE_LEADERBOARD: 'get_state_leaderboard',
   },
 
   // Request Timeouts (in milliseconds)

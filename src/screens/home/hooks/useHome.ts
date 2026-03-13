@@ -90,20 +90,22 @@ export const useHome = () => {
 
   const loadHomeData = useCallback(() => {
     const categories: CategoryUiModel[] = [
-      { id: '1', title: 'All', isSelected: true },
+      { id: '1', title: 'All',           isSelected: true  },
       { id: '2', title: 'Essay Writing', isSelected: false },
-      { id: '3', title: 'ELA', isSelected: false },
-      { id: '4', title: 'Math', isSelected: false },
-      { id: '5', title: 'Science', isSelected: false },
+      { id: '3', title: 'ELA',           isSelected: false },
+      { id: '4', title: 'Math',          isSelected: false },
+      { id: '5', title: 'Science',       isSelected: false },
     ];
 
     const features: FeatureUiModel[] = [
-      { id: '1', title: 'Rank',          subtitle: 'Top 10%',      iconRes: '🏆', colorRes: null },
-      { id: '2', title: 'Essay Writing', subtitle: 'Advanced',     iconRes: '📝', colorRes: null },
-      { id: '3', title: 'ELA',           subtitle: 'Intermediate', iconRes: '📚', colorRes: null },
-      { id: '4', title: 'Notes',         subtitle: 'Review',       iconRes: '📓', colorRes: null },
-      { id: '5', title: 'Quiz',          subtitle: 'Practice',     iconRes: '❓', colorRes: null },
-      { id: '6', title: 'Courses',       subtitle: 'Enrolled',     iconRes: '🎓', colorRes: null },
+      // ✅ UPDATED: id changed from '1' to 'rank' so AppNavigator
+      //    can route this tile to the Leaderboard screen
+      { id: 'rank',  title: 'Rank',          subtitle: 'Top 10%',      iconRes: '🏆', colorRes: null },
+      { id: 'essay', title: 'Essay Writing', subtitle: 'Advanced',     iconRes: '📝', colorRes: null },
+      { id: 'ela',   title: 'ELA',           subtitle: 'Intermediate', iconRes: '📚', colorRes: null },
+      { id: 'notes', title: 'Notes',         subtitle: 'Review',       iconRes: '📓', colorRes: null },
+      { id: 'quiz',  title: 'Quiz',          subtitle: 'Practice',     iconRes: '❓', colorRes: null },
+      { id: 'courses', title: 'Courses',     subtitle: 'Enrolled',     iconRes: '🎓', colorRes: null },
     ];
 
     const recentCourses: CourseUiModel[] = [

@@ -7,6 +7,9 @@
 export * from './Result';
 export * from './EssayModels';
 
+// Leaderboard models
+export * from './LeaderboardModels';
+
 // UI models
 export * from './ui/CategoryUiModel';
 export * from './ui/CourseUiModel';
