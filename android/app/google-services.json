@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "946721723947",
+    "project_id": "e-learning-app-9d86f",
+    "storage_bucket": "e-learning-app-9d86f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:946721723947:android:9f4c0c6b0c3ad61be0bc6e",
+        "android_client_info": {
+          "package_name": "com.elearningapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "946721723947-0pnknnth4ed6f9t5qp6jpa4lhf1s72rr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhgu1_iW8EYnvF4K293BmCzyCThYjpUF8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "946721723947-0pnknnth4ed6f9t5qp6jpa4lhf1s72rr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:946721723947:android:29fc8fe4eee571ace0bc6e",
+        "android_client_info": {
+          "package_name": "com.example.elearningapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "946721723947-0pnknnth4ed6f9t5qp6jpa4lhf1s72rr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhgu1_iW8EYnvF4K293BmCzyCThYjpUF8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "946721723947-0pnknnth4ed6f9t5qp6jpa4lhf1s72rr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
