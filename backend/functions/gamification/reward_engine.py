@@ -105,6 +105,24 @@ BADGE_DEFINITIONS = [
         "condition_type":  "beat_personal_best",
         "condition_value": True,
     },
+    #--new bedges for phase 5 games --------------------
+      {
+        "id":              "sharp_shooter",
+        "name":            "Sharp Shooter",
+        "description":     "Complete Stay on Topic with a perfect score",
+        "icon":            "🎯",
+        "condition_type":  "game_perfect",
+        "condition_value": "stay_on_topic",
+    },
+    {
+        "id":              "word_wizard",
+        "name":            "Word Wizard",
+        "description":     "Complete Word Swap with a perfect score",
+        "icon":            "🧙",
+        "condition_type":  "game_perfect",
+        "condition_value": "word_swap",
+    },
+ 
 ]
 
 

@@ -1,6 +1,6 @@
 /**
  * Game Models
- * Data types for mini-games (Bug Catcher, Jumbled Story, Detail Detective, Boss Battle)
+ * Data types for all mini-games
  */
 
 // ─── Game IDs ─────────────────────────────────────────────────────────────────
@@ -8,18 +8,18 @@
 export type GameId =
   | 'bug_catcher'
   | 'jumbled_story'
-  | 'stay_on_topic'
-  | 'word_swap'
   | 'detail_detective'
-  | 'boss_battle';
+  | 'boss_battle'
+  | 'stay_on_topic'
+  | 'word_swap';
 
-// ─── Game Submission (no-AI games) ───────────────────────────────────────────
+// ─── Game Submission ──────────────────────────────────────────────────────────
 
 export interface GameSubmissionRequest {
   game_id:          GameId;
-  score:            number;       // 0-100
-  time_taken?:      number;       // seconds — required for jumbled_story / stay_on_topic
-  lives_remaining?: number;       // 0-3    — required for bug_catcher
+  score:            number;   // 0–100
+  time_taken?:      number;   // seconds
+  lives_remaining?: number;   // 0–3, bug_catcher only
 }
 
 export interface GameRewards {
@@ -58,17 +58,17 @@ export interface ApiResponse<T> {
 
 export interface BugError {
   id:        string;
-  wordIndex: number;       // index in the words array
-  word:      string;       // the incorrect word shown
-  fix:       string;       // the correct version (not shown to student)
+  wordIndex: number;
+  word:      string;
+  fix:       string;
   type:      'spelling' | 'grammar' | 'punctuation';
 }
 
 export interface BugCatcherLevel {
   id:        string;
-  paragraph: string;       // full paragraph text
-  words:     string[];     // paragraph split into tappable words
-  errors:    BugError[];   // which words are bugs
+  paragraph: string;
+  words:     string[];
+  errors:    BugError[];
 }
 
 // ─── Jumbled Story ────────────────────────────────────────────────────────────
@@ -76,7 +76,7 @@ export interface BugCatcherLevel {
 export interface StorySentence {
   id:           string;
   text:         string;
-  correctIndex: number;   // 0-based correct position in the story
+  correctIndex: number;
 }
 
 export interface JumbledStoryLevel {
@@ -85,36 +85,16 @@ export interface JumbledStoryLevel {
   sentences: StorySentence[];
 }
 
-// ─── Game Result (local, before API call) ────────────────────────────────────
-
-export interface GameResult {
-  gameId:          GameId;
-  score:           number;
-  timeTaken?:      number;
-  livesRemaining?: number;
-}
-
 // ─── Detail Detective ─────────────────────────────────────────────────────────
-
-export interface DetailDetectiveSentence {
-  id:               string;
-  weakSentence:     string;   // the boring sentence shown to the student
-  hint?:            string;   // optional hint shown if student is stuck
-  topic:            string;   // topic label e.g. "Food", "Animals"
-}
+// Required by useGame.ts — AI-powered sentence improvement game
 
 export interface DetailDetectiveEvaluation {
-  score:             number;   // 1-5
-  max_score:         number;   // always 5
-  feedback:          string;   // main feedback message shown to student
-  what_they_did_well: string;  // specific praise
-  how_to_improve:    string;   // specific tip
-  xp_earned:         number;   // 10-60 based on score
-}
-
-export interface DetailDetectiveRequest {
-  original_sentence: string;
-  improved_sentence: string;
+  score:            number;   // 1–5
+  max_score:        number;   // 5
+  feedback:         string;
+  what_they_did_well: string;
+  how_to_improve:   string;
+  xp_earned:        number;
 }
 
 export interface DetailDetectiveResponse {
@@ -123,36 +103,54 @@ export interface DetailDetectiveResponse {
 }
 
 // ─── Boss Battle ──────────────────────────────────────────────────────────────
-
-export interface BossBattleRequest {
-  essay_text: string;
-  state?:     string;   // e.g. 'PA' — optional, defaults to user preference
-  grade?:     string;   // e.g. '6'  — optional, defaults to user preference
-}
+// Required by useGame.ts — weekly personal best essay challenge
 
 export interface BossBattleResult {
-  converted_score:    number;   // 0-100
-  personal_best:      number;   // previous personal best
+  converted_score:    number;
+  personal_best:      number;
   beat_personal_best: boolean;
-  improvement:        number;   // how many points above personal best (0 if not beaten)
-}
-
-export interface BossBattleEvaluation {
-  total_score:           number;
-  pssa_total:            number;
-  converted_score:       number;
-  grade:                 string;
-  raw_scores:            Record<string, number>;
-  converted_scores:      Record<string, number>;
-  rubric_justifications: Record<string, string>;
-  strengths:             string[];
-  areas_for_improvement: string[];
-  personalized_feedback: string;
-  word_count:            number;
+  improvement:        number;
 }
 
 export interface BossBattleResponse {
-  evaluation:  BossBattleEvaluation;
+  evaluation:  Record<string, any>;
   boss_battle: BossBattleResult;
   rewards:     GameRewards;
 }
+
+// ─── Unified Game Result (local, before API call) ─────────────────────────────
+//
+//  Single interface covers all games.
+//  Optional fields are game-specific:
+//    livesRemaining               → bug_catcher
+//    timeTaken                    → jumbled_story, stay_on_topic
+//    accuracy / correctRemovals
+//      wrongRemovals / missedRemovals / badge / xpEarned
+//                                 → stay_on_topic, word_swap
+
+export interface GameResult {
+  gameId:           GameId;
+  score:            number;       // 0–100 sent to backend
+
+  livesRemaining?:  number;       // bug_catcher
+  timeTaken?:       number;       // seconds
+
+  accuracy?:        number;       // 0–100
+  badge?:           string | null;
+  correctRemovals?: number;
+  wrongRemovals?:   number;
+  missedRemovals?:  number;
+  xpEarned?:        number;       // local preview only
+}
+
+// ─── XP / Level helpers ───────────────────────────────────────────────────────
+
+export interface PlayerProgress {
+  totalXP: number;
+  level:   number;
+  badges:  string[];
+}
+
+export const XP_PER_LEVEL = 100;
+export const levelFromXP = (xp: number): number =>
+  Math.floor(xp / XP_PER_LEVEL) + 1;
