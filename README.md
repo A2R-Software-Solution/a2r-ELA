@@ -118,12 +118,12 @@ backend/
         └── validator.py
 ```
 ```
-src
+D:.
 ├───api
 │   │   apiClient.ts
 │   │   apiConfig.ts
 │   │   apiService.ts
-│   │   
+│   │
 │   └───interceptors
 │           AuthInterceptor.ts
 │
@@ -148,6 +148,7 @@ src
 │   │   GameModels.ts
 │   │   GamificationModels.ts
 │   │   index.ts
+│   │   LeaderboardModels.ts
 │   │   Result.ts
 │   │
 │   └───ui
@@ -164,10 +165,10 @@ src
 ├───repositories
 │       EssayRepository.ts
 │       FileRepository.ts
+│       LeaderboardRepository.ts
 │
 ├───screens
 │   ├───auth
-│   │   │   .DS_Store
 │   │   │   SignInScreen.tsx
 │   │   │   SignUpScreen.tsx
 │   │   │
@@ -224,10 +225,28 @@ src
 │   ├───Intro
 │   │       IntroScreen.tsx
 │   │
+│   ├───Leaderboard
+│   │   │   LeaderboardScreen.tsx
+│   │   │
+│   │   ├───components
+│   │   │       LeaderboardRow.tsx
+│   │   │       TabSelector.tsx
+│   │   │       TopThreeCard.tsx
+│   │   │
+│   │   ├───hooks
+│   │   │       useLeaderboard.ts
+│   │   │
+│   │   └───types
+│   │           LeaderboardUiState.ts
+│   │
 │   ├───Playground
+│   │       BossBattleGame.tsx
 │   │       BugCatcherGame.tsx
+│   │       DetailDetectiveGame.tsx
 │   │       JumbledStoryGame.tsx
 │   │       PlaygroundScreen.tsx
+│   │       StayOnTopicGame.tsx
+│   │       WordSwapGame.tsx
 │   │
 │   └───Splash
 │           SplashScreen.tsx
