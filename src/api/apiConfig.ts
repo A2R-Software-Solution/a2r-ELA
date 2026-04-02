@@ -34,6 +34,7 @@ export const ApiConfig = {
     // User Profile
     GET_USER_PROFILE:    'get_user_profile',
     UPDATE_USER_PROFILE: 'update_user_profile',
+    DELETE_ACCOUNT:      'delete_account',       // ← NEW
 
     // Games (no AI)
     SUBMIT_GAME_RESULT: 'submit_game_result',

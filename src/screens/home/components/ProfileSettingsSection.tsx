@@ -8,6 +8,7 @@
  *   - State row — label left, tappable state pill right
  *   - Divider
  *   - Logout button
+ *   - Delete Account button                                          ← NEW
  *
  * Pure presentational component — no logic, no API calls.
  * All actions are passed in as props and handled by useProfile.ts.
@@ -39,6 +40,9 @@ interface ProfileSettingsSectionProps {
 
   /** Signs out the current user */
   onLogoutClick: () => void;
+
+  /** Permanently deletes the account — shows confirmation Alert before proceeding */
+  onDeleteAccountClick: () => void; // ← NEW
 }
 
 // ============================================================================
@@ -49,6 +53,7 @@ const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
   preferences,
   onEditPreferencesClick,
   onLogoutClick,
+  onDeleteAccountClick, // ← NEW
 }) => {
   return (
     <View style={styles.container}>
@@ -84,6 +89,15 @@ const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
         activeOpacity={0.8}
       >
         <Text style={styles.logoutText}>Logout</Text>
+      </TouchableOpacity>
+
+      {/* Delete Account button — red, destructive action */}
+      <TouchableOpacity                                          
+        style={styles.deleteButton}
+        onPress={onDeleteAccountClick}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.deleteText}>Delete Account</Text>
       </TouchableOpacity>
 
     </View>
@@ -136,8 +150,10 @@ const RowDivider: React.FC = () => <View style={styles.rowDivider} />;
 // STYLES
 // ============================================================================
 
-const PURPLE = '#7D55FF';
+const PURPLE       = '#7D55FF';
 const PURPLE_LIGHT = '#F0EBFF';
+const RED          = '#DC2626'; // ← NEW
+const RED_LIGHT    = '#FEF2F2'; // ← NEW
 
 const styles = StyleSheet.create({
   container: {
@@ -214,19 +230,34 @@ const styles = StyleSheet.create({
   },
 
   // ---------- Logout button ----------
-  // Matches the existing logout button in HomeScreen.tsx exactly:
-  //   backgroundColor: '#7D55FF', borderRadius: 12
   logoutButton: {
     backgroundColor: PURPLE,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 12, // ← spacing between logout and delete
   },
   logoutText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+
+  // ---------- Delete Account button ----------              ← NEW
+  deleteButton: {
+    backgroundColor: RED_LIGHT,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: RED,
+  },
+  deleteText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: RED,
   },
 });
 

@@ -58,6 +58,7 @@ from leaderboard.leaderboard_routes import (
 from user.user_routes import (
     get_user_profile,
     update_user_profile,
+    delete_account,          # ← NEW
 )
 
 # File upload functions
@@ -101,6 +102,7 @@ def health_check(req: https_fn.Request) -> https_fn.Response:
             # User Profile
             "get_user_profile":          "GET  /get_user_profile",
             "update_user_profile":       "POST /update_user_profile",
+            "delete_account":            "DELETE /delete_account",   # ← NEW
             # File
             "extract_pdf_text":          "POST /extract_pdf_text",
             "extract_pdf_text_authenticated": "POST /extract_pdf_text_authenticated",
@@ -142,6 +144,7 @@ __all__ = [
     # User Profile
     'get_user_profile',
     'update_user_profile',
+    'delete_account',            # ← NEW
     # File
     'extract_pdf_text',
     'extract_pdf_text_authenticated',

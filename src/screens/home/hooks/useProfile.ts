@@ -6,6 +6,7 @@
  *           to Sign In screen fires correctly after signOut()
  * ✅ FIXED: isLoggingOutRef prevents loadProfile from firing after signOut()
  *           when Firebase clears auth state and triggers useEffect re-run
+ * ✅ ADDED: onDeleteAccountClick — permanently deletes account with confirmation
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -38,6 +39,7 @@ import {
   BadgeDefinition,
   EMPTY_BADGE_PROGRESS,
 } from '../../../models/GamificationModels';
+import firebaseAuthRepository from '../../../auth/FirebaseAuthRepository';
 
 // ============================================================================
 // CONSTANTS
@@ -47,12 +49,14 @@ const BIRTHDATE_REGEX = /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/(\d{4})$/;
 const MAX_PHOTO_BYTES = 800 * 1024;
 
 // ============================================================================
-// OPTIONS — ✅ NEW: accepts onLogoutSuccess to trigger navigation
+// OPTIONS
 // ============================================================================
 
 interface UseProfileOptions {
   /** Called after signOut() succeeds — use this to navigate to Sign In */
   onLogoutSuccess?: () => void;
+  /** Called after account deletion succeeds — use this to navigate to Sign In */
+  onDeleteAccountSuccess?: () => void;
 }
 
 // ============================================================================
@@ -73,6 +77,7 @@ export interface UseProfileReturn {
   onBirthdateSave: (birthdate: string) => Promise<void>;
   onAvatarPress: () => void;
   onLogoutClick: () => Promise<void>;
+  onDeleteAccountClick: () => void;
   stateOptions: Array<{ code: string; label: string }>;
   gradeOptions: Array<{ code: string; label: string }>;
 }
@@ -83,6 +88,7 @@ export interface UseProfileReturn {
 
 export const useProfile = ({
   onLogoutSuccess,
+  onDeleteAccountSuccess,
 }: UseProfileOptions = {}): UseProfileReturn => {
   const { user, signOut } = useAuth();
   const [uiState, setUiState] = useState<ProfileUiState>(initialProfileUiState);
@@ -93,24 +99,10 @@ export const useProfile = ({
     Array<{ code: string; label: string }>
   >([]);
 
-  // ✅ FIX: Ref to prevent loadProfile firing after signOut() clears auth state
-  // Using a ref (not state) so it's set synchronously before signOut() resolves
-  // and doesn't cause an extra re-render.
   const isLoggingOutRef = useRef(false);
 
   // --------------------------------------------------------------------------
-  // Load on mount
-  // --------------------------------------------------------------------------
-  // ✅ FIX: Guard against both missing user AND active logout to prevent
-  // auth/no-current-user errors when Firebase clears auth state mid-flight
-  useEffect(() => {
-    if (user?.uid && !isLoggingOutRef.current) {
-      loadProfile();
-    }
-  }, [loadProfile, user?.uid]);
-
-  // --------------------------------------------------------------------------
-  // LOAD PROFILE
+  // LOAD PROFILE — declared BEFORE useEffect so the reference is valid
   // --------------------------------------------------------------------------
   const loadProfile = useCallback(async () => {
     setUiState(prev => ({ ...prev, isLoading: true, error: null }));
@@ -242,6 +234,15 @@ export const useProfile = ({
     user?.metadata?.creationTime,
     user?.providerData,
   ]);
+
+  // --------------------------------------------------------------------------
+  // Load on mount — AFTER loadProfile is declared
+  // --------------------------------------------------------------------------
+  useEffect(() => {
+    if (user?.uid && !isLoggingOutRef.current) {
+      loadProfile();
+    }
+  }, [loadProfile, user?.uid]);
 
   // --------------------------------------------------------------------------
   // RETRY
@@ -482,21 +483,74 @@ export const useProfile = ({
 
   // --------------------------------------------------------------------------
   // LOGOUT
-  // ✅ FIX: Set isLoggingOutRef BEFORE calling signOut() so the useEffect
-  //         guard catches the auth state change and skips loadProfile().
-  //         Reset the flag only on failure so it doesn't block future loads.
   // --------------------------------------------------------------------------
   const onLogoutClick = useCallback(async () => {
     try {
-      isLoggingOutRef.current = true; // ✅ block loadProfile before signOut fires
+      isLoggingOutRef.current = true;
       await signOut();
       onLogoutSuccess?.();
     } catch (error) {
-      isLoggingOutRef.current = false; // ✅ reset on failure so profile can reload
+      isLoggingOutRef.current = false;
       console.error('useProfile: logout failed:', error);
       Alert.alert('Error', 'Failed to logout. Please try again.');
     }
   }, [signOut, onLogoutSuccess]);
+
+  // --------------------------------------------------------------------------
+  // DELETE ACCOUNT
+  // _performAccountDeletion declared BEFORE onDeleteAccountClick so the
+  // reference is valid when onDeleteAccountClick's useCallback runs.
+  // --------------------------------------------------------------------------
+  const _performAccountDeletion = useCallback(async () => {
+    try {
+      isLoggingOutRef.current = true;
+      setUiState(prev => ({ ...prev, isLoading: true }));
+
+      const result = await firebaseAuthRepository.deleteAccount();
+
+      if (!result.success) {
+        isLoggingOutRef.current = false;
+        setUiState(prev => ({ ...prev, isLoading: false }));
+        Alert.alert('Error', result.error.message);
+        return;
+      }
+
+      onDeleteAccountSuccess?.();
+    } catch (error) {
+      isLoggingOutRef.current = false;
+      setUiState(prev => ({ ...prev, isLoading: false }));
+      console.error('useProfile: account deletion failed:', error);
+      Alert.alert('Error', 'Failed to delete account. Please try again.');
+    }
+  }, [onDeleteAccountSuccess]);
+
+  const onDeleteAccountClick = useCallback(() => {
+    Alert.alert(
+      'Delete Account',
+      'This will permanently delete your account and all your data including essays, progress, and stats. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'Are you sure?',
+              'Your account will be permanently deleted.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Yes, Delete My Account',
+                  style: 'destructive',
+                  onPress: _performAccountDeletion,
+                },
+              ],
+            );
+          },
+        },
+      ],
+    );
+  }, [_performAccountDeletion]);
 
   // --------------------------------------------------------------------------
   // RETURN
@@ -515,6 +569,7 @@ export const useProfile = ({
     onBirthdateSave,
     onAvatarPress,
     onLogoutClick,
+    onDeleteAccountClick,
     stateOptions,
     gradeOptions,
   };

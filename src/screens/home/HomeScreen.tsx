@@ -4,6 +4,7 @@
  *
  * ✅ FIXED: Logout now properly signs out AND navigates to Sign In screen
  *           by passing onLogoutClick prop into useProfile hook
+ * ✅ FIXED: onDeleteAccountClick now passed to ProfileSettingsSection
  */
 
 import React, { useEffect } from 'react';
@@ -42,6 +43,7 @@ import PlaygroundScreen from '../Playground/PlaygroundScreen';
 
 interface HomeScreenProps {
   onLogoutClick?: () => void;
+  onDeleteAccountClick?: () => void; // ← NEW
   onCourseClick?: (course: CourseUiModel) => void;
   onFeatureClick?: (feature: FeatureUiModel) => void;
   onCategoryClick?: (category: CategoryUiModel) => void;
@@ -57,6 +59,7 @@ interface HomeScreenProps {
 
 const HomeScreen: React.FC<HomeScreenProps> = ({
   onLogoutClick = () => {},
+  onDeleteAccountClick = () => {}, // ← NEW
   onCourseClick = () => {},
   onFeatureClick = () => {},
   onCategoryClick = () => {},
@@ -67,8 +70,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 }) => {
   const { uiState, onTabSelected, onCategorySelected } = useHome();
 
-  // ✅ FIX: use onLogoutSuccess (matches UseProfileOptions interface)
-  const profile = useProfile({ onLogoutSuccess: onLogoutClick });
+  const profile = useProfile({
+    onLogoutSuccess: onLogoutClick,
+    onDeleteAccountSuccess: onDeleteAccountClick, // ← NEW
+  });
 
   // Tab switch listener
   useEffect(() => {
@@ -241,6 +246,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
     onBirthdateSave,
     onAvatarPress,
     onLogoutClick,
+    onDeleteAccountClick, // ← NEW
     stateOptions,
     gradeOptions,
   } = profileHook;
@@ -302,6 +308,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
           preferences={profile.preferences}
           onEditPreferencesClick={onEditPreferencesClick}
           onLogoutClick={onLogoutClick}
+          onDeleteAccountClick={onDeleteAccountClick} // ← NEW
         />
 
         <View style={styles.bottomSpacer} />

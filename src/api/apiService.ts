@@ -199,6 +199,15 @@ class ApiService {
     return apiClient.post(ApiConfig.Endpoints.UPDATE_USER_PROFILE, request);
   }
 
+  /**
+   * Permanently delete the current user's account and all associated data.
+   * Backend deletes: essay_submissions, user_preferences, user_progress,
+   * gamification, users doc, and Firebase Auth user — in that order.
+   */
+  async deleteAccount(): Promise<AxiosResponse<ApiResponse<null>>> { // ← NEW
+    return apiClient.delete(ApiConfig.Endpoints.DELETE_ACCOUNT);
+  }
+
   // --------------------------------------------------------------------------
   // FILE
   // --------------------------------------------------------------------------

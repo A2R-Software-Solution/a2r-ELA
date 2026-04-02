@@ -14,6 +14,7 @@ import {
 } from '@react-native-firebase/auth';
 import { getApps } from '@react-native-firebase/app';
 import { AuthRepository, Result } from './AuthRepository';
+import { apiService } from '../api/apiService'; // ← NEW
 
 class FirebaseAuthRepository implements AuthRepository {
   /**
@@ -102,6 +103,35 @@ class FirebaseAuthRepository implements AuthRepository {
     } catch (error) {
       console.error('Error getting ID token:', error);
       return null;
+    }
+  }
+
+  /**
+   * Permanently delete the current user's account and all associated data.
+   *
+   * Flow:
+   *   1. Call DELETE /delete_account on the backend
+   *      — backend deletes essay_submissions, user_preferences,
+   *        user_progress, gamification, users doc, Firebase Auth user
+   *   2. Sign out locally so Firebase Auth state is cleared on the device
+   *
+   * The backend handles Firebase Auth deletion server-side via
+   * firebase_admin.auth.delete_user(uid). The local signOut() clears
+   * the cached session on the device.
+   */
+  async deleteAccount(): Promise<Result<void>> { // ← NEW
+    try {
+      await apiService.deleteAccount();
+      await firebaseSignOut(this.auth);
+      return { success: true, data: undefined };
+    } catch (error: any) {
+      console.error('FirebaseAuthRepository: deleteAccount failed:', error);
+      return {
+        success: false,
+        error: new Error(
+          error?.message ?? 'Failed to delete account. Please try again.'
+        ),
+      };
     }
   }
 
