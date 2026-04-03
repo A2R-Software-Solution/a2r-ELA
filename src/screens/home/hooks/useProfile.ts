@@ -2,18 +2,14 @@
  * useProfile Hook
  * Profile screen logic (ViewModel equivalent).
  *
- * Follows the exact same pattern as useHome.ts and useSignIn.ts.
- *
- * References:
- *   - useHome.ts             (hook pattern — useState, useEffect, useCallback)
- *   - useAuth.ts             (user object + signOut)
- *   - apiService.ts          (API calls)
- *   - EssayModels.ts         (response types: ProgressStats, UserPreferences)
- *   - ProfileUiModel.ts      (assembled model + all helper functions)
- *   - ProfileUiState.ts      (state shape + initialProfileUiState)
+ * ✅ FIXED: Logout now accepts onLogoutSuccess callback so navigation
+ *           to Sign In screen fires correctly after signOut()
+ * ✅ FIXED: isLoggingOutRef prevents loadProfile from firing after signOut()
+ *           when Firebase clears auth state and triggers useEffect re-run
+ * ✅ ADDED: onDeleteAccountClick — permanently deletes account with confirmation
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Alert } from 'react-native';
 import {
   launchImageLibrary,
@@ -25,10 +21,7 @@ import auth from '@react-native-firebase/auth';
 import { profileEvents } from '../../../utils/profileEvents';
 import { useAuth } from '../../../hooks/useAuth';
 import { apiService } from '../../../api/apiService';
-import {
-  ProfileUiState,
-  initialProfileUiState,
-} from '../types/ProfileUiState';
+import { ProfileUiState, initialProfileUiState } from '../types/ProfileUiState';
 import {
   ProfileUiModel,
   RecentEssayUiItem,
@@ -42,16 +35,29 @@ import {
   getEssayCategoryDisplayName,
   stringToEssayCategory,
 } from '../../../models/EssayModels';
+import {
+  BadgeDefinition,
+  EMPTY_BADGE_PROGRESS,
+} from '../../../models/GamificationModels';
+import firebaseAuthRepository from '../../../auth/FirebaseAuthRepository';
 
 // ============================================================================
 // CONSTANTS
 // ============================================================================
 
-// Birthdate MM/DD/YY format
 const BIRTHDATE_REGEX = /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/(\d{4})$/;
-
-// Max base64 size — 800KB stays safely under Firestore 1MB doc limit
 const MAX_PHOTO_BYTES = 800 * 1024;
+
+// ============================================================================
+// OPTIONS
+// ============================================================================
+
+interface UseProfileOptions {
+  /** Called after signOut() succeeds — use this to navigate to Sign In */
+  onLogoutSuccess?: () => void;
+  /** Called after account deletion succeeds — use this to navigate to Sign In */
+  onDeleteAccountSuccess?: () => void;
+}
 
 // ============================================================================
 // HOOK RETURN TYPE
@@ -59,33 +65,19 @@ const MAX_PHOTO_BYTES = 800 * 1024;
 
 export interface UseProfileReturn {
   uiState: ProfileUiState;
-
-  /** Retry loading after an error */
   onRetry: () => void;
-
-  // ---------- Preferences sheet ----------
   onEditPreferencesClick: () => void;
   onSelectorSheetClose: () => void;
   onPreferencesSaved: (state: string, grade: string) => Promise<void>;
-
-  // ---------- Name editing ----------
   onNameEditStart: () => void;
   onNameEditCancel: () => void;
   onNameSave: (newName: string) => Promise<void>;
-
-  // ---------- Birthdate editing ----------
   onBirthdateEditStart: () => void;
   onBirthdateEditCancel: () => void;
   onBirthdateSave: (birthdate: string) => Promise<void>;
-
-  // ---------- Photo ----------
-  /** Tapping avatar opens Alert action sheet: Camera / Gallery / Remove */
   onAvatarPress: () => void;
-
-  // ---------- Auth ----------
   onLogoutClick: () => Promise<void>;
-
-  // ---------- Sheet options ----------
+  onDeleteAccountClick: () => void;
   stateOptions: Array<{ code: string; label: string }>;
   gradeOptions: Array<{ code: string; label: string }>;
 }
@@ -94,31 +86,40 @@ export interface UseProfileReturn {
 // HOOK
 // ============================================================================
 
-export const useProfile = (): UseProfileReturn => {
+export const useProfile = ({
+  onLogoutSuccess,
+  onDeleteAccountSuccess,
+}: UseProfileOptions = {}): UseProfileReturn => {
   const { user, signOut } = useAuth();
   const [uiState, setUiState] = useState<ProfileUiState>(initialProfileUiState);
-  const [stateOptions, setStateOptions] = useState<Array<{ code: string; label: string }>>([]);
-  const [gradeOptions, setGradeOptions] = useState<Array<{ code: string; label: string }>>([]);
+  const [stateOptions, setStateOptions] = useState<
+    Array<{ code: string; label: string }>
+  >([]);
+  const [gradeOptions, setGradeOptions] = useState<
+    Array<{ code: string; label: string }>
+  >([]);
+
+  const isLoggingOutRef = useRef(false);
 
   // --------------------------------------------------------------------------
-  // Load on mount
-  // --------------------------------------------------------------------------
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
-  // --------------------------------------------------------------------------
-  // LOAD PROFILE — 4 parallel API calls
+  // LOAD PROFILE — declared BEFORE useEffect so the reference is valid
   // --------------------------------------------------------------------------
   const loadProfile = useCallback(async () => {
     setUiState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const [statsRes, prefsRes, submissionsRes, userProfileRes] = await Promise.all([
+      const [
+        statsRes,
+        prefsRes,
+        submissionsRes,
+        userProfileRes,
+        gamificationRes,
+      ] = await Promise.all([
         apiService.getProgressStats(),
         apiService.getUserPreferences(),
         apiService.getUserSubmissions(5),
         apiService.getUserProfile(),
+        apiService.getGamification(),
       ]);
 
       if (!statsRes.data.success || !statsRes.data.data) {
@@ -130,85 +131,79 @@ export const useProfile = (): UseProfileReturn => {
       if (!submissionsRes.data.success || !submissionsRes.data.data) {
         throw new Error('Failed to load recent essays');
       }
-      // userProfile allowed to have null data — first time user has no document yet
 
-      const stats       = statsRes.data.data;
-      const prefs       = prefsRes.data.data;
+      const stats = statsRes.data.data;
+      const prefs = prefsRes.data.data;
       const submissions = (submissionsRes.data.data as any).submissions ?? [];
       const userProfile = userProfileRes.data?.data ?? null;
+      const gamification = gamificationRes.data?.data ?? null;
 
       setStateOptions(prefs.supported_states ?? []);
       setGradeOptions(prefs.supported_grades ?? []);
 
-      // ------------------------------------------------------------------
-      // Identity — Firebase Auth
-      // ------------------------------------------------------------------
-      const rawDisplayName  = user?.displayName ?? null;
-      const email           = user?.email ?? user?.providerData?.[0]?.email ?? '';
-      const displayName     = rawDisplayName ?? displayNameFromEmail(email);
-      const initials        = computeInitials(displayName);
-      const joinedDate      = formatJoinedDate(user?.metadata?.creationTime);
+      const badgeProgress: BadgeDefinition[] =
+        gamification?.badge_progress ?? EMPTY_BADGE_PROGRESS;
 
-      // ------------------------------------------------------------------
-      // Firestore user profile
-      // ------------------------------------------------------------------
-      const birthdate         = userProfile?.birthdate ?? null;
+      const rawDisplayName = user?.displayName ?? null;
+      const email = user?.email ?? user?.providerData?.[0]?.email ?? '';
+      const displayName = rawDisplayName ?? displayNameFromEmail(email);
+      const initials = computeInitials(displayName);
+      const joinedDate = formatJoinedDate(user?.metadata?.creationTime);
+      const birthdate = userProfile?.birthdate ?? null;
       const firestorePhotoUrl = userProfile?.photo_url ?? null;
 
-      // ------------------------------------------------------------------
-      // Stats
-      // ------------------------------------------------------------------
-      const categoryStats   = stats.category_stats ?? {};
-      const totalEssays     = stats.total_essays_submitted ?? 0;
+      const categoryStats = stats.category_stats ?? {};
+      const totalEssays = stats.total_essays_submitted ?? 0;
 
-      const avgScore = totalEssays === 0 ? 0 : Math.round(
-        (
-          (categoryStats.essay_writing?.avg_score ?? 0) * (categoryStats.essay_writing?.count ?? 0) +
-          (categoryStats.ela?.avg_score ?? 0)           * (categoryStats.ela?.count ?? 0) +
-          (categoryStats.math?.avg_score ?? 0)          * (categoryStats.math?.count ?? 0) +
-          (categoryStats.science?.avg_score ?? 0)       * (categoryStats.science?.count ?? 0)
-        ) / totalEssays,
-      );
+      const avgScore =
+        totalEssays === 0
+          ? 0
+          : Math.round(
+              ((categoryStats.essay_writing?.avg_score ?? 0) *
+                (categoryStats.essay_writing?.count ?? 0) +
+                (categoryStats.ela?.avg_score ?? 0) *
+                  (categoryStats.ela?.count ?? 0) +
+                (categoryStats.math?.avg_score ?? 0) *
+                  (categoryStats.math?.count ?? 0) +
+                (categoryStats.science?.avg_score ?? 0) *
+                  (categoryStats.science?.count ?? 0)) /
+                totalEssays,
+            );
 
-      // ------------------------------------------------------------------
-      // Preferences
-      // ------------------------------------------------------------------
       const profilePrefs = {
-        state:        prefs.state ?? 'PA',
+        state: prefs.state ?? 'PA',
         stateDisplay: prefs.state_display ?? prefs.state ?? 'Pennsylvania',
-        grade:        prefs.grade ?? '6',
+        grade: prefs.grade ?? '6',
         gradeDisplay: prefs.grade_display ?? `Grade ${prefs.grade ?? '6'}`,
       };
 
-      // ------------------------------------------------------------------
-      // Recent essays
-      // ------------------------------------------------------------------
       const recentEssays: RecentEssayUiItem[] = submissions.map((sub: any) => ({
-        submissionId:  sub.submission_id ?? sub.id ?? '',
-        categoryLabel: getEssayCategoryDisplayName(stringToEssayCategory(sub.category ?? '')),
-        score:         sub.converted_score ?? sub.total_score ?? 0,
-        letterGrade:   sub.grade ?? 'F',
-        submittedAt:   formatSubmissionDate(sub.submitted_at ?? sub.created_at ?? ''),
-        scoreColor:    gradeToScoreColor(sub.grade ?? 'F'),
+        submissionId: sub.submission_id ?? sub.id ?? '',
+        categoryLabel: getEssayCategoryDisplayName(
+          stringToEssayCategory(sub.category ?? ''),
+        ),
+        score: sub.converted_score ?? sub.total_score ?? 0,
+        letterGrade: sub.grade ?? 'F',
+        submittedAt: formatSubmissionDate(
+          sub.submitted_at ?? sub.created_at ?? '',
+        ),
+        scoreColor: gradeToScoreColor(sub.grade ?? 'F'),
       }));
 
-      // ------------------------------------------------------------------
-      // Assemble
-      // ------------------------------------------------------------------
       const profile: ProfileUiModel = {
-        uid:             user?.uid ?? '',
+        uid: user?.uid ?? '',
         displayName,
         email,
-        photoURL:        user?.photoURL ?? null,
+        photoURL: user?.photoURL ?? null,
         initials,
         joinedDate,
         stats: {
           totalEssays,
           currentStreak: stats.current_streak ?? 0,
-          maxStreak:     stats.max_streak ?? 0,
+          maxStreak: stats.max_streak ?? 0,
           avgScore,
         },
-        preferences:     profilePrefs,
+        preferences: profilePrefs,
         recentEssays,
         birthdate,
         firestorePhotoUrl,
@@ -217,19 +212,37 @@ export const useProfile = (): UseProfileReturn => {
       setUiState(prev => ({
         ...prev,
         profile,
+        badgeProgress,
         isLoading: false,
         error: null,
       }));
-
     } catch (error: any) {
       console.error('useProfile: loadProfile failed:', error);
       setUiState(prev => ({
         ...prev,
         isLoading: false,
-        error: error?.message ?? 'Failed to load profile. Please try again.',
+        error:
+          (error as Error)?.message ??
+          'Failed to load profile. Please try again.',
       }));
     }
-  }, [user?.uid]);
+  }, [
+    user?.uid,
+    user?.displayName,
+    user?.email,
+    user?.photoURL,
+    user?.metadata?.creationTime,
+    user?.providerData,
+  ]);
+
+  // --------------------------------------------------------------------------
+  // Load on mount — AFTER loadProfile is declared
+  // --------------------------------------------------------------------------
+  useEffect(() => {
+    if (user?.uid && !isLoggingOutRef.current) {
+      loadProfile();
+    }
+  }, [loadProfile, user?.uid]);
 
   // --------------------------------------------------------------------------
   // RETRY
@@ -249,34 +262,38 @@ export const useProfile = (): UseProfileReturn => {
     setUiState(prev => ({ ...prev, isSelectorSheetOpen: false }));
   }, []);
 
-  const onPreferencesSaved = useCallback(async (state: string, grade: string) => {
-    setUiState(prev => {
-      if (!prev.profile) return prev;
-      return {
-        ...prev,
-        isSelectorSheetOpen: false,
-        profile: {
-          ...prev.profile,
-          preferences: {
-            ...prev.profile.preferences,
-            state,
-            grade,
-            stateDisplay: state,
-            gradeDisplay: grade === 'k'
-              ? 'Kindergarten'
-              : grade === 'prek'
-              ? 'Pre-K'
-              : `Grade ${grade}`,
+  const onPreferencesSaved = useCallback(
+    async (state: string, grade: string) => {
+      setUiState(prev => {
+        if (!prev.profile) return prev;
+        return {
+          ...prev,
+          isSelectorSheetOpen: false,
+          profile: {
+            ...prev.profile,
+            preferences: {
+              ...prev.profile.preferences,
+              state,
+              grade,
+              stateDisplay: state,
+              gradeDisplay:
+                grade === 'k'
+                  ? 'Kindergarten'
+                  : grade === 'prek'
+                  ? 'Pre-K'
+                  : `Grade ${grade}`,
+            },
           },
-        },
-      };
-    });
-    try {
-      await apiService.saveUserPreferences({ state, grade });
-    } catch (error) {
-      console.error('useProfile: failed to save preferences:', error);
-    }
-  }, []);
+        };
+      });
+      try {
+        await apiService.saveUserPreferences({ state, grade });
+      } catch (error) {
+        console.error('useProfile: failed to save preferences:', error);
+      }
+    },
+    [],
+  );
 
   // --------------------------------------------------------------------------
   // NAME EDITING
@@ -304,19 +321,13 @@ export const useProfile = (): UseProfileReturn => {
     setUiState(prev => ({ ...prev, isSavingName: true }));
 
     try {
-      // Update Firebase Auth displayName
       const currentUser = auth().currentUser;
       if (currentUser) {
         await currentUser.updateProfile({ displayName: trimmed });
-        // Do NOT call reload() here — it triggers onAuthStateChanged which
-        // causes loadProfile to re-run and overwrite local optimistic state.
-        // useHome reads displayName directly via its own useEffect below.
       }
 
-      // Sync to Firestore
       await apiService.updateUserProfile({ display_name: trimmed });
 
-      // Optimistic local update
       setUiState(prev => {
         if (!prev.profile) return prev;
         return {
@@ -331,9 +342,7 @@ export const useProfile = (): UseProfileReturn => {
         };
       });
 
-      // Notify useHome to sync the new name immediately
       profileEvents.emit('nameChanged');
-
     } catch (error) {
       console.error('useProfile: failed to save name:', error);
       Alert.alert('Error', 'Failed to update name. Please try again.');
@@ -354,7 +363,10 @@ export const useProfile = (): UseProfileReturn => {
 
   const onBirthdateSave = useCallback(async (birthdate: string) => {
     if (!BIRTHDATE_REGEX.test(birthdate)) {
-      Alert.alert('Invalid Format', 'Please enter date as MM/DD/YYYY (e.g. 08/22/1998).');
+      Alert.alert(
+        'Invalid Format',
+        'Please enter date as MM/DD/YYYY (e.g. 08/22/1998).',
+      );
       return;
     }
 
@@ -372,7 +384,6 @@ export const useProfile = (): UseProfileReturn => {
           profile: { ...prev.profile, birthdate },
         };
       });
-
     } catch (error) {
       console.error('useProfile: failed to save birthdate:', error);
       Alert.alert('Error', 'Failed to update birthdate. Please try again.');
@@ -383,58 +394,61 @@ export const useProfile = (): UseProfileReturn => {
   // --------------------------------------------------------------------------
   // PHOTO
   // --------------------------------------------------------------------------
-  const _processAndSaveImage = useCallback(async (source: 'camera' | 'library') => {
-    setUiState(prev => ({ ...prev, isSavingPhoto: true }));
+  const _processAndSaveImage = useCallback(
+    async (source: 'camera' | 'library') => {
+      setUiState(prev => ({ ...prev, isSavingPhoto: true }));
 
-    try {
-      const options = {
-        mediaType: 'photo' as MediaType,
-        includeBase64: true,
-        maxWidth: 400,
-        maxHeight: 400,
-        quality: 0.6 as const,
-      };
-
-      const response: ImagePickerResponse = source === 'camera'
-        ? await launchCamera(options)
-        : await launchImageLibrary(options);
-
-      if (response.didCancel || !response.assets?.length) {
-        setUiState(prev => ({ ...prev, isSavingPhoto: false }));
-        return;
-      }
-
-      const asset = response.assets[0];
-
-      if (!asset.base64 || !asset.type) {
-        throw new Error('Failed to read image data');
-      }
-
-      const dataUri = `data:${asset.type};base64,${asset.base64}`;
-
-      if (dataUri.length > MAX_PHOTO_BYTES) {
-        Alert.alert('Image Too Large', 'Please choose a smaller image.');
-        setUiState(prev => ({ ...prev, isSavingPhoto: false }));
-        return;
-      }
-
-      await apiService.updateUserProfile({ photo_url: dataUri });
-
-      setUiState(prev => {
-        if (!prev.profile) return prev;
-        return {
-          ...prev,
-          isSavingPhoto: false,
-          profile: { ...prev.profile, firestorePhotoUrl: dataUri },
+      try {
+        const options = {
+          mediaType: 'photo' as MediaType,
+          includeBase64: true,
+          maxWidth: 400,
+          maxHeight: 400,
+          quality: 0.6 as const,
         };
-      });
 
-    } catch (error) {
-      console.error('useProfile: failed to save photo:', error);
-      Alert.alert('Error', 'Failed to update photo. Please try again.');
-      setUiState(prev => ({ ...prev, isSavingPhoto: false }));
-    }
-  }, []);
+        const response: ImagePickerResponse =
+          source === 'camera'
+            ? await launchCamera(options)
+            : await launchImageLibrary(options);
+
+        if (response.didCancel || !response.assets?.length) {
+          setUiState(prev => ({ ...prev, isSavingPhoto: false }));
+          return;
+        }
+
+        const asset = response.assets[0];
+
+        if (!asset.base64 || !asset.type) {
+          throw new Error('Failed to read image data');
+        }
+
+        const dataUri = `data:${asset.type};base64,${asset.base64}`;
+
+        if (dataUri.length > MAX_PHOTO_BYTES) {
+          Alert.alert('Image Too Large', 'Please choose a smaller image.');
+          setUiState(prev => ({ ...prev, isSavingPhoto: false }));
+          return;
+        }
+
+        await apiService.updateUserProfile({ photo_url: dataUri });
+
+        setUiState(prev => {
+          if (!prev.profile) return prev;
+          return {
+            ...prev,
+            isSavingPhoto: false,
+            profile: { ...prev.profile, firestorePhotoUrl: dataUri },
+          };
+        });
+      } catch (error) {
+        console.error('useProfile: failed to save photo:', error);
+        Alert.alert('Error', 'Failed to update photo. Please try again.');
+        setUiState(prev => ({ ...prev, isSavingPhoto: false }));
+      }
+    },
+    [],
+  );
 
   const _removePhoto = useCallback(async () => {
     setUiState(prev => ({ ...prev, isSavingPhoto: true }));
@@ -456,16 +470,15 @@ export const useProfile = (): UseProfileReturn => {
   }, []);
 
   const onAvatarPress = useCallback(() => {
-    Alert.alert(
-      'Profile Photo',
-      'Choose an option',
-      [
-        { text: 'Take Photo',           onPress: () => _processAndSaveImage('camera') },
-        { text: 'Choose from Gallery',  onPress: () => _processAndSaveImage('library') },
-        { text: 'Remove Photo',         style: 'destructive', onPress: _removePhoto },
-        { text: 'Cancel',               style: 'cancel' },
-      ],
-    );
+    Alert.alert('Profile Photo', 'Choose an option', [
+      { text: 'Take Photo', onPress: () => _processAndSaveImage('camera') },
+      {
+        text: 'Choose from Gallery',
+        onPress: () => _processAndSaveImage('library'),
+      },
+      { text: 'Remove Photo', style: 'destructive', onPress: _removePhoto },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
   }, [_processAndSaveImage, _removePhoto]);
 
   // --------------------------------------------------------------------------
@@ -473,11 +486,71 @@ export const useProfile = (): UseProfileReturn => {
   // --------------------------------------------------------------------------
   const onLogoutClick = useCallback(async () => {
     try {
+      isLoggingOutRef.current = true;
       await signOut();
+      onLogoutSuccess?.();
     } catch (error) {
+      isLoggingOutRef.current = false;
       console.error('useProfile: logout failed:', error);
+      Alert.alert('Error', 'Failed to logout. Please try again.');
     }
-  }, [signOut]);
+  }, [signOut, onLogoutSuccess]);
+
+  // --------------------------------------------------------------------------
+  // DELETE ACCOUNT
+  // _performAccountDeletion declared BEFORE onDeleteAccountClick so the
+  // reference is valid when onDeleteAccountClick's useCallback runs.
+  // --------------------------------------------------------------------------
+  const _performAccountDeletion = useCallback(async () => {
+    try {
+      isLoggingOutRef.current = true;
+      setUiState(prev => ({ ...prev, isLoading: true }));
+
+      const result = await firebaseAuthRepository.deleteAccount();
+
+      if (!result.success) {
+        isLoggingOutRef.current = false;
+        setUiState(prev => ({ ...prev, isLoading: false }));
+        Alert.alert('Error', result.error.message);
+        return;
+      }
+
+      onDeleteAccountSuccess?.();
+    } catch (error) {
+      isLoggingOutRef.current = false;
+      setUiState(prev => ({ ...prev, isLoading: false }));
+      console.error('useProfile: account deletion failed:', error);
+      Alert.alert('Error', 'Failed to delete account. Please try again.');
+    }
+  }, [onDeleteAccountSuccess]);
+
+  const onDeleteAccountClick = useCallback(() => {
+    Alert.alert(
+      'Delete Account',
+      'This will permanently delete your account and all your data including essays, progress, and stats. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'Are you sure?',
+              'Your account will be permanently deleted.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Yes, Delete My Account',
+                  style: 'destructive',
+                  onPress: _performAccountDeletion,
+                },
+              ],
+            );
+          },
+        },
+      ],
+    );
+  }, [_performAccountDeletion]);
 
   // --------------------------------------------------------------------------
   // RETURN
@@ -496,6 +569,7 @@ export const useProfile = (): UseProfileReturn => {
     onBirthdateSave,
     onAvatarPress,
     onLogoutClick,
+    onDeleteAccountClick,
     stateOptions,
     gradeOptions,
   };

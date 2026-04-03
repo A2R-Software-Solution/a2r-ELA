@@ -64,89 +64,200 @@ A comprehensive mobile learning application built with React Native and TypeScri
 ---
 
 ## 📁 Project Structure
+for finding the project structure: dir /S /B *.py | findstr /V /I "functions\venv"
 ```
-ELearningApp/
-├── android/                      # Android native code
-├── ios/                          # iOS native code
-├── src/
-│   ├── api/                      # API configuration
-│   │   ├── interceptors/
-│   │   │   └── AuthInterceptor.ts    # JWT token injection
-│   │   ├── apiClient.ts              # Axios instance
-│   │   ├── apiConfig.ts              # API endpoints
-│   │   └── apiService.ts             # API methods
+backend/
+└── functions/
+    ├── __init__.py
+    ├── main.py
+    ├── test_llm.py
+    │
+    ├── auth/
+    │   ├── __init__.py
+    │   └── auth_service.py
+    │
+    ├── config/
+    │   ├── __init__.py
+    │   ├── settings.py
+    │   │
+    │   └── rubrics/
+    │       ├── __init__.py
+    │       ├── pa_rubric.py
+    │       └── rubric_service.py
+    │
+    ├── essay/
+    │   ├── __init__.py
+    │   ├── essay_routes.py
+    │   ├── essay_service.py
+    │   └── progress_service.py
+    │
+    ├── file/
+    │   ├── __init__.py
+    │   ├── file_routes.py
+    │   └── file_service.py
+    │
+    ├── gamification/
+    │   ├── __init__.py
+    │   ├── game_routes.py
+    │   └── reward_engine.py
+    │
+    ├── llm/
+    │   ├── __init__.py
+    │   ├── evaluator.py
+    │   ├── llm_client.py
+    │   └── prompts.py
+    │
+    ├── user/
+    │   ├── __init__.py
+    │   ├── user_routes.py
+    │   └── user_service.py
+    │
+    └── utils/
+        ├── __init__.py
+        ├── responses.py
+        └── validator.py
+```
+```
+D:.
+├───api
+│   │   apiClient.ts
+│   │   apiConfig.ts
+│   │   apiService.ts
 │   │
-│   ├── auth/                     # Authentication
-│   │   ├── AuthRepository.ts         # Auth interface
-│   │   └── FirebaseAuthRepository.ts # Firebase implementation
-│   │
-│   ├── models/                   # Data models
-│   │   ├── ui/                       # UI-specific models
-│   │   │   ├── CategoryUiModel.ts
-│   │   │   ├── CourseUiModel.ts
-│   │   │   ├── FeatureUiModel.ts
-│   │   │   └── StreakUiModel.ts
-│   │   ├── EssayModels.ts            # Essay API models
-│   │   ├── Result.ts                 # Generic result wrapper
-│   │   └── index.ts                  # Barrel exports
-│   │
-│   ├── repositories/             # Data repositories
-│   │   └── EssayRepository.ts        # Essay API calls
-│   │
-│   ├── hooks/                    # Custom React hooks
-│   │   ├── useAuth.ts                # Authentication hook
-│   │   └── useEssay.ts               # Essay operations hook
-│   │
-│   ├── utils/                    # Utilities
-│   │   └── PreferencesManager.ts     # Local storage wrapper
-│   │
-│   ├── screens/                  # App screens
-│   │   ├── Splash/
-│   │   │   └── SplashScreen.tsx
-│   │   ├── Intro/
-│   │   │   └── IntroScreen.tsx
-│   │   ├── Auth/
-│   │   │   ├── hooks/
-│   │   │   │   ├── useSignIn.ts
-│   │   │   │   └── useSignUp.ts
-│   │   │   ├── types/
-│   │   │   │   ├── SignInUiState.ts
-│   │   │   │   └── SignUpUiState.ts
-│   │   │   ├── SignInScreen.tsx
-│   │   │   └── SignUpScreen.tsx
-│   │   ├── Home/
-│   │   │   ├── components/
-│   │   │   │   ├── BottomNavigationBar.tsx
-│   │   │   │   ├── CategorySection.tsx
-│   │   │   │   ├── FeatureGrid.tsx
-│   │   │   │   ├── HomeHeader.tsx
-│   │   │   │   ├── RecentCourses.tsx
-│   │   │   │   └── StreakCard.tsx
-│   │   │   ├── hooks/
-│   │   │   │   └── useHome.ts
-│   │   │   ├── types/
-│   │   │   │   └── HomeUiState.ts
-│   │   │   └── HomeScreen.tsx
-│   │   └── Essay/
-│   │       ├── components/
-│   │       │   ├── EssayWritingPad.tsx
-│   │       │   └── FeedbackDialog.tsx
-│   │       ├── hooks/
-│   │       │   └── useEssayEditor.ts
-│   │       ├── types/
-│   │       │   └── EssayUiState.ts
-│   │       └── EssayEditorScreen.tsx
-│   │
-│   └── navigation/               # Navigation setup
-│       ├── types.ts                  # Route types
-│       └── AppNavigator.tsx          # Main navigator
+│   └───interceptors
+│           AuthInterceptor.ts
 │
-├── App.tsx                       # Root component
-├── index.js                      # Entry point
-├── package.json                  # Dependencies
-└── tsconfig.json                 # TypeScript config
+├───assets
+│   └───images
+│           signin.png
+│           signup.png
+│
+├───auth
+│       AuthRepository.ts
+│       FirebaseAuthRepository.ts
+│
+├───hooks
+│       useAuth.ts
+│       useEssay.ts
+│       useEssayEditor.ts
+│       useGame.ts
+│
+├───models
+│   │   EssayModels.ts
+│   │   FileModels.ts
+│   │   GameModels.ts
+│   │   GamificationModels.ts
+│   │   index.ts
+│   │   LeaderboardModels.ts
+│   │   Result.ts
+│   │
+│   └───ui
+│           CategoryUiModel.ts
+│           CourseUiModel.ts
+│           FeatureUiModel.ts
+│           ProfileUiModel.ts
+│           StreakUiModel.ts
+│
+├───navigation
+│       AppNavigator.tsx
+│       types.ts
+│
+├───repositories
+│       EssayRepository.ts
+│       FileRepository.ts
+│       LeaderboardRepository.ts
+│
+├───screens
+│   ├───auth
+│   │   │   SignInScreen.tsx
+│   │   │   SignUpScreen.tsx
+│   │   │
+│   │   ├───hooks
+│   │   │       useSignIn.ts
+│   │   │       useSignUp.ts
+│   │   │
+│   │   └───types
+│   │           SignInUiState.ts
+│   │           SignUpUiState.ts
+│   │
+│   ├───Essay
+│   │   │   EssayEditorScreen.tsx
+│   │   │
+│   │   ├───components
+│   │   │       CompactSendButton.tsx
+│   │   │       EssayWritingPad.tsx
+│   │   │       FeedbackDialog.tsx
+│   │   │       FilePreviewChip.tsx
+│   │   │       FileUploadButton.tsx
+│   │   │       InputToolbar.tsx
+│   │   │       StateSelectorSheet.tsx
+│   │   │
+│   │   ├───hooks
+│   │   │       useEssayEditor.ts
+│   │   │
+│   │   └───types
+│   │           EssayUiState.ts
+│   │
+│   ├───home
+│   │   │   HomeScreen.tsx
+│   │   │
+│   │   ├───components
+│   │   │       BadgeCollection.tsx
+│   │   │       BottomNavigationBar.tsx
+│   │   │       CategorySection.tsx
+│   │   │       FeatureGrid.tsx
+│   │   │       HomeHeader.tsx
+│   │   │       ProfileHeader.tsx
+│   │   │       ProfileSettingsSection.tsx
+│   │   │       RecentCourses.tsx
+│   │   │       RecentEssaysList.tsx
+│   │   │       StatsRow.tsx
+│   │   │       StreakCard.tsx
+│   │   │
+│   │   ├───hooks
+│   │   │       useHome.ts
+│   │   │       useProfile.ts
+│   │   │
+│   │   └───types
+│   │           HomeUiState.ts
+│   │           ProfileUiState.ts
+│   │
+│   ├───Intro
+│   │       IntroScreen.tsx
+│   │
+│   ├───Leaderboard
+│   │   │   LeaderboardScreen.tsx
+│   │   │
+│   │   ├───components
+│   │   │       LeaderboardRow.tsx
+│   │   │       TabSelector.tsx
+│   │   │       TopThreeCard.tsx
+│   │   │
+│   │   ├───hooks
+│   │   │       useLeaderboard.ts
+│   │   │
+│   │   └───types
+│   │           LeaderboardUiState.ts
+│   │
+│   ├───Playground
+│   │       BossBattleGame.tsx
+│   │       BugCatcherGame.tsx
+│   │       DetailDetectiveGame.tsx
+│   │       JumbledStoryGame.tsx
+│   │       PlaygroundScreen.tsx
+│   │       StayOnTopicGame.tsx
+│   │       WordSwapGame.tsx
+│   │
+│   └───Splash
+│           SplashScreen.tsx
+│           SplashScreen.tsx.backup
+│
+└───utils
+        PdfTextExtractor.ts
+        PreferencesManager.ts
+        profileEvents.ts
+        tabEvents.ts
 ```
-
 ---
 
 ## 🚀 Getting Started

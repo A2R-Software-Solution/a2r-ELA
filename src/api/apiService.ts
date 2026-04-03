@@ -3,6 +3,9 @@
  * Defines all API endpoints and methods
  */
 
+import {
+  GamificationData,
+} from '../models/GamificationModels';
 import { AxiosResponse } from 'axios';
 import { apiClient } from './apiClient';
 import { ApiConfig } from './apiConfig';
@@ -18,6 +21,7 @@ import {
   UserPreferences,
   SaveUserPreferencesRequest,
 } from '../models/EssayModels';
+import { LeaderboardResponse } from '../models/LeaderboardModels';
 
 // ============================================================================
 // PDF MODELS (local to apiService — not essay domain models)
@@ -29,10 +33,10 @@ export interface PdfExtractionRequest {
 }
 
 export interface PdfExtractionResponse {
-  success: boolean;
-  text: string;
+  success:   boolean;
+  text:      string;
   wordCount: number;
-  error?: string;
+  error?:    string;
 }
 
 // ============================================================================
@@ -128,6 +132,49 @@ class ApiService {
   }
 
   // --------------------------------------------------------------------------
+  // GAMIFICATION
+  // --------------------------------------------------------------------------
+
+  /**
+   * Get user's current XP and level data
+   */
+  async getGamification(): Promise<AxiosResponse<ApiResponse<GamificationData>>> {
+    return apiClient.get(ApiConfig.Endpoints.GET_GAMIFICATION);
+  }
+
+  // --------------------------------------------------------------------------
+  // LEADERBOARD
+  // --------------------------------------------------------------------------
+
+  /**
+   * Get top 10 users in the same grade as the current user, ranked by XP.
+   * Grade is read from user's saved preferences on the backend.
+   *
+   * @param gradeOverride  Optional grade string to override saved preference
+   */
+  async getGradeLeaderboard(
+    gradeOverride?: string,
+  ): Promise<AxiosResponse<ApiResponse<LeaderboardResponse>>> {
+    return apiClient.get(ApiConfig.Endpoints.GET_GRADE_LEADERBOARD, {
+      params: gradeOverride ? { grade: gradeOverride } : {},
+    });
+  }
+
+  /**
+   * Get top 10 users in the same state as the current user, ranked by XP.
+   * State is read from user's saved preferences on the backend.
+   *
+   * @param stateOverride  Optional state code to override saved preference e.g. "PA"
+   */
+  async getStateLeaderboard(
+    stateOverride?: string,
+  ): Promise<AxiosResponse<ApiResponse<LeaderboardResponse>>> {
+    return apiClient.get(ApiConfig.Endpoints.GET_STATE_LEADERBOARD, {
+      params: stateOverride ? { state: stateOverride } : {},
+    });
+  }
+
+  // --------------------------------------------------------------------------
   // USER PROFILE
   // --------------------------------------------------------------------------
 
@@ -150,6 +197,15 @@ class ApiService {
     request: UpdateUserProfileRequest,
   ): Promise<AxiosResponse<ApiResponse<UserProfile>>> {
     return apiClient.post(ApiConfig.Endpoints.UPDATE_USER_PROFILE, request);
+  }
+
+  /**
+   * Permanently delete the current user's account and all associated data.
+   * Backend deletes: essay_submissions, user_preferences, user_progress,
+   * gamification, users doc, and Firebase Auth user — in that order.
+   */
+  async deleteAccount(): Promise<AxiosResponse<ApiResponse<null>>> { // ← NEW
+    return apiClient.delete(ApiConfig.Endpoints.DELETE_ACCOUNT);
   }
 
   // --------------------------------------------------------------------------

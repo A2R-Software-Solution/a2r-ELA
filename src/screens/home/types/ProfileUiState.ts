@@ -8,9 +8,11 @@
  * References:
  *   - HomeUiState.ts      (pattern mirror — same structure, same conventions)
  *   - ProfileUiModel.ts   (the data shape this state holds)
+ *   - GamificationModels.ts (BadgeDefinition, EMPTY_BADGE_PROGRESS)
  */
 
 import { ProfileUiModel } from '../../../models/ui/ProfileUiModel';
+import { BadgeDefinition, EMPTY_BADGE_PROGRESS } from '../../../models/GamificationModels';
 
 // ============================================================================
 // MAIN STATE INTERFACE
@@ -20,12 +22,12 @@ export interface ProfileUiState {
   /**
    * The fully assembled profile data.
    * null while loading or if fetch has not been attempted yet.
-   * useProfile.ts populates this once all four API calls complete.
+   * useProfile.ts populates this once all API calls complete.
    */
   profile: ProfileUiModel | null;
 
   /**
-   * True while any of the four API calls are in-flight.
+   * True while any of the API calls are in-flight.
    * ProfileScreen shows a loading spinner when this is true.
    */
   isLoading: boolean;
@@ -39,8 +41,7 @@ export interface ProfileUiState {
 
   /**
    * Controls the StateSelectorSheet visibility.
-   * The sheet handles both state AND grade selection together
-   * (matches StateSelectorSheet's actual props interface).
+   * The sheet handles both state AND grade selection together.
    */
   isSelectorSheetOpen: boolean;
 
@@ -77,6 +78,18 @@ export interface ProfileUiState {
    * ProfileHeader shows ActivityIndicator overlay on avatar.
    */
   isSavingPhoto: boolean;
+
+  // --------------------------------------------------------------------------
+  // Badge state
+  // --------------------------------------------------------------------------
+
+  /**
+   * All 8 badges with unlock status and progress bars.
+   * Populated from GET /get_gamification → badge_progress.
+   * Initialises as EMPTY_BADGE_PROGRESS (all locked, zero progress)
+   * so BadgeCollection renders immediately without waiting for the API.
+   */
+  badgeProgress: BadgeDefinition[];
 }
 
 // ============================================================================
@@ -87,15 +100,19 @@ export interface ProfileUiState {
  * Default state before useProfile loads any data.
  * isLoading starts as true so the screen immediately shows
  * a loading indicator on first mount — same pattern as initialHomeUiState.
+ *
+ * badgeProgress starts as EMPTY_BADGE_PROGRESS so the badge grid
+ * renders all 8 locked badges instantly — no layout shift on load.
  */
 export const initialProfileUiState: ProfileUiState = {
-  profile: null,
-  isLoading: true,
-  error: null,
+  profile:             null,
+  isLoading:           true,
+  error:               null,
   isSelectorSheetOpen: false,
-  isEditingName: false,
-  isSavingName: false,
-  isEditingBirthdate: false,
-  isSavingBirthdate: false,
-  isSavingPhoto: false,
+  isEditingName:       false,
+  isSavingName:        false,
+  isEditingBirthdate:  false,
+  isSavingBirthdate:   false,
+  isSavingPhoto:       false,
+  badgeProgress:       EMPTY_BADGE_PROGRESS,
 };

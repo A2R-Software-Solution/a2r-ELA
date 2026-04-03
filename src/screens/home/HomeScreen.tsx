@@ -2,15 +2,12 @@
  * Home Screen
  * Main home screen with tabs and content sections.
  *
- * Changes from original:
- *   - ProfileContent replaced with fully assembled ProfileScreen
- *   - useProfile hook wired in
- *   - StateSelectorSheet integrated for grade/state editing
- *   - ProfileHeader receives name/birthdate/photo edit props
- *   - All other tabs (HOME, PLAYGROUND, INBOX) completely unchanged
+ * ✅ FIXED: Logout now properly signs out AND navigates to Sign In screen
+ *           by passing onLogoutClick prop into useProfile hook
+ * ✅ FIXED: onDeleteAccountClick now passed to ProfileSettingsSection
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -31,24 +28,27 @@ import BottomNavigationBar from './components/BottomNavigationBar';
 import StateSelectorSheet from './../Essay/components/StateSelectorSheet';
 import ProfileHeader from './components/ProfileHeader';
 import StatsRow from './components/StatsRow';
+import BadgeCollection from './components/BadgeCollection';
 import RecentEssaysList from './components/RecentEssaysList';
 import ProfileSettingsSection from './components/ProfileSettingsSection';
+import { tabEvents } from '../../utils/tabEvents';
 import { CourseUiModel } from '../../models/ui/CourseUiModel';
 import { FeatureUiModel } from '../../models/ui/FeatureUiModel';
 import { CategoryUiModel } from '../../models/ui/CategoryUiModel';
+import PlaygroundScreen from '../Playground/PlaygroundScreen';
 
 // ============================================================================
-// HOME SCREEN PROPS — unchanged
+// HOME SCREEN PROPS
 // ============================================================================
 
 interface HomeScreenProps {
   onLogoutClick?: () => void;
+  onDeleteAccountClick?: () => void; // ← NEW
   onCourseClick?: (course: CourseUiModel) => void;
   onFeatureClick?: (feature: FeatureUiModel) => void;
   onCategoryClick?: (category: CategoryUiModel) => void;
   onSeeAllCategories?: () => void;
   onNotificationClick?: () => void;
-  onProfileClick?: () => void;
   onEssayWritingClick?: () => void;
   onSeeAllEssaysClick?: () => void;
 }
@@ -59,19 +59,46 @@ interface HomeScreenProps {
 
 const HomeScreen: React.FC<HomeScreenProps> = ({
   onLogoutClick = () => {},
+  onDeleteAccountClick = () => {}, // ← NEW
   onCourseClick = () => {},
   onFeatureClick = () => {},
   onCategoryClick = () => {},
   onSeeAllCategories = () => {},
   onNotificationClick = () => {},
-  onProfileClick = () => {},
   onEssayWritingClick = () => {},
   onSeeAllEssaysClick = () => {},
 }) => {
   const { uiState, onTabSelected, onCategorySelected } = useHome();
 
-  // Profile hook — initialized here so state persists across tab switches
-  const profile = useProfile();
+  const profile = useProfile({
+    onLogoutSuccess: onLogoutClick,
+    onDeleteAccountSuccess: onDeleteAccountClick, // ← NEW
+  });
+
+  // Tab switch listener
+  useEffect(() => {
+    const handleSwitchTab = (tab: string) => {
+      switch (tab) {
+        case 'PLAYGROUND':
+          onTabSelected(HomeTab.PLAYGROUND);
+          break;
+        case 'HOME':
+          onTabSelected(HomeTab.HOME);
+          break;
+        case 'INBOX':
+          onTabSelected(HomeTab.INBOX);
+          break;
+        case 'PROFILE':
+          onTabSelected(HomeTab.PROFILE);
+          break;
+        default:
+          break;
+      }
+    };
+
+    tabEvents.on('switchTab', handleSwitchTab);
+    return () => tabEvents.off('switchTab', handleSwitchTab);
+  }, [onTabSelected]);
 
   const handleFeatureClick = (feature: FeatureUiModel) => {
     if (feature.title === 'Essay Writing') {
@@ -89,12 +116,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-
-        {/* HOME TAB — unchanged */}
         {uiState.selectedTab === HomeTab.HOME && (
           <HomeContent
             username={uiState.username}
-            streak={uiState.streak}
             categories={uiState.categories}
             features={uiState.features}
             recentCourses={uiState.recentCourses}
@@ -103,24 +127,22 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             onCategoryClick={handleCategoryClick}
             onSeeAllCategories={onSeeAllCategories}
             onNotificationClick={onNotificationClick}
-            onProfileClick={onProfileClick}
+            xp={uiState.xp}
+            level={uiState.level}
+            levelName={uiState.levelName}
+            isLoadingXp={uiState.isLoadingXp}
           />
         )}
 
-        {/* PLAYGROUND TAB — unchanged */}
         {uiState.selectedTab === HomeTab.PLAYGROUND && <PlaygroundContent />}
-
-        {/* INBOX TAB — unchanged */}
         {uiState.selectedTab === HomeTab.INBOX && <InboxContent />}
 
-        {/* PROFILE TAB */}
         {uiState.selectedTab === HomeTab.PROFILE && (
           <ProfileScreen
             profileHook={profile}
             onSeeAllEssaysClick={onSeeAllEssaysClick}
           />
         )}
-
       </View>
 
       <BottomNavigationBar
@@ -132,12 +154,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 };
 
 // ============================================================================
-// HOME TAB CONTENT — unchanged
+// HOME TAB CONTENT
 // ============================================================================
 
 interface HomeContentProps {
   username: string;
-  streak: { currentStreak: number; totalDays: number };
   categories: CategoryUiModel[];
   features: FeatureUiModel[];
   recentCourses: CourseUiModel[];
@@ -146,12 +167,14 @@ interface HomeContentProps {
   onCategoryClick: (category: CategoryUiModel) => void;
   onSeeAllCategories: () => void;
   onNotificationClick: () => void;
-  onProfileClick: () => void;
+  xp: number;
+  level: number;
+  levelName: string;
+  isLoadingXp: boolean;
 }
 
 const HomeContent: React.FC<HomeContentProps> = ({
   username,
-  streak,
   categories,
   features,
   recentCourses,
@@ -160,17 +183,18 @@ const HomeContent: React.FC<HomeContentProps> = ({
   onCategoryClick,
   onSeeAllCategories,
   onNotificationClick,
-  onProfileClick,
+  xp,
+  level,
+  levelName,
+  isLoadingXp,
 }) => (
   <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-    <HomeHeader
-      username={username}
-      onProfileClick={onProfileClick}
-      onNotificationClick={onNotificationClick}
-    />
+    <HomeHeader username={username} onNotificationClick={onNotificationClick} />
     <StreakCard
-      currentStreak={streak.currentStreak}
-      totalDays={streak.totalDays}
+      xp={xp}
+      level={level}
+      levelName={levelName}
+      isLoadingXp={isLoadingXp}
     />
     <CategorySection
       categories={categories}
@@ -179,19 +203,15 @@ const HomeContent: React.FC<HomeContentProps> = ({
     />
     <FeatureGrid features={features} onFeatureClick={onFeatureClick} />
     <RecentCourses courses={recentCourses} onCourseClick={onCourseClick} />
-    <View style={{ height: 80 }} />
+    <View style={styles.bottomSpacer} />
   </ScrollView>
 );
 
 // ============================================================================
-// PLACEHOLDER TABS — unchanged
+// PLACEHOLDER TABS
 // ============================================================================
 
-const PlaygroundContent: React.FC = () => (
-  <View style={styles.placeholderContainer}>
-    <Text style={styles.placeholderText}>Playground Screen</Text>
-  </View>
-);
+const PlaygroundContent: React.FC = () => <PlaygroundScreen />;
 
 const InboxContent: React.FC = () => (
   <View style={styles.placeholderContainer}>
@@ -226,11 +246,11 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
     onBirthdateSave,
     onAvatarPress,
     onLogoutClick,
+    onDeleteAccountClick, // ← NEW
     stateOptions,
     gradeOptions,
   } = profileHook;
 
-  // ---------- Loading ----------
   if (uiState.isLoading) {
     return (
       <View style={styles.centeredContainer}>
@@ -239,7 +259,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
     );
   }
 
-  // ---------- Error ----------
   if (uiState.error || !uiState.profile) {
     return (
       <View style={styles.centeredContainer}>
@@ -262,7 +281,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.profileScrollContent}
       >
-        {/* Avatar + name + email + birthdate + joined + pills */}
         <ProfileHeader
           profile={profile}
           isEditingName={uiState.isEditingName}
@@ -280,7 +298,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
         />
 
         <StatsRow stats={profile.stats} />
-
+        <BadgeCollection badges={uiState.badgeProgress} />
         <RecentEssaysList
           essays={profile.recentEssays}
           onSeeAllClick={onSeeAllEssaysClick}
@@ -290,12 +308,12 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
           preferences={profile.preferences}
           onEditPreferencesClick={onEditPreferencesClick}
           onLogoutClick={onLogoutClick}
+          onDeleteAccountClick={onDeleteAccountClick} // ← NEW
         />
 
-        <View style={{ height: 80 }} />
+        <View style={styles.bottomSpacer} />
       </ScrollView>
 
-      {/* State + grade selector sheet */}
       <StateSelectorSheet
         isVisible={uiState.isSelectorSheetOpen}
         onClose={onSelectorSheetClose}
@@ -359,6 +377,9 @@ const styles = StyleSheet.create({
   },
   profileScrollContent: {
     backgroundColor: '#F9F7FF',
+  },
+  bottomSpacer: {
+    height: 80,
   },
 });
 

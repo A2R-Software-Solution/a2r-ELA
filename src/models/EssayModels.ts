@@ -3,6 +3,8 @@
  * Updated to support PSSA Writing Domain rubric and state/grade preferences
  */
 
+import { RewardsUpdate } from './GamificationModels';
+
 // ============================================================================
 // REQUEST MODELS
 // ============================================================================
@@ -71,6 +73,32 @@ export interface RubricScores {
 }
 
 // ============================================================================
+// GAME SUGGESTION  ← new in Phase 3
+// ============================================================================
+
+/**
+ * Suggested game to play based on the student's weakest PSSA domain.
+ * Included in EssaySubmissionResponse when any domain scores <= 2.
+ * null when all domains score >= 3 — no suggestion needed.
+ */
+export interface GameSuggestion {
+  /** PSSA domain key e.g. "focus" */
+  domain: string;
+
+  /** Human-readable domain label e.g. "Focus" */
+  domain_label: string;
+
+  /** Raw score the student received e.g. 2 */
+  score: number;
+
+  /** Name of the suggested game e.g. "Focus Quest" */
+  game_name: string;
+
+  /** Why this game was suggested e.g. "Practising Focus will help you stay on topic" */
+  reason: string;
+}
+
+// ============================================================================
 // RESPONSE MODELS
 // ============================================================================
 
@@ -112,6 +140,12 @@ export interface EssaySubmissionResponse {
   category: string;
   submitted_at: string;
   progress?: ProgressUpdate | null;
+
+  // Gamification rewards earned from this submission (if any)
+  rewards?: RewardsUpdate | null;
+
+  // Practice suggestion — null when all domains >= 3
+  game_suggestion?: GameSuggestion | null;   // ← new in Phase 3
 }
 
 export interface ProgressUpdate {

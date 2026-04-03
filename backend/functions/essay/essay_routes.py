@@ -34,9 +34,15 @@ def submit_essay(req: https_fn.Request, user_id: str) -> https_fn.Response:
     Body: {
         "essay_text": "...",
         "category":   "essay_writing" | "ela" | "math" | "science",
-        "state":      "PA",   (optional — defaults to user preference or PA)
-        "grade":      "7"     (optional — defaults to user preference or 6)
+        "state":      "PA",
+        "grade":      "7"
     }
+
+    Response includes:
+        rewards.xp_earned
+        rewards.streak_bonus_xp   ← new: bonus from 7/30-day streak
+        rewards.newly_unlocked_badges
+        game_suggestion           ← new: suggested game for weakest domain
     """
     if req.method == "OPTIONS":
         return https_fn.Response(status=204)
@@ -50,40 +56,76 @@ def submit_essay(req: https_fn.Request, user_id: str) -> https_fn.Response:
         if not request_data:
             return response_builder.validation_error("Request body is required")
 
-        # Validate required fields
         if "essay_text" not in request_data:
             return response_builder.validation_error("essay_text is required")
 
         if "category" not in request_data:
             return response_builder.validation_error("category is required")
 
-        # state and grade are optional — essay_service resolves defaults
         state = request_data.get("state", settings.DEFAULT_STATE)
         grade = str(request_data.get("grade", settings.DEFAULT_GRADE))
 
-        # Warn but don't reject if invalid — service will fallback gracefully
         if not settings.is_valid_state(state):
             print(f"Warning: invalid state '{state}' in request, will use default")
 
         if not settings.is_valid_grade(grade):
             print(f"Warning: invalid grade '{grade}' in request, will use default")
 
-        # Submit essay — state and grade passed in essay_data
+        # ── Step 1: Submit essay (XP calculated inside, streak_bonus = 0) ────
         result = essay_service.submit_essay(user_id, request_data)
 
-        # Update progress
+        # ── Step 2: Update streak progress ───────────────────────────────────
         progress_update = progress_service.update_progress_after_submission(
             user_id,
             result["category"],
-            result["total_score"]
+            result["total_score"],
         )
 
         result["progress"] = {
-            "current_streak":  progress_update["current_streak"],
-            "max_streak":      progress_update["max_streak"],
-            "total_essays":    progress_update["total_essays_submitted"],
-            "streak_updated":  progress_update["streak_updated"],
+            "current_streak": progress_update["current_streak"],
+            "max_streak":     progress_update["max_streak"],
+            "total_essays":   progress_update["total_essays_submitted"],
+            "streak_updated": progress_update["streak_updated"],
         }
+
+        # ── Step 3: Apply streak bonus XP if a milestone was hit ─────────────
+        # progress_service returns streak_bonus_xp > 0 only when the streak
+        # reaches exactly 7 or 30 days. We then call apply_streak_bonus()
+        # which adds the XP on top, rechecks badges, and returns updated values
+        # to merge into the existing rewards dict.
+        streak_bonus_xp = progress_update.get("streak_bonus_xp", 0)
+
+        if streak_bonus_xp > 0:
+            print(f"Streak milestone! Applying +{streak_bonus_xp} bonus XP")
+            from gamification.reward_engine import reward_engine
+
+            streak_rewards = reward_engine.apply_streak_bonus(user_id, streak_bonus_xp)
+
+            if streak_rewards:
+                # Merge streak rewards on top of essay rewards
+                # streak_rewards has fresher total_xp, level, newly_unlocked_badges
+                existing_rewards = result.get("rewards", {})
+
+                # Combine newly unlocked badges from both passes
+                essay_badges  = existing_rewards.get("newly_unlocked_badges", [])
+                streak_badges = streak_rewards.get("newly_unlocked_badges", [])
+                all_new_badges = essay_badges + streak_badges
+
+                result["rewards"] = {
+                    # XP breakdown
+                    "xp_earned":       existing_rewards.get("xp_earned", 0),
+                    "streak_bonus_xp": streak_bonus_xp,
+
+                    # Use streak_rewards values — they reflect the final state
+                    "total_xp":       streak_rewards.get("total_xp",       existing_rewards.get("total_xp", 0)),
+                    "level":          streak_rewards.get("level",          existing_rewards.get("level", 1)),
+                    "level_name":     streak_rewards.get("level_name",     existing_rewards.get("level_name", "Beginner Writer")),
+                    "level_up":       streak_rewards.get("level_up",       existing_rewards.get("level_up", False)),
+                    "next_threshold": streak_rewards.get("next_threshold", existing_rewards.get("next_threshold", 1000)),
+
+                    # All badges from both passes
+                    "newly_unlocked_badges": all_new_badges,
+                }
 
         return response_builder.success(
             data=result,
@@ -108,11 +150,6 @@ def save_user_preferences(req: https_fn.Request, user_id: str) -> https_fn.Respo
     Save user's state and grade preferences to Firestore.
 
     Endpoint: POST /save_user_preferences
-    Headers:  Authorization: Bearer <firebase_token>
-    Body: {
-        "state": "PA",
-        "grade": "7"
-    }
     """
     if req.method == "OPTIONS":
         return https_fn.Response(status=204)
@@ -171,7 +208,6 @@ def get_user_preferences(req: https_fn.Request, user_id: str) -> https_fn.Respon
     Get user's saved state and grade preferences.
 
     Endpoint: GET /get_user_preferences
-    Headers:  Authorization: Bearer <firebase_token>
     """
     if req.method == "OPTIONS":
         return https_fn.Response(status=204)
@@ -206,7 +242,7 @@ def get_user_preferences(req: https_fn.Request, user_id: str) -> https_fn.Respon
 
 
 # ------------------------------------------------------------------------------
-# EXISTING ENDPOINTS (updated to include state/grade in responses)
+# EXISTING ENDPOINTS — unchanged
 # ------------------------------------------------------------------------------
 
 @https_fn.on_request(cors=cors_options)
@@ -216,7 +252,6 @@ def get_essay_submission(req: https_fn.Request, user_id: str) -> https_fn.Respon
     Get a specific essay submission.
 
     Endpoint: GET /get_essay_submission?submission_id=<id>
-    Headers:  Authorization: Bearer <firebase_token>
     """
     if req.method == "OPTIONS":
         return https_fn.Response(status=204)
@@ -251,7 +286,6 @@ def get_user_submissions(req: https_fn.Request, user_id: str) -> https_fn.Respon
     Get user's essay submissions.
 
     Endpoint: GET /get_user_submissions?limit=10&category=essay_writing
-    Headers:  Authorization: Bearer <firebase_token>
     """
     if req.method == "OPTIONS":
         return https_fn.Response(status=204)
@@ -266,7 +300,7 @@ def get_user_submissions(req: https_fn.Request, user_id: str) -> https_fn.Respon
         submissions = essay_service.get_user_submissions(
             user_id,
             limit=limit,
-            category=category
+            category=category,
         )
 
         return response_builder.success(
@@ -289,7 +323,6 @@ def get_streak(req: https_fn.Request, user_id: str) -> https_fn.Response:
     Get user's current streak information.
 
     Endpoint: GET /get_streak
-    Headers:  Authorization: Bearer <firebase_token>
     """
     if req.method == "OPTIONS":
         return https_fn.Response(status=204)
@@ -317,7 +350,6 @@ def get_progress_stats(req: https_fn.Request, user_id: str) -> https_fn.Response
     Get user's overall progress statistics.
 
     Endpoint: GET /get_progress_stats
-    Headers:  Authorization: Bearer <firebase_token>
     """
     if req.method == "OPTIONS":
         return https_fn.Response(status=204)
@@ -345,7 +377,6 @@ def get_category_stats(req: https_fn.Request, user_id: str) -> https_fn.Response
     Get user's category-wise statistics.
 
     Endpoint: GET /get_category_stats
-    Headers:  Authorization: Bearer <firebase_token>
     """
     if req.method == "OPTIONS":
         return https_fn.Response(status=204)
@@ -369,16 +400,9 @@ def get_category_stats(req: https_fn.Request, user_id: str) -> https_fn.Response
 @https_fn.on_request(cors=cors_options)
 def submit_essay_no_auth(req: https_fn.Request) -> https_fn.Response:
     """
-    Test endpoint for essay submission WITHOUT authentication.
-    For debugging only — remove in production.
+    Test endpoint — no auth. Remove in production.
 
     Endpoint: POST /submit_essay_no_auth
-    Body: {
-        "essay_text": "...",
-        "category":   "essay_writing",
-        "state":      "PA",
-        "grade":      "7"
-    }
     """
     if req.method == "OPTIONS":
         return https_fn.Response(status=204)
@@ -401,30 +425,26 @@ def submit_essay_no_auth(req: https_fn.Request) -> https_fn.Response:
             )
 
         test_user_id = "debug_test_user_123"
-        state        = request_data.get("state", settings.DEFAULT_STATE)
-        grade        = str(request_data.get("grade", settings.DEFAULT_GRADE))
-
-        print(f"State: {state}, Grade: {grade}")
-        print(f"Essay length: {len(request_data.get('essay_text', ''))}")
-
-        result = essay_service.submit_essay(test_user_id, request_data)
+        result       = essay_service.submit_essay(test_user_id, request_data)
 
         return https_fn.Response(
             json.dumps({
-                "success":            True,
-                "message":            "Essay submitted and evaluated successfully",
-                "submission_id":      result.get("submission_id"),
-                "total_score":        result.get("total_score"),
-                "pssa_total":         result.get("pssa_total"),
-                "converted_score":    result.get("converted_score"),
-                "grade":              result.get("grade"),
-                "state":              result.get("state"),
-                "student_grade":      result.get("student_grade"),
-                "grade_band":         result.get("grade_band"),
-                "raw_scores":         result.get("raw_scores"),
-                "converted_scores":   result.get("converted_scores"),
-                "category":           result.get("category"),
-                "word_count":         result.get("word_count"),
+                "success":          True,
+                "message":          "Essay submitted and evaluated successfully",
+                "submission_id":    result.get("submission_id"),
+                "total_score":      result.get("total_score"),
+                "pssa_total":       result.get("pssa_total"),
+                "converted_score":  result.get("converted_score"),
+                "grade":            result.get("grade"),
+                "state":            result.get("state"),
+                "student_grade":    result.get("student_grade"),
+                "grade_band":       result.get("grade_band"),
+                "raw_scores":       result.get("raw_scores"),
+                "converted_scores": result.get("converted_scores"),
+                "category":         result.get("category"),
+                "word_count":       result.get("word_count"),
+                "game_suggestion":  result.get("game_suggestion"),
+                "rewards":          result.get("rewards"),
                 "personalized_feedback": (
                     result.get("personalized_feedback", "")[:200] + "..."
                     if result.get("personalized_feedback") else ""
@@ -442,6 +462,58 @@ def submit_essay_no_auth(req: https_fn.Request) -> https_fn.Response:
             json.dumps({"error": str(e), "details": traceback.format_exc()}),
             status=500
         )
+
+
+# ------------------------------------------------------------------------------
+# GAMIFICATION
+# ------------------------------------------------------------------------------
+
+@https_fn.on_request(cors=cors_options)
+@require_auth
+def get_gamification(req: https_fn.Request, user_id: str) -> https_fn.Response:
+    """
+    Get user's current XP, level, and badge data.
+
+    Endpoint: GET /get_gamification
+    """
+    if req.method == "OPTIONS":
+        return https_fn.Response(status=204)
+
+    if req.method != "GET":
+        return response_builder.error("Method not allowed", status=405)
+
+    try:
+        from gamification.reward_engine import reward_engine
+
+        data = reward_engine.get_or_create_gamification(user_id)
+
+        xp            = data.get("xp", 0)
+        level         = data.get("level", 1)
+        level_name    = data.get("level_name", "Beginner Writer")
+        badges_earned = data.get("badges_earned", [])
+        total_essays  = data.get("total_essays_submitted", 0)
+
+        badge_progress = reward_engine.build_badge_progress(
+            badges_earned=badges_earned,
+            total_essays=total_essays,
+            total_xp=xp,
+            level=level,
+        )
+
+        return response_builder.success(
+            data={
+                "xp":             xp,
+                "level":          level,
+                "level_name":     level_name,
+                "badges_earned":  badges_earned,
+                "badge_progress": badge_progress,
+            },
+            message="Gamification data retrieved successfully"
+        )
+
+    except Exception as e:
+        print(f"Error in get_gamification: {str(e)}")
+        return response_builder.internal_error("Failed to retrieve gamification data")
 
 
 @https_fn.on_request(cors=cors_options)

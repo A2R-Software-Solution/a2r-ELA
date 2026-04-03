@@ -23,11 +23,18 @@ export interface AuthRepository {
    * Sign out current user
    */
   signOut(): Promise<void>;
+
+  /**
+   * Permanently delete the current user's account and all associated data.
+   * Calls DELETE /delete_account on the backend which removes all Firestore
+   * data, then deletes the Firebase Auth user.
+   */
+  deleteAccount(): Promise<Result<void>>; // ← NEW
 }
 
 /**
  * Simple Result type for auth operations
  */
-export type Result<T> = 
+export type Result<T> =
   | { success: true; data: T }
   | { success: false; error: Error };

@@ -1,6 +1,11 @@
 /**
  * Sign Up Screen
  * User registration screen with email/password
+ *
+ * ✅ FIXED: Removed back button
+ * ✅ FIXED: Font sizes match SignInScreen
+ * ✅ FIXED: Image from assets folder
+ * ✅ FIXED: Safe area insets for dynamic island
  */
 
 import React, { useEffect } from 'react';
@@ -14,7 +19,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSignUp } from './hooks/useSignUp';
 
 interface SignUpScreenProps {
@@ -34,7 +41,8 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({
     onSignUpClick,
   } = useSignUp();
 
-  // Handle one-time navigation on successful sign up
+  const insets = useSafeAreaInsets();
+
   useEffect(() => {
     if (uiState.isSignUpSuccessful) {
       onSignUpSuccess();
@@ -47,30 +55,35 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: insets.top + 16 },
+        ]}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Back Arrow */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onSignInClick}>
-            <Text style={styles.backArrow}>←</Text>
-          </TouchableOpacity>
+        {/* Illustration */}
+        <View style={styles.illustrationContainer}>
+          <Image
+            source={require('../../assets/images/signup.png')}
+            style={styles.illustrationImage}
+            resizeMode="contain"
+          />
         </View>
 
-        {/* Title */}
+        {/* Title — matches SignIn font sizes */}
         <View style={styles.titleContainer}>
           <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Sign up to get started</Text>
+          <Text style={styles.subtitle}>Sign up to get started!</Text>
         </View>
 
-        {/* Email Input */}
+        {/* Email */}
         <View style={styles.inputContainer}>
           <TextInput
             style={[
-                styles.input,
-                uiState.emailError ? styles.inputError : undefined,
-                ]}
-            placeholder="email"
+              styles.input,
+              uiState.emailError ? styles.inputError : undefined,
+            ]}
+            placeholder="Email"
             placeholderTextColor="#999"
             value={uiState.email}
             onChangeText={onEmailChange}
@@ -83,14 +96,14 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({
           )}
         </View>
 
-        {/* Password Input */}
+        {/* Password */}
         <View style={styles.inputContainer}>
           <TextInput
             style={[
-                styles.input,
-                uiState.passwordError ? styles.inputError : undefined,
-                ]}
-            placeholder="password"
+              styles.input,
+              uiState.passwordError ? styles.inputError : undefined,
+            ]}
+            placeholder="Password"
             placeholderTextColor="#999"
             value={uiState.password}
             onChangeText={onPasswordChange}
@@ -103,14 +116,14 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({
           )}
         </View>
 
-        {/* Confirm Password Input */}
+        {/* Confirm Password */}
         <View style={styles.inputContainer}>
           <TextInput
             style={[
-                styles.input,
-                uiState.confirmPasswordError ? styles.inputError : undefined,
-                ]}
-            placeholder="confirm password"
+              styles.input,
+              uiState.confirmPasswordError ? styles.inputError : undefined,
+            ]}
+            placeholder="Confirm Password"
             placeholderTextColor="#999"
             value={uiState.confirmPassword}
             onChangeText={onConfirmPasswordChange}
@@ -123,7 +136,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({
           )}
         </View>
 
-        {/* Global Error Message */}
+        {/* Global Error */}
         {uiState.errorMessage && (
           <Text style={styles.globalError}>{uiState.errorMessage}</Text>
         )}
@@ -144,13 +157,11 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({
           )}
         </TouchableOpacity>
 
-        {/* OR Divider */}
         <Text style={styles.orText}>OR</Text>
 
-        {/* Social Buttons */}
-        <SocialAuthButton text="Continue With Google" />
-        <SocialAuthButton text="Continue With IOS" />
-        <SocialAuthButton text="Continue With Facebook" />
+        <SocialAuthButton text="Continue with Google" />
+        <SocialAuthButton text="Continue with iOS" />
+        <SocialAuthButton text="Continue with Apple Id" />
 
         {/* Sign In Link */}
         <View style={styles.signInContainer}>
@@ -168,13 +179,11 @@ interface SocialAuthButtonProps {
   text: string;
 }
 
-const SocialAuthButton: React.FC<SocialAuthButtonProps> = ({ text }) => {
-  return (
-    <TouchableOpacity style={styles.socialButton}>
-      <Text style={styles.socialButtonText}>{text}</Text>
-    </TouchableOpacity>
-  );
-};
+const SocialAuthButton: React.FC<SocialAuthButtonProps> = ({ text }) => (
+  <TouchableOpacity style={styles.socialButton}>
+    <Text style={styles.socialButtonText}>{text}</Text>
+  </TouchableOpacity>
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -183,15 +192,18 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
+  illustrationContainer: {
+    height: 160,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
   },
-  backArrow: {
-    fontSize: 35,
-    color: '#000000',
+  illustrationImage: {
+    width: '100%',
+    height: 160,
   },
   titleContainer: {
     marginTop: 16,
@@ -212,14 +224,16 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#CCCCCC',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    backgroundColor: '#FFFFFF',
-  },
+  borderWidth: 1,
+  borderColor: '#CCCCCC',
+  borderRadius: 12,
+  paddingHorizontal: 16,
+  paddingVertical: 14,
+  fontSize: 16,
+  backgroundColor: '#FFFFFF',
+  color: '#000000',   // ADD THIS
+},
+  
   inputError: {
     borderColor: '#FF0000',
   },
@@ -231,8 +245,8 @@ const styles = StyleSheet.create({
   },
   globalError: {
     color: '#FF0000',
-    fontSize: 14,
-    marginVertical: 8,
+    fontSize: 12,
+    marginBottom: 8,
   },
   signUpButton: {
     backgroundColor: '#7D55FF',
@@ -241,7 +255,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     height: 48,
-    marginTop: 20,
+    marginTop: 8,
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -275,6 +289,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 20,
+    marginBottom: 20,
   },
   signInText: {
     color: '#000000',

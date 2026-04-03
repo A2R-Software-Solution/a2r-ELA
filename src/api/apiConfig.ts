@@ -18,6 +18,9 @@ export const ApiConfig = {
     GET_PROGRESS_STATS:   'get_progress_stats',
     GET_CATEGORY_STATS:   'get_category_stats',
 
+    // Gamification
+    GET_GAMIFICATION:     'get_gamification',
+
     // User Preferences — state & grade
     SAVE_USER_PREFERENCES: 'save_user_preferences',
     GET_USER_PREFERENCES:  'get_user_preferences',
@@ -29,14 +32,26 @@ export const ApiConfig = {
     HEALTH_CHECK: 'health_check',
 
     // User Profile
-    GET_USER_PROFILE:'get_user_profile',
-    UPDATE_USER_PROFILE:'update_user_profile',
+    GET_USER_PROFILE:    'get_user_profile',
+    UPDATE_USER_PROFILE: 'update_user_profile',
+    DELETE_ACCOUNT:      'delete_account',       // ← NEW
+
+    // Games (no AI)
+    SUBMIT_GAME_RESULT: 'submit_game_result',
+
+    // Games (AI)
+    DETAIL_DETECTIVE_EVALUATE: 'detail_detective_evaluate',
+    BOSS_BATTLE_SUBMIT:        'boss_battle_submit',
+
+    // Leaderboard
+    GET_GRADE_LEADERBOARD: 'get_grade_leaderboard',
+    GET_STATE_LEADERBOARD: 'get_state_leaderboard',
   },
 
   // Request Timeouts (in milliseconds)
   Timeouts: {
     CONNECT_TIMEOUT: 30000, // 30 seconds
-    READ_TIMEOUT:    30000,
+    READ_TIMEOUT:    60000, // 60 seconds — AI endpoints need longer timeout
     WRITE_TIMEOUT:   30000,
   },
 } as const;

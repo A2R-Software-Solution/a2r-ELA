@@ -6,8 +6,9 @@ Handles display_name, birthdate, and photo_url (base64 compressed avatar).
 Separate from essay_routes.py — user profile is its own domain.
 
 Endpoints:
-    GET  /get_user_profile    — fetch profile data from Firestore
-    POST /update_user_profile — update any combination of profile fields
+    GET    /get_user_profile    — fetch profile data from Firestore
+    POST   /update_user_profile — update any combination of profile fields
+    DELETE /delete_account      — permanently delete account and all user data
 """
 
 import re
@@ -19,7 +20,7 @@ from utils.responses import response_builder
 # Configure CORS — same pattern as essay_routes.py
 cors_options = options.CorsOptions(
     cors_origins="*",
-    cors_methods=["GET", "POST", "OPTIONS"]
+    cors_methods=["GET", "POST", "DELETE", "OPTIONS"]
 )
 
 # MM/DD/YYYY validation pattern (4-digit year)
@@ -204,3 +205,48 @@ def update_user_profile(req: https_fn.Request, user_id: str) -> https_fn.Respons
     except Exception as e:
         print(f"Error in update_user_profile: {str(e)}")
         return response_builder.internal_error("Failed to update profile")
+
+
+# ------------------------------------------------------------------------------
+# DELETE ACCOUNT
+# ------------------------------------------------------------------------------
+
+@https_fn.on_request(cors=cors_options)
+@require_auth
+def delete_account(req: https_fn.Request, user_id: str) -> https_fn.Response:
+    """
+    Permanently delete the authenticated user's account and all associated data.
+
+    Deletes in order:
+        1. All essay submissions
+        2. User preferences
+        3. User progress
+        4. Gamification data  (also removes from all leaderboards)
+        5. User profile doc
+        6. Firebase Auth user
+
+    Endpoint: DELETE /delete_account
+    Headers:  Authorization: Bearer <firebase_token>
+
+    Returns:
+        { "message": "Account deleted successfully" }
+    """
+    if req.method == "OPTIONS":
+        return https_fn.Response(status=204)
+
+    if req.method != "DELETE":
+        return response_builder.error("Method not allowed", status=405)
+
+    try:
+        print(f"delete_account called for user: {user_id}")
+
+        user_service.delete_user_account(user_id)
+
+        return response_builder.success(
+            data=None,
+            message="Account deleted successfully"
+        )
+
+    except Exception as e:
+        print(f"Error in delete_account for user {user_id}: {str(e)}")
+        return response_builder.internal_error("Failed to delete account")

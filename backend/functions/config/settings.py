@@ -8,6 +8,12 @@ class Settings:
     OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
     OPENROUTER_MODEL: str = "google/gemma-3n-e4b-it:free"
+    
+    # Groq Configuration
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    GROQ_BASE_URL: str = "https://api.groq.com/openai/v1"
+    GROQ_MODEL: str = "llama-3.1-8b-instant"
+    
     # Essay Validation
     MIN_WORDS: int = 50
     MAX_WORDS: int = 500
@@ -110,6 +116,26 @@ class Settings:
     COLLECTION_USER_PROGRESS: str = "user_progress"
     COLLECTION_ESSAY_SUBMISSIONS: str = "essay_submissions"
     COLLECTION_USER_PREFERENCES: str = "user_preferences"   # NEW — stores state/grade
+    COLLECTION_GAMIFICATION: str = "gamification"      # NEW — stores XP, level, rewards history
+    
+    # -------------------------------------------------------------------------
+    # Gamification — XP & Levels
+    # -------------------------------------------------------------------------
+    LEVEL_THRESHOLDS: Dict[int, tuple] = {
+        1: (0,     999,   "Beginner Writer"),
+        2: (1000,  4999,  "Word Explorer"),
+        3: (5000,  14999, "Story Builder"),
+        4: (15000, 29999, "Essay Master"),
+        5: (30000, 99999, "Writing Legend"),
+    }
+
+    XP_VALUES: Dict[str, int] = {
+        "essay_base":     50,
+        "domain_perfect": 25,
+        "streak_daily":   10,
+        "streak_7_day":   150,
+        "streak_30_day":  500,
+    }
 
     # -------------------------------------------------------------------------
     # LLM Configuration
@@ -140,6 +166,8 @@ class Settings:
         """Validate that required configuration is present"""
         if not cls.OPENROUTER_API_KEY:
             raise ValueError("OPENROUTER_API_KEY environment variable is required")
+        if not cls.GROQ_API_KEY:
+            raise ValueError("GROQ_API_KEY environment variable is required")
         return True
 
     @classmethod

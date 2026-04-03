@@ -23,7 +23,7 @@ try:
     print("Configuration validated successfully")
 except ValueError as e:
     print(f"Configuration warning: {str(e)}")
-    print("Set OPENROUTER_API_KEY in Firebase Functions config")
+    print("Set OPENROUTER_API_KEY and GROQ_API_KEY in Firebase Functions config")
 
 # Import all cloud functions
 from essay.essay_routes import (
@@ -35,16 +35,30 @@ from essay.essay_routes import (
     get_category_stats,
     submit_essay_no_auth,
     test_essay_evaluator,
-    # NEW: user preference endpoints
+    # User preference endpoints
     save_user_preferences,
     get_user_preferences,
+    # Gamification
+    get_gamification,
 )
 from test_llm import test_llm_connection
+from gamification.game_routes import (
+    submit_game_result,
+    detail_detective_evaluate,
+    boss_battle_submit,
+)
+
+# Leaderboard functions
+from leaderboard.leaderboard_routes import (
+    get_grade_leaderboard,
+    get_state_leaderboard,
+)
 
 # User profile functions
 from user.user_routes import (
     get_user_profile,
     update_user_profile,
+    delete_account,          # ← NEW
 )
 
 # File upload functions
@@ -88,11 +102,20 @@ def health_check(req: https_fn.Request) -> https_fn.Response:
             # User Profile
             "get_user_profile":          "GET  /get_user_profile",
             "update_user_profile":       "POST /update_user_profile",
+            "delete_account":            "DELETE /delete_account",   # ← NEW
             # File
             "extract_pdf_text":          "POST /extract_pdf_text",
             "extract_pdf_text_authenticated": "POST /extract_pdf_text_authenticated",
             # Health
             "health_check":              "GET  /health_check",
+            # Gamification
+            "get_gamification":          "GET  /get_gamification",
+            "submit_game_result":        "POST /submit_game_result",
+            "detail_detective_evaluate": "POST /detail_detective_evaluate",
+            "boss_battle_submit":        "POST /boss_battle_submit",
+            # Leaderboard
+            "get_grade_leaderboard":     "GET  /get_grade_leaderboard",
+            "get_state_leaderboard":     "GET  /get_state_leaderboard",
         }
     }
 
@@ -121,16 +144,26 @@ __all__ = [
     # User Profile
     'get_user_profile',
     'update_user_profile',
+    'delete_account',            # ← NEW
     # File
     'extract_pdf_text',
     'extract_pdf_text_authenticated',
     # Utils
     'health_check',
     'test_llm_connection',
+    # Gamification
+    'get_gamification',
+    'submit_game_result',
+    'detail_detective_evaluate',
+    'boss_battle_submit',
+    # Leaderboard
+    'get_grade_leaderboard',
+    'get_state_leaderboard',
 ]
 
 print("E-Learning Essay Backend initialized")
-print(f"Environment:     {settings.ENVIRONMENT}")
-print(f"LLM Model:       {settings.OPENROUTER_MODEL}")
-print(f"Rubric:          PSSA Writing Domain")
+print(f"Environment:      {settings.ENVIRONMENT}")
+print(f"LLM Model:        {settings.OPENROUTER_MODEL} (essays)")
+print(f"LLM Model:        {settings.GROQ_MODEL} (Detail Detective)")
+print(f"Rubric:           PSSA Writing Domain")
 print(f"Supported states: {settings.SUPPORTED_STATES}")

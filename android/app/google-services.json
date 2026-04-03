@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:946721723947:android:9f4c0c6b0c3ad61be0bc6e",
+        "mobilesdk_app_id": "1:946721723947:android:c3c33ce2ec3643fbe0bc6e",
         "android_client_info": {
-          "package_name": "com.elearningapp"
+          "package_name": "com.a2rsoftwaresolution.novelbound"
         }
       },
       "oauth_client": [
@@ -36,9 +36,9 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:946721723947:android:29fc8fe4eee571ace0bc6e",
+        "mobilesdk_app_id": "1:946721723947:android:d81b4b872ebeb818e0bc6e",
         "android_client_info": {
-          "package_name": "com.example.elearningapp"
+          "package_name": "com.languageapp"
         }
       },
       "oauth_client": [

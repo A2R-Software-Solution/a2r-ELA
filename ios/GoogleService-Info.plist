@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.elearningapp</string>
+	<string>com.a2rsoftwaresolution.novelbound</string>
 	<key>PROJECT_ID</key>
 	<string>e-learning-app-9d86f</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:946721723947:ios:e7568b68dcae4204e0bc6e</string>
+	<string>1:946721723947:ios:2c8ff48919b8212ae0bc6e</string>
 </dict>
 </plist>

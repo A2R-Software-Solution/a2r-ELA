@@ -17,7 +17,8 @@ Firestore structure:
 
 from typing import Dict, Any, Optional
 from datetime import datetime
-from firebase_admin import firestore
+from firebase_admin import firestore, auth
+from config.settings import settings
 
 
 class UserService:
@@ -143,6 +144,99 @@ class UserService:
             Updated profile dict
         """
         return self.update_user_profile(user_id, {"photo_url": None})
+
+    # --------------------------------------------------------------------------
+    # DELETE USER ACCOUNT
+    # --------------------------------------------------------------------------
+
+    def delete_user_account(self, user_id: str) -> None:
+        """
+        Permanently delete a user account and all associated data.
+
+        Deletes in this order:
+            1. All essay submissions       (essay_submissions where user_id == uid)
+            2. User preferences            (user_preferences/{uid})
+            3. User progress               (user_progress/{uid})
+            4. Gamification data           (gamification/{uid})
+            5. User profile                (users/{uid})
+            6. Firebase Auth user          (firebase_admin.auth.delete_user)
+
+        Steps 1-5 are Firestore. Step 6 is Firebase Auth.
+        If any step fails, the exception propagates up to the route handler
+        which returns a 500 to the client.
+
+        Args:
+            user_id: Firebase user ID (uid)
+        """
+        print(f"Starting account deletion for user: {user_id}")
+
+        # ------------------------------------------------------------------
+        # Step 1: Delete all essay submissions
+        # Queried by user_id field — same pattern as essay_service.py
+        # ------------------------------------------------------------------
+        essays_ref = (
+            self.db
+            .collection(settings.COLLECTION_ESSAY_SUBMISSIONS)
+            .where("user_id", "==", user_id)
+            .stream()
+        )
+
+        essay_count = 0
+        for doc in essays_ref:
+            doc.reference.delete()
+            essay_count += 1
+
+        print(f"Deleted {essay_count} essay submissions for user: {user_id}")
+
+        # ------------------------------------------------------------------
+        # Step 2: Delete user preferences
+        # Stored as a single doc with uid as document ID
+        # ------------------------------------------------------------------
+        self.db.collection(
+            settings.COLLECTION_USER_PREFERENCES
+        ).document(user_id).delete()
+
+        print(f"Deleted user_preferences for user: {user_id}")
+
+        # ------------------------------------------------------------------
+        # Step 3: Delete user progress
+        # Stored as a single doc with uid as document ID
+        # ------------------------------------------------------------------
+        self.db.collection(
+            settings.COLLECTION_USER_PROGRESS
+        ).document(user_id).delete()
+
+        print(f"Deleted user_progress for user: {user_id}")
+
+        # ------------------------------------------------------------------
+        # Step 4: Delete gamification data
+        # Stored as a single doc with uid as document ID
+        # Removing this also removes the user from all leaderboards
+        # since leaderboard_service.py queries gamification collection
+        # ------------------------------------------------------------------
+        self.db.collection(
+            settings.COLLECTION_GAMIFICATION
+        ).document(user_id).delete()
+
+        print(f"Deleted gamification data for user: {user_id}")
+
+        # ------------------------------------------------------------------
+        # Step 5: Delete user profile document
+        # ------------------------------------------------------------------
+        self.db.collection(
+            self.COLLECTION
+        ).document(user_id).delete()
+
+        print(f"Deleted users profile for user: {user_id}")
+
+        # ------------------------------------------------------------------
+        # Step 6: Delete Firebase Auth user
+        # Must be last — once this is done, the uid is gone permanently
+        # ------------------------------------------------------------------
+        auth.delete_user(user_id)
+
+        print(f"Deleted Firebase Auth user: {user_id}")
+        print(f"Account deletion complete for user: {user_id}")
 
     # --------------------------------------------------------------------------
     # PRIVATE HELPERS
