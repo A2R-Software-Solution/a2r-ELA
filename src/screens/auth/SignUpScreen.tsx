@@ -156,13 +156,6 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({
             <Text style={styles.signUpButtonText}>Sign Up</Text>
           )}
         </TouchableOpacity>
-
-        <Text style={styles.orText}>OR</Text>
-
-        <SocialAuthButton text="Continue with Google" />
-        <SocialAuthButton text="Continue with iOS" />
-        <SocialAuthButton text="Continue with Apple Id" />
-
         {/* Sign In Link */}
         <View style={styles.signInContainer}>
           <Text style={styles.signInText}>Already have an account? </Text>
@@ -178,12 +171,6 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({
 interface SocialAuthButtonProps {
   text: string;
 }
-
-const SocialAuthButton: React.FC<SocialAuthButtonProps> = ({ text }) => (
-  <TouchableOpacity style={styles.socialButton}>
-    <Text style={styles.socialButtonText}>{text}</Text>
-  </TouchableOpacity>
-);
 
 const styles = StyleSheet.create({
   container: {
@@ -271,20 +258,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginVertical: 20,
   },
-  socialButton: {
-    borderWidth: 1,
-    borderColor: '#DDDDDD',
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    height: 48,
-    marginBottom: 8,
-    backgroundColor: '#FFFFFF',
-  },
-  socialButtonText: {
-    color: '#000000',
-    fontSize: 14,
-  },
+  
   signInContainer: {
     flexDirection: 'row',
     justifyContent: 'center',

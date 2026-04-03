@@ -21,9 +21,8 @@ import { useProfile } from './hooks/useProfile';
 import { HomeTab } from './types/HomeUiState';
 import HomeHeader from './components/HomeHeader';
 import StreakCard from './components/StreakCard';
-import CategorySection from './components/CategorySection';
 import FeatureGrid from './components/FeatureGrid';
-import RecentCourses from './components/RecentCourses';
+
 import BottomNavigationBar from './components/BottomNavigationBar';
 import StateSelectorSheet from './../Essay/components/StateSelectorSheet';
 import ProfileHeader from './components/ProfileHeader';
@@ -36,6 +35,7 @@ import { CourseUiModel } from '../../models/ui/CourseUiModel';
 import { FeatureUiModel } from '../../models/ui/FeatureUiModel';
 import { CategoryUiModel } from '../../models/ui/CategoryUiModel';
 import PlaygroundScreen from '../Playground/PlaygroundScreen';
+
 
 // ============================================================================
 // HOME SCREEN PROPS
@@ -68,7 +68,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onEssayWritingClick = () => {},
   onSeeAllEssaysClick = () => {},
 }) => {
-  const { uiState, onTabSelected, onCategorySelected } = useHome();
+ const { uiState, onTabSelected, onCategorySelected, onFeaturePress } = useHome();
 
   const profile = useProfile({
     onLogoutSuccess: onLogoutClick,
@@ -100,14 +100,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
     return () => tabEvents.off('switchTab', handleSwitchTab);
   }, [onTabSelected]);
 
-  const handleFeatureClick = (feature: FeatureUiModel) => {
-    if (feature.title === 'Essay Writing') {
-      onEssayWritingClick();
-    } else {
-      onFeatureClick(feature);
-    }
-  };
-
+ const handleFeatureClick = (feature: FeatureUiModel) => {
+  onFeaturePress(feature.id, {
+    navigate: (screen: string) => {
+      if (screen === 'Leaderboard') {
+        onFeatureClick(feature); // or your navigation
+      } else if (screen === 'EssayWriting') {
+        onEssayWritingClick();
+      }
+    },
+  });
+};
   const handleCategoryClick = (category: CategoryUiModel) => {
     onCategorySelected(category);
     onCategoryClick(category);
@@ -196,13 +199,7 @@ const HomeContent: React.FC<HomeContentProps> = ({
       levelName={levelName}
       isLoadingXp={isLoadingXp}
     />
-    <CategorySection
-      categories={categories}
-      onCategoryClick={onCategoryClick}
-      onSeeAllClick={onSeeAllCategories}
-    />
     <FeatureGrid features={features} onFeatureClick={onFeatureClick} />
-    <RecentCourses courses={recentCourses} onCourseClick={onCourseClick} />
     <View style={styles.bottomSpacer} />
   </ScrollView>
 );
@@ -215,7 +212,7 @@ const PlaygroundContent: React.FC = () => <PlaygroundScreen />;
 
 const InboxContent: React.FC = () => (
   <View style={styles.placeholderContainer}>
-    <Text style={styles.placeholderText}>Inbox Screen</Text>
+    <Text style={styles.placeholderText}>Coming Soon</Text>
   </View>
 );
 

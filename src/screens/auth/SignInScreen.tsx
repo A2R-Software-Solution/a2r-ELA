@@ -35,11 +35,6 @@ interface SocialButtonProps {
   onPress?: () => void;
 }
 
-const SocialButton: React.FC<SocialButtonProps> = ({ text, onPress }) => (
-  <TouchableOpacity style={styles.socialButton} onPress={onPress}>
-    <Text style={styles.socialButtonText}>{text}</Text>
-  </TouchableOpacity>
-);
 
 /* -------------------------------- Sign In Screen -------------------------------- */
 
@@ -158,14 +153,6 @@ const SignInScreen: React.FC<SignInScreenProps> = ({
           )}
         </TouchableOpacity>
 
-        {/* OR */}
-        <Text style={styles.orText}>OR</Text>
-
-        {/* Social Login */}
-        <SocialButton text="Continue with Google" />
-        <SocialButton text="Continue with iOS" />
-        <SocialButton text="Continue with Apple Id" />
-
         {/* Sign Up */}
         <View style={styles.signUpContainer}>
           <Text style={styles.signUpText}>Not a member? </Text>
@@ -273,19 +260,6 @@ input: {
     color: '#999999',
     fontSize: 12,
     marginVertical: 20,
-  },
-  socialButton: {
-    borderWidth: 1,
-    borderColor: '#DDDDDD',
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    height: 48,
-    marginBottom: 8,
-  },
-  socialButtonText: {
-    color: '#000000',
-    fontSize: 14,
   },
   signUpContainer: {
     flexDirection: 'row',
