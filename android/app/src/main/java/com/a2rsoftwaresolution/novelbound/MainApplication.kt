@@ -1,4 +1,4 @@
-package com.elearningapp
+package com.a2rsoftwaresolution.novelbound
 
 import android.app.Application
 import com.facebook.react.PackageList

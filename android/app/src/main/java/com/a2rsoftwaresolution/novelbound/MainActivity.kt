@@ -1,4 +1,4 @@
-package com.elearningapp
+package com.a2rsoftwaresolution.novelbound
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
