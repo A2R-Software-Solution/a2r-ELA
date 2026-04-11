@@ -12,23 +12,23 @@
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		7D646EE2B559254B4B198933 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		B824A729D96BB8FBAD62C40E /* Pods_ELearningApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF2537C7760CCF0E6997D522 /* Pods_ELearningApp.framework */; };
+		B824A729D96BB8FBAD62C40E /* Pods_NovelBound.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF2537C7760CCF0E6997D522 /* Pods_NovelBound.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0F7FACA1F9EFCB368D7CBDDC /* Pods-ELearningApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ELearningApp.debug.xcconfig"; path = "Target Support Files/Pods-ELearningApp/Pods-ELearningApp.debug.xcconfig"; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* ELearningApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ELearningApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ELearningApp/Images.xcassets; sourceTree = "<group>"; };
-		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ELearningApp/Info.plist; sourceTree = "<group>"; };
-		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = ELearningApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		47DA94391DE777887725260F /* Pods-ELearningApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ELearningApp.release.xcconfig"; path = "Target Support Files/Pods-ELearningApp/Pods-ELearningApp.release.xcconfig"; sourceTree = "<group>"; };
+		0F7FACA1F9EFCB368D7CBDDC /* Pods-NovelBound.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NovelBound.debug.xcconfig"; path = "Target Support Files/Pods-NovelBound/Pods-NovelBound.debug.xcconfig"; sourceTree = "<group>"; };
+		13B07F961A680F5B00A75B9A /* NovelBound.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NovelBound.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = NovelBound/Images.xcassets; sourceTree = "<group>"; };
+		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = NovelBound/Info.plist; sourceTree = "<group>"; };
+		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = NovelBound/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		47DA94391DE777887725260F /* Pods-NovelBound.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NovelBound.release.xcconfig"; path = "Target Support Files/Pods-NovelBound/Pods-NovelBound.release.xcconfig"; sourceTree = "<group>"; };
 		539B9ABE2F3862ED0036138A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		53DAA5132F38959900F51C03 /* dummy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dummy.swift; sourceTree = "<group>"; };
-		53DAA5142F3896A000F51C03 /* ELearningApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ELearningApp-Bridging-Header.h"; sourceTree = "<group>"; };
-		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ELearningApp/AppDelegate.swift; sourceTree = "<group>"; };
-		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ELearningApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		53DAA5142F3896A000F51C03 /* NovelBound-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NovelBound-Bridging-Header.h"; sourceTree = "<group>"; };
+		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = NovelBound/AppDelegate.swift; sourceTree = "<group>"; };
+		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = NovelBound/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		EF2537C7760CCF0E6997D522 /* Pods_ELearningApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ELearningApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		EF2537C7760CCF0E6997D522 /* Pods_NovelBound.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NovelBound.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,14 +36,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B824A729D96BB8FBAD62C40E /* Pods_ELearningApp.framework in Frameworks */,
+				B824A729D96BB8FBAD62C40E /* Pods_NovelBound.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		13B07FAE1A68108700A75B9A /* ELearningApp */ = {
+		13B07FAE1A68108700A75B9A /* NovelBound */ = {
 			isa = PBXGroup;
 			children = (
 				539B9ABE2F3862ED0036138A /* GoogleService-Info.plist */,
@@ -53,14 +53,14 @@
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 			);
-			name = ELearningApp;
+			name = NovelBound;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				EF2537C7760CCF0E6997D522 /* Pods_ELearningApp.framework */,
+				EF2537C7760CCF0E6997D522 /* Pods_NovelBound.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -75,9 +75,9 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				53DAA5142F3896A000F51C03 /* ELearningApp-Bridging-Header.h */,
+				53DAA5142F3896A000F51C03 /* NovelBound-Bridging-Header.h */,
 				53DAA5132F38959900F51C03 /* dummy.swift */,
-				13B07FAE1A68108700A75B9A /* ELearningApp */,
+				13B07FAE1A68108700A75B9A /* NovelBound */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
@@ -91,7 +91,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* ELearningApp.app */,
+				13B07F961A680F5B00A75B9A /* NovelBound.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -99,8 +99,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				0F7FACA1F9EFCB368D7CBDDC /* Pods-ELearningApp.debug.xcconfig */,
-				47DA94391DE777887725260F /* Pods-ELearningApp.release.xcconfig */,
+				0F7FACA1F9EFCB368D7CBDDC /* Pods-NovelBound.debug.xcconfig */,
+				47DA94391DE777887725260F /* Pods-NovelBound.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -108,9 +108,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		13B07F861A680F5B00A75B9A /* ELearningApp */ = {
+		13B07F861A680F5B00A75B9A /* NovelBound */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ELearningApp" */;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "NovelBound" */;
 			buildPhases = (
 				ED34C76EE31308F5EA24ED93 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
@@ -125,9 +125,9 @@
 			);
 			dependencies = (
 			);
-			name = ELearningApp;
-			productName = ELearningApp;
-			productReference = 13B07F961A680F5B00A75B9A /* ELearningApp.app */;
+			name = NovelBound;
+			productName = NovelBound;
+			productReference = 13B07F961A680F5B00A75B9A /* NovelBound.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -143,7 +143,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "ELearningApp" */;
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "NovelBound" */;
 			compatibilityVersion = "Xcode 12.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -156,7 +156,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				13B07F861A680F5B00A75B9A /* ELearningApp */,
+				13B07F861A680F5B00A75B9A /* NovelBound */,
 			);
 		};
 /* End PBXProject section */
@@ -198,15 +198,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ELearningApp/Pods-ELearningApp-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-NovelBound/Pods-NovelBound-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ELearningApp/Pods-ELearningApp-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-NovelBound/Pods-NovelBound-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ELearningApp/Pods-ELearningApp-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-NovelBound/Pods-NovelBound-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		77D8132D08894AAA0D1CF23C /* [CP-User] [RNFB] Core Configuration */ = {
@@ -237,7 +237,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-ELearningApp-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-NovelBound-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -250,15 +250,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ELearningApp/Pods-ELearningApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-NovelBound/Pods-NovelBound-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ELearningApp/Pods-ELearningApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-NovelBound/Pods-NovelBound-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ELearningApp/Pods-ELearningApp-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-NovelBound/Pods-NovelBound-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -277,7 +277,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0F7FACA1F9EFCB368D7CBDDC /* Pods-ELearningApp.debug.xcconfig */;
+			baseConfigurationReference = 0F7FACA1F9EFCB368D7CBDDC /* Pods-NovelBound.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -286,7 +286,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
-				INFOPLIST_FILE = ELearningApp/Info.plist;
+				INFOPLIST_FILE = NovelBound/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -299,7 +299,7 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.elearningapp;
-				PRODUCT_NAME = ELearningApp;
+				PRODUCT_NAME = NovelBound;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -309,7 +309,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 47DA94391DE777887725260F /* Pods-ELearningApp.release.xcconfig */;
+			baseConfigurationReference = 47DA94391DE777887725260F /* Pods-NovelBound.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -317,7 +317,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
-				INFOPLIST_FILE = ELearningApp/Info.plist;
+				INFOPLIST_FILE = NovelBound/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -330,7 +330,7 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.elearningapp;
-				PRODUCT_NAME = ELearningApp;
+				PRODUCT_NAME = NovelBound;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -512,7 +512,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ELearningApp" */ = {
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "NovelBound" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
@@ -521,7 +521,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "ELearningApp" */ = {
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "NovelBound" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,

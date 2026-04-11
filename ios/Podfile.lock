@@ -50,7 +50,7 @@ PODS:
   - GoogleUtilities/Reachability (8.1.0):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
-  - GTMSessionFetcher/Core (5.0.0)
+  - GTMSessionFetcher/Core (5.2.0)
   - hermes-engine (0.14.0):
     - hermes-engine/Pre-built (= 0.14.0)
   - hermes-engine/Pre-built (0.14.0)
@@ -3331,8 +3331,8 @@ SPEC CHECKSUMS:
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
-  GTMSessionFetcher: 02d6e866e90bc236f48a703a041dfe43e6221a29
-  hermes-engine: aca724adefe27a51df4b867b40480e8078de5c2d
+  GTMSessionFetcher: 904bdd2a82c635bcd6f44edf94cc8775c5d1d6e6
+  hermes-engine: a48e7c8784380c992d061b821b82b87a1d45224c
   RCT-Folly: 846fda9475e61ec7bcbf8a3fe81edfcaeb090669
   RCTDeprecation: a41bbdd9af30bf2e5715796b313e44ec43eefff1
   RCTRequired: 7be34aabb0b77c3cefe644528df0fa0afad4e4d0
@@ -3418,6 +3418,6 @@ SPEC CHECKSUMS:
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 33b53536a0500d039f2cd78caf1d5d68712d3af7
 
-PODFILE CHECKSUM: fa8ac83fcd30bcbc98cdff292946701ec6095fc7
+PODFILE CHECKSUM: 4b3dad7bf6ab9fddbcf962981a40eec3ec2f457b
 
 COCOAPODS: 1.16.2

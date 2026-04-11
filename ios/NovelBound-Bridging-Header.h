@@ -1,6 +1,6 @@
 //
-//  ELearningApp-Bridging-Header.h
-//  ELearningApp
+//  NovelBound-Bridging-Header.h
+//  NovelBound
 //
 //  Created by Manoj Singh on 08/02/26.
 //

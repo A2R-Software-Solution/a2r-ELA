@@ -26,7 +26,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     window = UIWindow(frame: UIScreen.main.bounds)
     factory.startReactNative(
-      withModuleName: "ELearningApp",
+      withModuleName: "NovelBound",
       in: window,
       launchOptions: launchOptions
     )

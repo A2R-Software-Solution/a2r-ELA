@@ -274,7 +274,7 @@ D:.
 1. **Clone the repository**
 ```bash
    git clone <repository-url>
-   cd ELearningApp
+   cd NovelBound
 ```
 
 2. **Install dependencies**
