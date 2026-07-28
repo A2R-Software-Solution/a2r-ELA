@@ -803,8 +803,8 @@
     "android": {
       "sourceDir": "D:\\coding\\A2R\\ELA\\a2r-ELA\\android",
       "appName": "app",
-      "packageName": "com.elearningapp",
-      "applicationId": "com.elearningapp",
+      "packageName": "com.a2rsoftwaresolution.novelbound",
+      "applicationId": "com.a2rsoftwaresolution.novelbound",
       "mainActivity": ".MainActivity",
       "assets": []
     }

@@ -13,6 +13,8 @@
  * Pure presentational component — no logic, no API calls.
  * All actions are passed in as props and handled by useProfile.ts.
  *
+ * ✅ UPDATED: Dark C-palette theme (glassy purple surface, light-on-dark text)
+ *
  * References:
  *   - StateSelectorSheet.tsx   (already built — opened by onGradeEditClick / onStateEditClick)
  *   - HomeScreen.tsx           (logout button style — #7D55FF, borderRadius 12)
@@ -150,10 +152,15 @@ const RowDivider: React.FC = () => <View style={styles.rowDivider} />;
 // STYLES
 // ============================================================================
 
-const PURPLE       = '#7D55FF';
-const PURPLE_LIGHT = '#F0EBFF';
-const RED          = '#DC2626'; // ← NEW
-const RED_LIGHT    = '#FEF2F2'; // ← NEW
+const PURPLE         = '#7D55FF';
+const PURPLE_SURFACE = 'rgba(125, 85, 255, 0.10)';
+const PURPLE_BORDER  = 'rgba(125, 85, 255, 0.28)';
+const PILL_SURFACE   = 'rgba(125, 85, 255, 0.18)';
+const ROW_BORDER     = 'rgba(255, 255, 255, 0.06)';
+const TEXT_PRIMARY   = '#F5F3FF';
+const TEXT_MUTED     = 'rgba(245, 243, 255, 0.45)';
+const RED            = '#F87171'; // ← brightened for visibility on dark bg
+const RED_SURFACE    = 'rgba(248, 113, 113, 0.12)'; // ← NEW (was RED_LIGHT solid)
 
 const styles = StyleSheet.create({
   container: {
@@ -166,20 +173,20 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1A1A2E',
+    color: TEXT_PRIMARY, // ← was '#1A1A2E'
     marginBottom: 12,
   },
 
   // ---------- Settings card ----------
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: PURPLE_SURFACE, // ← was '#FFFFFF'
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#F0EBFF',
+    borderColor: PURPLE_BORDER, // ← was '#F0EBFF'
     // Shadow — iOS
     shadowColor: PURPLE,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.15,
     shadowRadius: 8,
     // Shadow — Android
     elevation: 3,
@@ -198,7 +205,7 @@ const styles = StyleSheet.create({
   rowLabel: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#1A1A2E',
+    color: TEXT_PRIMARY, // ← was '#1A1A2E'
   },
   rowRight: {
     flexDirection: 'row',
@@ -206,7 +213,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   valuePill: {
-    backgroundColor: PURPLE_LIGHT,
+    backgroundColor: PILL_SURFACE, // ← was PURPLE_LIGHT
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 20,
@@ -218,14 +225,14 @@ const styles = StyleSheet.create({
   },
   chevron: {
     fontSize: 20,
-    color: '#9CA3AF',
+    color: TEXT_MUTED, // ← was '#9CA3AF'
     lineHeight: 22,
   },
 
   // ---------- Row divider ----------
   rowDivider: {
     height: 1,
-    backgroundColor: '#F9F7FF',
+    backgroundColor: ROW_BORDER, // ← was '#F9F7FF'
     marginHorizontal: 16,
   },
 
@@ -246,7 +253,7 @@ const styles = StyleSheet.create({
 
   // ---------- Delete Account button ----------              ← NEW
   deleteButton: {
-    backgroundColor: RED_LIGHT,
+    backgroundColor: RED_SURFACE, // ← was RED_LIGHT (solid)
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',

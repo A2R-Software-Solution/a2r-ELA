@@ -1,7 +1,7 @@
 /**
  * ExamSectionRow Component
  * A single topic/section row in the exam prep checklist.
- * Shows title, completed/total count, progress bar, and status icon.
+ * Dark-themed to match the black background.
  */
 
 import React from 'react';
@@ -12,64 +12,46 @@ import {
 } from 'react-native';
 import { ExamSection, SectionStatus } from '../types/ExamPrepUiState';
 
-// --------------------------------------------------------------------------
-// PROPS
-// --------------------------------------------------------------------------
-
 interface ExamSectionRowProps {
   section: ExamSection;
 }
 
 // --------------------------------------------------------------------------
-// CONSTANTS
+// CONSTANTS — dark theme palette
 // --------------------------------------------------------------------------
 
-const PURPLE         = '#6C4DFF';
-const SUCCESS        = '#22C55E';
-const SUCCESS_LIGHT  = '#F0FDF4';
-const WARNING        = '#F59E0B';
-const WARNING_LIGHT  = '#FFFBEB';
-const GREY           = '#94A3B8';
-const GREY_LIGHT     = '#F8FAFC';
-const TEXT_PRIMARY   = '#0F172A';
-const TEXT_MUTED     = '#475569';
-const PROGRESS_TRACK = '#E5E7EB';
-const BG_WHITE       = '#FFFFFF';
-const BORDER         = '#E2E8F0';
+const PURPLE          = '#6C4DFF';
+const SUCCESS         = '#22C55E';
+const SUCCESS_BG      = 'rgba(34, 197, 94, 0.12)';
+const WARNING         = '#F59E0B';
+const WARNING_BG      = 'rgba(245, 158, 11, 0.12)';
+const GREY            = '#64748B';
+const GREY_BG         = 'rgba(100, 116, 139, 0.12)';
+
+const ROW_BG          = '#0E0B1A';   // same dark-purple-black as card (C)
+const ROW_BORDER      = 'rgba(108, 77, 255, 0.18)'; // very subtle purple rim
+const PROGRESS_TRACK  = 'rgba(255,255,255,0.08)';   // near-invisible track
+const TEXT_PRIMARY    = '#F1F5F9';   // off-white
+const TEXT_MUTED      = '#94A3B8';   // cool grey
 
 // --------------------------------------------------------------------------
 // STATUS HELPERS
 // --------------------------------------------------------------------------
 
 function getStatusConfig(status: SectionStatus): {
-  icon:       string;
-  iconColor:  string;
-  iconBg:     string;
-  barColor:   string;
+  icon:      string;
+  iconColor: string;
+  iconBg:    string;
+  barColor:  string;
 } {
   switch (status) {
     case 'complete':
-      return {
-        icon:      '✓',
-        iconColor: SUCCESS,
-        iconBg:    SUCCESS_LIGHT,
-        barColor:  SUCCESS,
-      };
+      return { icon: '✓', iconColor: SUCCESS, iconBg: SUCCESS_BG, barColor: SUCCESS };
     case 'in_progress':
-      return {
-        icon:      '●',
-        iconColor: WARNING,
-        iconBg:    WARNING_LIGHT,
-        barColor:  PURPLE,
-      };
+      return { icon: '●', iconColor: WARNING, iconBg: WARNING_BG, barColor: PURPLE };
     case 'not_started':
     default:
-      return {
-        icon:      '○',
-        iconColor: GREY,
-        iconBg:    GREY_LIGHT,
-        barColor:  GREY,
-      };
+      return { icon: '○', iconColor: GREY,    iconBg: GREY_BG,    barColor: GREY };
   }
 }
 
@@ -107,10 +89,7 @@ const ExamSectionRow: React.FC<ExamSectionRowProps> = ({ section }) => {
           <View
             style={[
               styles.progressFill,
-              {
-                width:           `${progressPercent}%`,
-                backgroundColor: barColor,
-              },
+              { width: `${progressPercent}%`, backgroundColor: barColor },
             ]}
           />
         </View>
@@ -126,23 +105,22 @@ const ExamSectionRow: React.FC<ExamSectionRowProps> = ({ section }) => {
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection:     'row',
-    alignItems:        'center',
-    backgroundColor:   BG_WHITE,
-    marginHorizontal:  16,
-    marginVertical:    5,
-    borderRadius:      12,
-    padding:           14,
-    borderWidth:       1,
-    borderColor:       BORDER,
-    shadowColor:       '#000',
-    shadowOffset:      { width: 0, height: 1 },
-    shadowOpacity:     0.04,
-    shadowRadius:      4,
-    elevation:         1,
+    flexDirection:    'row',
+    alignItems:       'center',
+    backgroundColor:  ROW_BG,
+    marginHorizontal: 16,
+    marginVertical:   5,
+    borderRadius:     14,
+    padding:          14,
+    borderWidth:      1,
+    borderColor:      ROW_BORDER,
+    shadowColor:      '#6C4DFF',
+    shadowOffset:     { width: 0, height: 2 },
+    shadowOpacity:    0.10,
+    shadowRadius:     8,
+    elevation:        3,
   },
 
-  // Status icon
   iconContainer: {
     width:          40,
     height:         40,
@@ -157,7 +135,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 
-  // Middle content
   middleContent: {
     flex: 1,
   },
@@ -168,10 +145,10 @@ const styles = StyleSheet.create({
     marginBottom:   8,
   },
   title: {
-    flex:       1,
-    fontSize:   14,
-    fontWeight: '600',
-    color:      TEXT_PRIMARY,
+    flex:        1,
+    fontSize:    14,
+    fontWeight:  '600',
+    color:       TEXT_PRIMARY,
     marginRight: 8,
   },
   count: {
@@ -180,7 +157,6 @@ const styles = StyleSheet.create({
     color:      TEXT_MUTED,
   },
 
-  // Progress bar
   progressTrack: {
     height:          6,
     backgroundColor: PROGRESS_TRACK,

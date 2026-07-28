@@ -10,6 +10,8 @@
  * Pure presentational component — no logic, no API calls.
  * All data comes from props.
  *
+ * ✅ UPDATED: Dark C-palette theme (glassy purple surface, light-on-dark text)
+ *
  * References:
  *   - RecentCourses.tsx      (list row styling pattern)
  *   - EssayModels.ts         (EssayCategory display names)
@@ -118,7 +120,7 @@ interface ScoreChipProps {
 }
 
 const ScoreChip: React.FC<ScoreChipProps> = ({ score, letterGrade, color }) => (
-  <View style={[styles.chip, { backgroundColor: `${color}18` }]}>
+  <View style={[styles.chip, { backgroundColor: `${color}26` }]}>
     <Text style={[styles.chipScore, { color }]}>{score}</Text>
     <Text style={[styles.chipGrade, { color }]}>{letterGrade}</Text>
   </View>
@@ -144,19 +146,24 @@ const EmptyState: React.FC = () => (
 // ============================================================================
 
 const PURPLE = '#7D55FF';
+const PURPLE_SURFACE = 'rgba(125, 85, 255, 0.10)';
+const PURPLE_BORDER = 'rgba(125, 85, 255, 0.28)';
+const ROW_BORDER = 'rgba(255, 255, 255, 0.06)';
+const TEXT_PRIMARY = '#F5F3FF';
+const TEXT_MUTED = 'rgba(245, 243, 255, 0.45)';
 
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 16,
     marginVertical: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: PURPLE_SURFACE, // ← was '#FFFFFF'
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#F0EBFF',
+    borderColor: PURPLE_BORDER, // ← was '#F0EBFF'
     // Shadow — iOS
     shadowColor: PURPLE,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.15,
     shadowRadius: 8,
     // Shadow — Android
     elevation: 3,
@@ -175,7 +182,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1A1A2E',
+    color: TEXT_PRIMARY, // ← was '#1A1A2E'
   },
   seeAll: {
     fontSize: 13,
@@ -198,7 +205,7 @@ const styles = StyleSheet.create({
   },
   rowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: '#F9F7FF',
+    borderBottomColor: ROW_BORDER, // ← was '#F9F7FF'
   },
   rowLeft: {
     flex: 1,
@@ -207,12 +214,12 @@ const styles = StyleSheet.create({
   categoryLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1A1A2E',
+    color: TEXT_PRIMARY, // ← was '#1A1A2E'
     marginBottom: 3,
   },
   submittedAt: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: TEXT_MUTED, // ← was '#9CA3AF'
   },
 
   // ---------- Score Chip ----------
@@ -246,12 +253,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1A1A2E',
+    color: TEXT_PRIMARY, // ← was '#1A1A2E'
     marginBottom: 6,
   },
   emptySubtitle: {
     fontSize: 13,
-    color: '#9CA3AF',
+    color: TEXT_MUTED, // ← was '#9CA3AF'
     textAlign: 'center',
     lineHeight: 18,
   },

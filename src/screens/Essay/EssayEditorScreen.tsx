@@ -208,11 +208,7 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
       <View style={[styles.toolbar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
 
         {/* Attach */}
-        <TouchableOpacity
-          style={styles.toolbarAttachBtn}
-          disabled={!uiState.canUploadMoreFiles || uiState.isFileExtracting}
-          activeOpacity={0.7}
-        >
+        <View style={styles.toolbarAttachBtn}>
           {uiState.isFileExtracting ? (
             <ActivityIndicator size="small" color={PRIMARY} />
           ) : (
@@ -220,12 +216,9 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
               onFileSelected={handleFileSelected}
               canUploadFiles={uiState.canUploadMoreFiles && !uiState.isFileExtracting}
               isFileExtracting={uiState.isFileExtracting || false}
-              onSend={submitEssay}
-              canSend={uiState.canSubmit && !uiState.isSubmitting}
-              isSending={uiState.isSubmitting}
             />
           )}
-        </TouchableOpacity>
+        </View>
 
         {/* Submit Essay */}
         <TouchableOpacity

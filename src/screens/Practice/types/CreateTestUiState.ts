@@ -80,16 +80,16 @@ export const DIFFICULTY_CONFIG: Record<Difficulty, {
   },
 };
 
-// Replace the entire QUICK_PRESETS array:
+// FIX: All presets capped at max 5 per section to stay within LLM reliability limit
 export const QUICK_PRESETS: QuickPreset[] = [
   {
-    id:            'full_mock',
-    title:         'Full Mock Exam',
-    description:   'Balanced test covering all skills.',
+    id:            'balanced',
+    title:         'Balanced Mix',
+    description:   'Covers all 3 skill areas evenly.',
     emoji:         '📋',
-    mcq:           10,
-    comprehension: 10,
-    writing:       5,
+    mcq:           2,
+    comprehension: 2,
+    writing:       1,
     isRecommended: true,
   },
   {
@@ -97,27 +97,27 @@ export const QUICK_PRESETS: QuickPreset[] = [
     title:         'Reading Focus',
     description:   'Strengthen your reading skills.',
     emoji:         '🎯',
-    mcq:           5,
-    comprehension: 10,
-    writing:       5,
+    mcq:           1,
+    comprehension: 3,
+    writing:       1,
   },
   {
     id:            'writing_focus',
     title:         'Writing Focus',
     description:   'Improve your writing abilities.',
     emoji:         '✏️',
-    mcq:           5,
-    comprehension: 5,
-    writing:       10,
+    mcq:           1,
+    comprehension: 1,
+    writing:       3,
   },
   {
-    id:            'quick_practice',
-    title:         'Quick Practice',
-    description:   'Short test for quick practice.',
+    id:            'mcq_blitz',
+    title:         'MCQ Blitz',
+    description:   'Quick multiple choice practice.',
     emoji:         '⚡',
-    mcq:           5,
-    comprehension: 5,
-    writing:       5,
+    mcq:           3,
+    comprehension: 1,
+    writing:       1,
   },
 ];
 
@@ -125,7 +125,9 @@ export const QUICK_PRESETS: QuickPreset[] = [
 // CONSTANTS
 // ============================================================================
 
-export const MAX_QUESTIONS = 10;
+// FIX: Capped at 5 per section — LLM reliably generates up to 5 questions per call.
+// Previous limit of 10 caused generation failures.
+export const MAX_QUESTIONS = 5;
 
 export const MIN_QUESTIONS = 0;
 
@@ -143,13 +145,14 @@ export const MINS_PER_WRITING       = 5;
 // INITIAL STATE
 // ============================================================================
 
+// FIX: Default to a sensible small config within the new 5-question cap
 export const initialCreateTestState: CreateTestUiState = {
   selectedDifficulty: 'medium',
-  mcqCount:           5,
-  comprehensionCount: 5,
-  writingCount:       5,
-  totalQuestions:     15,
-  estimatedMinutes:   25,
-  xpReward:           45,
+  mcqCount:           1,
+  comprehensionCount: 2,
+  writingCount:       1,
+  totalQuestions:     4,
+  estimatedMinutes:   10,
+  xpReward:           10,
   showConfirmSheet:   false,
 };

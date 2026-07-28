@@ -1,6 +1,7 @@
 /**
  * Playground Screen
  * ✅ Redesigned with new UI matching design system
+ * ✅ UPDATED: Background matched to HomeScreen C palette (Red-Orange + Emerald + Deep Purple)
  */
 
 import React, { useState, useCallback } from 'react';
@@ -23,19 +24,18 @@ import WordSwapGame from './WordSwapGame';
 import useGame from '../../hooks/useGame';
 
 // ============================================================================
-// CONSTANTS
+// CONSTANTS — C palette (matches HomeScreen exactly)
 // ============================================================================
 
-const PRIMARY       = '#6C4DFF';
-const PRIMARY_LIGHT = '#EDE9FF';
-const WHITE         = '#FFFFFF';
-const BG            = '#F8FAFC';
-const TEXT_DARK     = '#0F172A';
-const TEXT_MID      = '#475569';
-const TEXT_GRAY     = '#94A3B8';
-const BORDER        = '#E2E8F0';
-const GREEN         = '#22C55E';
-const ORANGE        = '#F97316';
+const BASE_BG     = '#07050E'; // deepest base — near black with purple tint
+const PRIMARY     = '#7C5CFC'; // violet accent
+const WHITE       = '#FFFFFF';
+const TEXT_LIGHT  = '#FFFFFF';
+const TEXT_MUTED  = 'rgba(255,255,255,0.6)';
+const TEXT_SUBTLE = 'rgba(255,255,255,0.35)';
+const CARD_BG     = 'rgba(255,255,255,0.07)';
+const CARD_BORDER = 'rgba(255,255,255,0.10)';
+const ORANGE      = '#F97316';
 
 // ============================================================================
 // GAME DATA
@@ -50,7 +50,7 @@ interface GameCard {
   xpRange:     string;
   bestXp:      number;
   color:       string;
-  lightColor:  string;
+  bgColor:     string; // dark-friendly tinted bubble bg
   aiPowered?:  boolean;
   isWeekly?:   boolean;
 }
@@ -64,8 +64,8 @@ const GAME_CARDS: GameCard[] = [
     description: 'Identify sentences that belong to the topic.',
     xpRange:     '20–50 XP',
     bestXp:      850,
-    color:       '#3B82F6',
-    lightColor:  '#EFF6FF',
+    color:       '#60A5FA',
+    bgColor:     'rgba(59,130,246,0.15)',
   },
   {
     id:          'jumbled_story',
@@ -75,8 +75,8 @@ const GAME_CARDS: GameCard[] = [
     description: 'Rearrange mixed-up sentences into the correct order.',
     xpRange:     '20–50 XP',
     bestXp:      720,
-    color:       '#8A6CFF',
-    lightColor:  '#EDE9FF',
+    color:       '#A78BFA',
+    bgColor:     'rgba(138,108,255,0.15)',
   },
   {
     id:          'word_swap',
@@ -86,8 +86,8 @@ const GAME_CARDS: GameCard[] = [
     description: 'Replace boring words with exciting vocabulary.',
     xpRange:     '20–40 XP',
     bestXp:      680,
-    color:       '#F59E0B',
-    lightColor:  '#FFFBEB',
+    color:       '#FCD34D',
+    bgColor:     'rgba(245,158,11,0.15)',
   },
   {
     id:          'bug_catcher',
@@ -97,8 +97,8 @@ const GAME_CARDS: GameCard[] = [
     description: 'Find spelling, grammar & punctuation errors.',
     xpRange:     '20–50 XP',
     bestXp:      910,
-    color:       '#22C55E',
-    lightColor:  '#F0FDF4',
+    color:       '#4ADE80',
+    bgColor:     'rgba(34,197,94,0.15)',
   },
   {
     id:          'detail_detective',
@@ -108,8 +108,8 @@ const GAME_CARDS: GameCard[] = [
     description: 'Expand weak sentences with vivid details.',
     xpRange:     '10–60 XP',
     bestXp:      540,
-    color:       '#0EA5E9',
-    lightColor:  '#F0F9FF',
+    color:       '#38BDF8',
+    bgColor:     'rgba(14,165,233,0.15)',
     aiPowered:   true,
   },
   {
@@ -120,8 +120,8 @@ const GAME_CARDS: GameCard[] = [
     description: 'Write a full essay and beat your personal best.',
     xpRange:     '50–250 XP',
     bestXp:      1250,
-    color:       '#EF4444',
-    lightColor:  '#FEF2F2',
+    color:       '#F87171',
+    bgColor:     'rgba(239,68,68,0.15)',
     aiPowered:   true,
     isWeekly:    true,
   },
@@ -258,10 +258,16 @@ const PlaygroundScreen: React.FC = () => {
 
   // ── Hub screen ────────────────────────────────────────────────────────────
 
-  const recommended = GAME_CARDS[0]; // Stay on Topic as default recommended
+  const recommended = GAME_CARDS[0];
 
   return (
-    <View style={styles.container}>
+    <View style={styles.wrapper}>
+
+      {/* ── Background color layers (C palette) ── */}
+      <View style={styles.bgBase} />
+      <View style={styles.bgOrangeRed} />
+      <View style={styles.bgEmerald} />
+      <View style={styles.bgPurple} />
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
@@ -284,7 +290,7 @@ const PlaygroundScreen: React.FC = () => {
           <Text style={styles.sectionTitle}>Recommended for You</Text>
           <Text style={styles.sectionSub}>Based on your recent essay</Text>
 
-          <View style={[styles.recommendedCard, { backgroundColor: recommended.lightColor }]}>
+          <View style={[styles.recommendedCard, { backgroundColor: recommended.bgColor }]}>
             <View style={styles.recommendedLeft}>
               <Text style={styles.recommendedEmoji}>{recommended.emoji}</Text>
               <View style={styles.recommendedInfo}>
@@ -292,7 +298,6 @@ const PlaygroundScreen: React.FC = () => {
                   {recommended.title}
                 </Text>
                 <Text style={styles.recommendedDomain}>{recommended.domain}</Text>
-                {/* Star rating */}
                 <View style={styles.starRow}>
                   {[1,2,3,4,5].map(i => (
                     <Text key={i} style={styles.star}>
@@ -374,7 +379,7 @@ const GameListRow: React.FC<GameListRowProps> = ({
     <View style={[styles.gameRow, !isLast && styles.gameRowBorder]}>
 
       {/* Icon bubble */}
-      <View style={[styles.gameIconBubble, { backgroundColor: game.lightColor }]}>
+      <View style={[styles.gameIconBubble, { backgroundColor: game.bgColor }]}>
         <Text style={styles.gameEmoji}>{game.emoji}</Text>
       </View>
 
@@ -415,39 +420,83 @@ const GameListRow: React.FC<GameListRowProps> = ({
 // ============================================================================
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: BG,
+
+  // ── Root wrapper ────────────────────────────────────────────────────────
+  wrapper: {
+    flex:            1,
+    backgroundColor: BASE_BG,
   },
 
-  // Header
+  // ── Background layers (C palette: red-orange + emerald + deep purple) ───
+  bgBase: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: BASE_BG,
+  },
+
+  // Red-orange bloom — bottom-left corner
+  bgOrangeRed: {
+    position:        'absolute',
+    bottom:          -120,
+    left:            -80,
+    width:           320,
+    height:          320,
+    borderRadius:    160,
+    backgroundColor: '#D93A00',
+    opacity:         0.38,
+  },
+
+  // Emerald bloom — bottom-right corner
+  bgEmerald: {
+    position:        'absolute',
+    bottom:          -100,
+    right:           -60,
+    width:           280,
+    height:          280,
+    borderRadius:    140,
+    backgroundColor: '#005C25',
+    opacity:         0.42,
+  },
+
+  // Deep purple bloom — top center
+  bgPurple: {
+    position:        'absolute',
+    top:             -100,
+    left:            '25%',
+    width:           300,
+    height:          300,
+    borderRadius:    150,
+    backgroundColor: '#4A007A',
+    opacity:         0.45,
+  },
+
+  // ── Header ──────────────────────────────────────────────────────────────
   header: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    justifyContent: 'space-between',
+    flexDirection:     'row',
+    alignItems:        'center',
+    justifyContent:    'space-between',
     paddingHorizontal: 20,
-    paddingBottom: 16,
-    backgroundColor: WHITE,
+    paddingBottom:     16,
+    backgroundColor:   'rgba(7, 5, 14, 0.75)',
     borderBottomWidth: 1,
-    borderBottomColor: BORDER,
+    borderBottomColor: 'rgba(255,255,255,0.08)',
   },
   headerTitle: {
     fontSize:   24,
     fontWeight: '800',
-    color:      TEXT_DARK,
+    color:      TEXT_LIGHT,
   },
   headerSub: {
     fontSize:  13,
-    color:     TEXT_GRAY,
+    color:     TEXT_MUTED,
     marginTop: 2,
   },
   streakBadge: {
-    backgroundColor: '#FFF7ED',
+    backgroundColor:   'rgba(249,115,22,0.15)',
     paddingHorizontal: 12,
     paddingVertical:   6,
     borderRadius:      20,
     borderWidth:       1,
-    borderColor:       '#FED7AA',
+    borderColor:       'rgba(249,115,22,0.35)',
   },
   streakText: {
     fontSize:   13,
@@ -455,12 +504,12 @@ const styles = StyleSheet.create({
     color:      ORANGE,
   },
 
-  // Scroll
+  // ── Scroll ──────────────────────────────────────────────────────────────
   scrollContent: {
     paddingTop: 16,
   },
 
-  // Section
+  // ── Section ─────────────────────────────────────────────────────────────
   section: {
     paddingHorizontal: 20,
     marginBottom:      20,
@@ -468,22 +517,24 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize:     18,
     fontWeight:   '700',
-    color:        TEXT_DARK,
+    color:        TEXT_LIGHT,
     marginBottom: 4,
   },
   sectionSub: {
     fontSize:     13,
-    color:        TEXT_GRAY,
+    color:        TEXT_MUTED,
     marginBottom: 12,
   },
 
-  // Recommended card
+  // ── Recommended card ────────────────────────────────────────────────────
   recommendedCard: {
-    borderRadius: 20,
-    padding:      16,
+    borderRadius:  20,
+    padding:       16,
     flexDirection: 'row',
-    alignItems:   'center',
+    alignItems:    'center',
     justifyContent: 'space-between',
+    borderWidth:   1,
+    borderColor:   CARD_BORDER,
   },
   recommendedLeft: {
     flexDirection: 'row',
@@ -498,13 +549,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   recommendedTitle: {
-    fontSize:   17,
-    fontWeight: '800',
+    fontSize:     17,
+    fontWeight:   '800',
     marginBottom: 2,
   },
   recommendedDomain: {
     fontSize:     12,
-    color:        TEXT_MID,
+    color:        TEXT_MUTED,
     marginBottom: 6,
   },
   starRow: {
@@ -534,39 +585,39 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // Game list
+  // ── Game list ───────────────────────────────────────────────────────────
   gameList: {
-    backgroundColor: WHITE,
+    backgroundColor: CARD_BG,
     borderRadius:    16,
     borderWidth:     1,
-    borderColor:     BORDER,
+    borderColor:     CARD_BORDER,
     overflow:        'hidden',
   },
   gameRow: {
-    flexDirection:  'row',
-    alignItems:     'center',
+    flexDirection:     'row',
+    alignItems:        'center',
     paddingVertical:   14,
     paddingHorizontal: 16,
-    gap:            12,
+    gap:               12,
   },
   gameRowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: 'rgba(255,255,255,0.07)',
   },
 
-  // Icon bubble
+  // ── Icon bubble ─────────────────────────────────────────────────────────
   gameIconBubble: {
-    width:         48,
-    height:        48,
-    borderRadius:  14,
+    width:          48,
+    height:         48,
+    borderRadius:   14,
     justifyContent: 'center',
-    alignItems:    'center',
+    alignItems:     'center',
   },
   gameEmoji: {
     fontSize: 24,
   },
 
-  // Game info
+  // ── Game info ───────────────────────────────────────────────────────────
   gameInfo: {
     flex: 1,
   },
@@ -579,14 +630,14 @@ const styles = StyleSheet.create({
   gameTitle: {
     fontSize:   15,
     fontWeight: '700',
-    color:      TEXT_DARK,
+    color:      TEXT_LIGHT,
   },
   gameTagRow: {
     flexDirection: 'row',
     gap:           4,
   },
   aiTag: {
-    backgroundColor: '#E0F2FE',
+    backgroundColor:   'rgba(14,165,233,0.2)',
     paddingHorizontal: 6,
     paddingVertical:   2,
     borderRadius:      6,
@@ -594,10 +645,10 @@ const styles = StyleSheet.create({
   aiTagText: {
     fontSize:   10,
     fontWeight: '700',
-    color:      '#0369A1',
+    color:      '#38BDF8',
   },
   weeklyTag: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor:   'rgba(245,158,11,0.2)',
     paddingHorizontal: 6,
     paddingVertical:   2,
     borderRadius:      6,
@@ -605,14 +656,14 @@ const styles = StyleSheet.create({
   weeklyTagText: {
     fontSize:   10,
     fontWeight: '700',
-    color:      '#92400E',
+    color:      '#FCD34D',
   },
   gameDomain: {
     fontSize:   12,
     fontWeight: '600',
   },
 
-  // Game right
+  // ── Game right ──────────────────────────────────────────────────────────
   gameRight: {
     alignItems: 'flex-end',
     gap:        4,
@@ -620,29 +671,31 @@ const styles = StyleSheet.create({
   gameBestXp: {
     fontSize:   12,
     fontWeight: '600',
-    color:      TEXT_GRAY,
+    color:      TEXT_SUBTLE,
   },
   gameChevron: {
     fontSize: 20,
-    color:    TEXT_GRAY,
+    color:    TEXT_MUTED,
   },
 
-  // Modal
+  // ── Modal ───────────────────────────────────────────────────────────────
   modalOverlay: {
     flex:            1,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: 'rgba(0,0,0,0.75)',
     justifyContent:  'center',
     alignItems:      'center',
   },
   rewardCard: {
     width:           '85%',
-    backgroundColor: WHITE,
+    backgroundColor: '#12102A',
     borderRadius:    24,
     padding:         28,
     alignItems:      'center',
     gap:             8,
+    borderWidth:     1,
+    borderColor:     CARD_BORDER,
   },
-  rewardEmoji: { fontSize: 48 },
+  rewardEmoji:  { fontSize: 48 },
   rewardXp: {
     fontSize:   32,
     fontWeight: '800',
@@ -650,34 +703,36 @@ const styles = StyleSheet.create({
   },
   rewardTotal: {
     fontSize: 14,
-    color:    TEXT_GRAY,
+    color:    TEXT_MUTED,
   },
   levelUpBadge: {
-    backgroundColor:  '#FEF3C7',
-    borderRadius:     12,
+    backgroundColor:   'rgba(245,158,11,0.15)',
+    borderRadius:      12,
     paddingHorizontal: 16,
     paddingVertical:   8,
-    marginTop:        4,
+    marginTop:         4,
+    borderWidth:       1,
+    borderColor:       'rgba(245,158,11,0.3)',
   },
   levelUpText: {
     fontSize:   14,
     fontWeight: '700',
-    color:      '#92400E',
+    color:      '#FCD34D',
   },
   badgesSection: {
-    alignSelf:  'stretch',
-    marginTop:  8,
-    gap:        8,
+    alignSelf: 'stretch',
+    marginTop: 8,
+    gap:       8,
   },
   badgesTitle: {
     fontSize:   14,
     fontWeight: '700',
-    color:      TEXT_DARK,
+    color:      TEXT_LIGHT,
   },
   badgeRow: {
     flexDirection:   'row',
     alignItems:      'center',
-    backgroundColor: '#F9F7FF',
+    backgroundColor: 'rgba(124,92,252,0.12)',
     borderRadius:    12,
     padding:         10,
     gap:             10,
@@ -686,11 +741,11 @@ const styles = StyleSheet.create({
   badgeName: {
     fontSize:   14,
     fontWeight: '700',
-    color:      TEXT_DARK,
+    color:      TEXT_LIGHT,
   },
   badgeDesc: {
     fontSize: 12,
-    color:    TEXT_GRAY,
+    color:    TEXT_MUTED,
   },
   rewardCloseBtn: {
     backgroundColor:   PRIMARY,

@@ -1,126 +1,71 @@
 /**
  * useExamPrep Hook
  * Manages all state and logic for the Exam Prep screen.
- * Currently uses mock data — backend integration comes later.
+ * Grade + Domain selection now drive real backend question generation
+ * via ExamRepository — mock progress data has been removed.
  */
 
 import { useState, useCallback } from 'react';
+import ExamRepository from '../../../repositories/ExamRepository';
+import { Result } from '../../../models/Result';
+import { PssaQuestionsResponse, PssaDifficulty } from '../../../api/apiService';
 import {
   ExamPrepUiState,
-  ExamSection,
   ExamTab,
-  SectionStatus,
+  GradeOption,
+  DomainOption,
 } from '../types/ExamPrepUiState';
 
 // --------------------------------------------------------------------------
-// HELPERS
+// STATIC OPTIONS
 // --------------------------------------------------------------------------
 
-/**
- * Derive section status from completed / total counts.
- */
-function deriveStatus(completed: number, total: number): SectionStatus {
-  if (completed === 0)           return 'not_started';
-  if (completed >= total)        return 'complete';
-  return 'in_progress';
-}
-
-/**
- * Calculate overall percent from all sections.
- * Sum of completed tasks / sum of total tasks * 100.
- */
-function calcOverallPercent(sections: ExamSection[]): number {
-  const totalTasks     = sections.reduce((acc, s) => acc + s.total, 0);
-  const completedTasks = sections.reduce((acc, s) => acc + s.completed, 0);
-  if (totalTasks === 0) return 0;
-  return Math.round((completedTasks / totalTasks) * 100);
-}
-
-// --------------------------------------------------------------------------
-// MOCK DATA
-// --------------------------------------------------------------------------
-
-const MOCK_TABS: ExamTab[] = [
+const TABS: ExamTab[] = [
   { id: 'pssa_ela',         label: 'PSSA ELA' },
   { id: 'placeholder_exam', label: 'Placeholder Exam!' },
 ];
 
-const MOCK_SECTIONS_BY_TAB: Record<string, ExamSection[]> = {
-  pssa_ela: [
-    {
-      id:        'understanding_exam',
-      title:     'Understanding the Exam',
-      completed: 5,
-      total:     5,
-      status:    deriveStatus(5, 5),
-    },
-    {
-      id:        'writing_skills',
-      title:     'Writing Skills',
-      completed: 3,
-      total:     5,
-      status:    deriveStatus(3, 5),
-    },
-    {
-      id:        'practice_essays',
-      title:     'Practice Essays',
-      completed: 4,
-      total:     8,
-      status:    deriveStatus(4, 8),
-    },
-    {
-      id:        'timed_practice',
-      title:     'Timed Practice',
-      completed: 2,
-      total:     5,
-      status:    deriveStatus(2, 5),
-    },
-    {
-      id:        'review_improve',
-      title:     'Review & Improve',
-      completed: 1,
-      total:     5,
-      status:    deriveStatus(1, 5),
-    },
-  ],
-  placeholder_exam: [
-    {
-      id:        'intro',
-      title:     'Introduction',
-      completed: 0,
-      total:     4,
-      status:    deriveStatus(0, 4),
-    },
-    {
-      id:        'core_concepts',
-      title:     'Core Concepts',
-      completed: 0,
-      total:     6,
-      status:    deriveStatus(0, 6),
-    },
-    {
-      id:        'practice',
-      title:     'Practice',
-      completed: 0,
-      total:     5,
-      status:    deriveStatus(0, 5),
-    },
-  ],
-};
-
-const MOCK_EXAM_TITLES: Record<string, string> = {
+const EXAM_TITLES: Record<string, string> = {
   pssa_ela:         'PSSA ELA Writing Exam Prep',
   placeholder_exam: 'Placeholder Exam Prep',
 };
+
+// Grade 3 and 4 only — Grade 5+ content not seeded in Firestore yet (out of scope this sprint)
+const GRADE_OPTIONS: GradeOption[] = [
+  { code: '3', label: 'Grade 3' },
+  { code: '4', label: 'Grade 4' },
+];
+
+const DOMAIN_OPTIONS: DomainOption[] = [
+  { code: 'reading_fiction',        label: 'Reading Fiction' },
+  { code: 'reading_informational',  label: 'Reading Informational' },
+  { code: 'vocabulary',             label: 'Vocabulary' },
+  { code: 'poetry',                 label: 'Poetry' },
+  { code: 'craft_and_structure',    label: 'Craft & Structure' },
+];
+
+const DEFAULT_GRADE  = '4';
+const DEFAULT_DOMAIN = 'reading_fiction' as const;
+
+// Fixed session parameters — used both when calling the backend and when
+// exposed via state so the navigator can build PreloadedSessionData with
+// the exact same difficulty that was actually used to generate questions.
+const DEFAULT_DIFFICULTY: PssaDifficulty = 'medium';
+const DEFAULT_QUESTION_COUNT = 10;
 
 // --------------------------------------------------------------------------
 // HOOK RETURN TYPE
 // --------------------------------------------------------------------------
 
 interface UseExamPrepReturn {
-  state:         ExamPrepUiState;
-  onTabChange:   (tabId: string) => void;
-  onRefresh:     () => void;
+  state:               ExamPrepUiState;
+  onTabChange:         (tabId: string) => void;
+  onRefresh:           () => void;
+  onGradeChange:       (grade: string) => void;
+  onDomainChange:      (domain: string) => void;
+  onOpenGradeSheet:    () => void;
+  onCloseGradeSheet:   () => void;
+  onContinue:          () => Promise<Result<PssaQuestionsResponse>>;
 }
 
 // --------------------------------------------------------------------------
@@ -130,11 +75,21 @@ interface UseExamPrepReturn {
 export default function useExamPrep(): UseExamPrepReturn {
   const [activeTabId, setActiveTabId] = useState<string>('pssa_ela');
   const [isLoading,   setIsLoading]   = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Derive data for active tab
-  const sections      = MOCK_SECTIONS_BY_TAB[activeTabId] ?? [];
-  const examTitle     = MOCK_EXAM_TITLES[activeTabId]     ?? '';
-  const overallPercent = calcOverallPercent(sections);
+  // Grade selector state
+  const [selectedGrade, setSelectedGrade]             = useState<string>(DEFAULT_GRADE);
+  const [isGradeSheetVisible, setIsGradeSheetVisible] = useState<boolean>(false);
+
+  // Domain selector state
+  const [selectedDomain, setSelectedDomain] = useState(DEFAULT_DOMAIN);
+
+  // Question generation state
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [generatedQuestions, setGeneratedQuestions] =
+    useState<PssaQuestionsResponse | null>(null);
+
+  const examTitle = EXAM_TITLES[activeTabId] ?? '';
 
   // --------------------------------------------------------------------------
   // HANDLERS
@@ -145,28 +100,80 @@ export default function useExamPrep(): UseExamPrepReturn {
   }, []);
 
   const onRefresh = useCallback(() => {
-    // Placeholder for future backend pull-to-refresh
     setIsLoading(true);
     setTimeout(() => setIsLoading(false), 800);
   }, []);
+
+  const onGradeChange = useCallback((grade: string) => {
+    setSelectedGrade(grade);
+  }, []);
+
+  const onDomainChange = useCallback((domain: string) => {
+    setSelectedDomain(domain as typeof DEFAULT_DOMAIN);
+  }, []);
+
+  const onOpenGradeSheet = useCallback(() => {
+    setIsGradeSheetVisible(true);
+  }, []);
+
+  const onCloseGradeSheet = useCallback(() => {
+    setIsGradeSheetVisible(false);
+  }, []);
+
+  const onContinue = useCallback(async (): Promise<Result<PssaQuestionsResponse>> => {
+    setIsGenerating(true);
+    setErrorMessage(null);
+
+    const result = await ExamRepository.generatePssaQuestions(
+      selectedGrade,
+      selectedDomain,
+      DEFAULT_DIFFICULTY,
+      DEFAULT_QUESTION_COUNT,
+    );
+
+    if (Result.isSuccess(result)) {
+      setGeneratedQuestions(result.data);
+    } else if (Result.isError(result)) {
+      setErrorMessage(result.message);
+    }
+
+    setIsGenerating(false);
+    return result;
+  }, [selectedGrade, selectedDomain]);
 
   // --------------------------------------------------------------------------
   // STATE ASSEMBLY
   // --------------------------------------------------------------------------
 
   const state: ExamPrepUiState = {
-    tabs:           MOCK_TABS,
+    tabs:           TABS,
     activeTabId,
     examTitle,
-    overallPercent,
-    sections,
+
+    selectedGrade,
+    gradeOptions:        GRADE_OPTIONS,
+    isGradeSheetVisible,
+
+    selectedDomain,
+    domainOptions: DOMAIN_OPTIONS,
+
+    difficulty: DEFAULT_DIFFICULTY,
+
+    isGenerating,
+    generatedQuestions,
+
     isLoading,
-    errorMessage:   null,
+    errorMessage,
   };
 
   return {
     state,
     onTabChange,
     onRefresh,
+    onGradeChange,
+    onDomainChange,
+    onOpenGradeSheet,
+    onCloseGradeSheet,
+    onContinue,
   };
 }

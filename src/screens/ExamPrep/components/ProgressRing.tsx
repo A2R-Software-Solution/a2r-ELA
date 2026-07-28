@@ -27,7 +27,7 @@ interface ProgressRingProps {
 
 const PURPLE       = '#6C4DFF';
 const TRACK_COLOR  = '#E5E7EB';
-const TEXT_PRIMARY = '#0F172A';
+const TEXT_PRIMARY = '#c8f610';
 const TEXT_MUTED   = '#475569';
 
 // --------------------------------------------------------------------------

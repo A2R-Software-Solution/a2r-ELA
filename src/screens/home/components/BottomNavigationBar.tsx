@@ -1,6 +1,7 @@
 /**
  * Bottom Navigation Bar Component
- * 5 tabs: Home, Exam Prep, Practice, Games, Profile
+ * 5 tabs: Home, Exam Prep, Games, Profile
+ * ✅ FIXED: Dark theme colors, proper positioning, no overlap
  * Active tab: purple pill background + colored icon + purple label
  */
 
@@ -66,38 +67,48 @@ const BottomNavigationBar: React.FC<BottomNavigationBarProps> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#12102A',           // ← FIX: Dark background matching theme
     borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
-    paddingTop: 8,
+    borderTopColor: 'rgba(255,255,255,0.1)', // ← Subtle dark border
+    paddingTop: 12,                       // ← Increased padding
     paddingHorizontal: 4,
+    paddingRight: 4,
+    paddingLeft: 4,
+    elevation: 8,                         // Android shadow
+    shadowColor: '#000000',               // iOS shadow
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
   tab: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 4,
   },
   iconWrap: {
-    width: 40,
-    height: 28,
-    borderRadius: 14,
+    width: 44,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 2,
+    marginBottom: 4,
+    backgroundColor: 'transparent', // ← Transparent when inactive
   },
   iconWrapActive: {
-    backgroundColor: '#EDE9FF',  // light purple pill
+    backgroundColor: '#6D28D9',           // ← FIX: Dark purple pill
   },
   icon: {
-    fontSize: 18,
+    fontSize: 20,
   },
   label: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '500',
-    color: '#94A3B8',
+    color: '#8B7BA8',                     // ← FIX: Muted light color for inactive
+    marginTop: 2,
   },
   labelSelected: {
-    color: '#6C4DFF',
+    color: '#C4B5FD',                     // ← FIX: Bright purple for active
     fontWeight: '700',
   },
 });

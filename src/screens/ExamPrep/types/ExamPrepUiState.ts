@@ -3,32 +3,7 @@
  * All TypeScript interfaces and types for the Exam Prep screen.
  */
 
-// --------------------------------------------------------------------------
-// SECTION STATUS
-// --------------------------------------------------------------------------
-
-/**
- * Status of an individual exam section based on completion.
- * - complete:    all tasks done         (green)
- * - in_progress: some tasks done        (yellow/orange)
- * - not_started: zero tasks done        (grey)
- */
-export type SectionStatus = 'complete' | 'in_progress' | 'not_started';
-
-// --------------------------------------------------------------------------
-// EXAM SECTION
-// --------------------------------------------------------------------------
-
-/**
- * A single topic/section row inside the exam prep checklist.
- */
-export interface ExamSection {
-  id:             string;        // Unique identifier e.g. "understanding_exam"
-  title:          string;        // Display title e.g. "Understanding the Exam"
-  completed:      number;        // Tasks completed e.g. 5
-  total:          number;        // Total tasks e.g. 5
-  status:         SectionStatus; // Derived from completed/total
-}
+import { PssaDomain, PssaDifficulty, PssaQuestionsResponse } from '../../../api/apiService';
 
 // --------------------------------------------------------------------------
 // EXAM TAB
@@ -41,6 +16,31 @@ export interface ExamSection {
 export interface ExamTab {
   id:    string; // e.g. "pssa_ela"
   label: string; // e.g. "PSSA ELA"
+}
+
+// --------------------------------------------------------------------------
+// GRADE OPTION
+// --------------------------------------------------------------------------
+
+/**
+ * A single selectable grade — used by the grade selector sheet
+ * (reuses StateSelectorSheet's grade grid, state portion unused).
+ */
+export interface GradeOption {
+  code:  string; // e.g. "3", "4"
+  label: string; // e.g. "Grade 3"
+}
+
+// --------------------------------------------------------------------------
+// DOMAIN OPTION
+// --------------------------------------------------------------------------
+
+/**
+ * A single selectable PSSA domain — rendered as an inline chip.
+ */
+export interface DomainOption {
+  code:  PssaDomain;
+  label: string; // e.g. "Reading Fiction"
 }
 
 // --------------------------------------------------------------------------
@@ -59,13 +59,23 @@ export interface ExamPrepUiState {
   // Header info
   examTitle:     string;      // e.g. "PSSA ELA Writing Exam Prep"
 
-  // Overall progress
-  overallPercent: number;     // 0–100, drives the progress ring
+  // Grade selector
+  selectedGrade:       string;        // e.g. "4" — currently selected grade
+  gradeOptions:         GradeOption[]; // Selectable grades (Grade 3 / Grade 4 for now)
+  isGradeSheetVisible:  boolean;       // Controls the grade selector sheet
 
-  // Section checklist
-  sections:      ExamSection[];
+  // Domain selector
+  selectedDomain: PssaDomain;    // Currently selected domain
+  domainOptions:  DomainOption[]; // Selectable domains (inline chips)
+
+  // Difficulty used for question generation (fixed for now, exposed for navigation)
+  difficulty:     PssaDifficulty;
+
+  // Question generation
+  isGenerating:       boolean;                    // True while generatePssaQuestions() is in flight
+  generatedQuestions: PssaQuestionsResponse | null; // Last successful generation result
 
   // Async state
-  isLoading:     boolean;
+  isLoading:     boolean;      // Pull-to-refresh loading state
   errorMessage:  string | null;
 }

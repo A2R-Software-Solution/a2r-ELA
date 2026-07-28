@@ -10,6 +10,8 @@ from auth.auth_service import require_auth
 from llm.llm_client import round_robin_groq_client as pssa_groq_client
 from llm.prompts import pssa_prompts
 from utils.responses import success_response, error_response
+from config.settings import settings
+from pssa.content_service import content_service          # ← NEW
 
 
 def _parse_json_response(content: str) -> dict:
@@ -58,19 +60,22 @@ def generate_pssa_questions(
 
     Body:
     {
-        "domain": "reading_fiction" | "reading_informational" | "vocabulary" | "poetry" | "craft_and_structure",
+        "domain":     "reading_fiction" | "reading_informational" | "vocabulary" | "poetry" | "craft_and_structure",
         "difficulty": "easy" | "medium" | "hard",
-        "count": 5 | 10 | 15 | 20
+        "count":      5 | 10 | 15 | 20,
+        "grade":      "3" | "4" | "5" ...   ← NEW (default: "4")
     }
     """
     try:
         body = req.get_json(silent=True) or {}
 
-        # Validate inputs
-        domain = body.get("domain", "reading_fiction")
+        # ── Parse inputs ──────────────────────────────────────────────────────
+        domain     = body.get("domain",     "reading_fiction")
         difficulty = body.get("difficulty", "medium")
-        count = int(body.get("count", 10))
+        count      = int(body.get("count",  10))
+        grade      = str(body.get("grade",  "4")).strip()   # ← NEW (default "4")
 
+        # ── Validate domain ───────────────────────────────────────────────────
         valid_domains = [
             "reading_fiction",
             "reading_informational",
@@ -78,42 +83,71 @@ def generate_pssa_questions(
             "poetry",
             "craft_and_structure",
         ]
-        valid_difficulties = ["easy", "medium", "hard"]
-
         if domain not in valid_domains:
             return error_response(
                 f"Invalid domain. Must be one of: {', '.join(valid_domains)}", 400
             )
 
+        # ── Validate difficulty ───────────────────────────────────────────────
+        valid_difficulties = ["easy", "medium", "hard"]
         if difficulty not in valid_difficulties:
             return error_response(
                 f"Invalid difficulty. Must be one of: {', '.join(valid_difficulties)}", 400
             )
 
+        # ── Validate count ────────────────────────────────────────────────────
         if not (1 <= count <= 20):
             return error_response("Count must be between 1 and 20", 400)
 
-        print(f"Generating PSSA questions — domain: {domain}, difficulty: {difficulty}, count: {count}, user: {user_id}")
+        # ── Validate grade ────────────────────────────────────────────────────
+        if not settings.is_valid_grade(grade):
+            return error_response(
+                f"Invalid grade '{grade}'. "
+                f"Supported grades: {', '.join(settings.SUPPORTED_GRADES)}", 400
+            )
 
-        # Build prompt and call LLM
-        prompt = pssa_prompts.get_question_generation_prompt(domain, difficulty, count)
-        max_tokens = 4000 if count > 8 else 2500
-        raw_content = pssa_groq_client.call(prompt, temperature=0.7, max_tokens=max_tokens)
+        print(
+            f"Generating PSSA questions — "
+            f"grade: {grade}, domain: {domain}, "
+            f"difficulty: {difficulty}, count: {count}, user: {user_id}"
+        )
 
+        # ── Fetch grade-specific content from Firestore ───────────────────────
+        try:
+            grade_content = content_service.get_content(grade)
+        except ValueError as e:
+            print(f"content_service error: {e}")
+            return error_response(
+                f"Content not available for Grade {grade}. "
+                f"Please try Grade 3 or Grade 4.", 400
+            )
 
-        # Parse response
+        # ── Build prompt and call LLM ─────────────────────────────────────────
+        prompt = pssa_prompts.get_question_generation_prompt(
+            domain=domain,
+            difficulty=difficulty,
+            count=count,
+            grade=grade,                    # ← NEW
+            grade_content=grade_content,    # ← NEW
+        )
+        max_tokens  = 4000 if count > 8 else 2500
+        raw_content = pssa_groq_client.call(
+            prompt, temperature=0.7, max_tokens=max_tokens
+        )
+
+        # ── Parse response ────────────────────────────────────────────────────
         result = _parse_json_response(raw_content)
 
         if not result:
             print(f"Failed to parse PSSA question generation response: {raw_content[:300]}")
             return error_response("Failed to generate questions. Please try again.", 500)
 
-        # Validate structure
+        # ── Validate structure ────────────────────────────────────────────────
         if "questions" not in result or "passage" not in result:
             print(f"Invalid response structure: {result}")
             return error_response("Invalid response from LLM. Please try again.", 500)
 
-        print(f"Successfully generated {len(result.get('questions', []))} questions")
+        print(f"Successfully generated {len(result.get('questions', []))} questions for grade {grade}")
         return success_response(result)
 
     except Exception as e:
@@ -137,17 +171,19 @@ def evaluate_pssa_writing(
 
     Body:
     {
-        "question": "The question text",
+        "question":       "The question text",
         "student_answer": "What the student wrote",
-        "difficulty": "easy" | "medium" | "hard"
+        "difficulty":     "easy" | "medium" | "hard",
+        "grade":          "3" | "4" ...   ← NEW (default: "4")
     }
     """
     try:
         body = req.get_json(silent=True) or {}
 
-        question = body.get("question", "").strip()
+        question       = body.get("question",       "").strip()
         student_answer = body.get("student_answer", "").strip()
-        difficulty = body.get("difficulty", "medium")
+        difficulty     = body.get("difficulty",     "medium")
+        grade          = str(body.get("grade",      "4")).strip()   # ← NEW
 
         if not question:
             return error_response("question is required", 400)
@@ -158,29 +194,41 @@ def evaluate_pssa_writing(
         if difficulty not in ["easy", "medium", "hard"]:
             return error_response("difficulty must be easy, medium, or hard", 400)
 
-        print(f"Evaluating PSSA writing response — user: {user_id}, difficulty: {difficulty}")
+        if not settings.is_valid_grade(grade):
+            return error_response(
+                f"Invalid grade '{grade}'. "
+                f"Supported grades: {', '.join(settings.SUPPORTED_GRADES)}", 400
+            )
 
-        # Build prompt and call LLM
+        print(
+            f"Evaluating PSSA writing — "
+            f"grade: {grade}, difficulty: {difficulty}, user: {user_id}"
+        )
+
+        # ── Build prompt and call LLM ─────────────────────────────────────────
         prompt = pssa_prompts.get_writing_evaluation_prompt(
             question=question,
             student_answer=student_answer,
-            difficulty=difficulty
+            difficulty=difficulty,
+            grade=grade,    # ← NEW
         )
-        raw_content = pssa_groq_client.call(prompt, temperature=0.3, max_tokens=500)
+        raw_content = pssa_groq_client.call(
+            prompt, temperature=0.3, max_tokens=500
+        )
 
-        # Parse response
+        # ── Parse response ────────────────────────────────────────────────────
         result = _parse_json_response(raw_content)
 
         if not result:
             print(f"Failed to parse PSSA writing evaluation response: {raw_content[:300]}")
             # Fallback so student isn't penalized for LLM failure
             return success_response({
-                "score": 2,
-                "max_score": 4,
-                "feedback": "Good effort! Keep practicing your writing.",
+                "score":            2,
+                "max_score":        4,
+                "feedback":         "Good effort! Keep practicing your writing.",
                 "what_they_did_well": "You attempted the question.",
-                "how_to_improve": "Try to add more specific details in your answer.",
-                "xp_earned": 15
+                "how_to_improve":   "Try to add more specific details in your answer.",
+                "xp_earned":        15,
             })
 
         return success_response(result)

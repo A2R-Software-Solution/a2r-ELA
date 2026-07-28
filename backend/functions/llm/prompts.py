@@ -340,10 +340,14 @@ essay_prompts = EssayPrompts()
 class PSSAPrompts:
     """Prompts for PSSA practice question generation and evaluation"""
 
-    # Full PDF reference context — used in every generation prompt
-    PDF_CONTEXT = """
-You are trained on Grade 4 PSSA ELA practice material. Here is the reference style and format:
-
+    # NOTE: Old hardcoded Grade-4-only PDF_CONTEXT has been removed.
+    # Grade-specific reference content now comes from Firestore via
+    # pssa/content_service.py and is injected per-request as `grade_content`.
+    #
+    # This STATIC_FORMAT_RULES block is grade-agnostic — question types,
+    # domains, and formatting rules that apply to every grade. The actual
+    # passage/vocabulary source material is 100% driven by grade_content.
+    STATIC_FORMAT_RULES = """
 QUESTION TYPES:
 1. Multiple Choice (MCQ) — 4 options (A/B/C/D), exactly one correct answer
 2. Short Answer — student writes 1-2 sentences, a model answer is provided for self-check
@@ -377,19 +381,26 @@ FORMAT RULES:
     def get_question_generation_prompt(
         domain: str,
         difficulty: str,
-        count: int
+        count: int,
+        grade: str,
+        grade_content: str,
     ) -> str:
         """
         Generate a prompt to create fresh PSSA-style questions.
 
         Args:
-            domain: e.g. 'reading', 'vocabulary', 'poetry', 'craft', 'writing'
-            difficulty: 'easy', 'medium', or 'hard'
-            count: number of questions (student's choice)
+            domain:        e.g. 'reading_fiction', 'vocabulary', 'poetry', 'craft_and_structure'
+            difficulty:    'easy', 'medium', or 'hard'
+            count:         number of questions (student's choice)
+            grade:         grade string e.g. '3', '4' — used for display + tone
+            grade_content: grade-specific reference content fetched from Firestore
+                           via pssa/content_service.py (replaces old hardcoded PDF_CONTEXT)
 
         Returns:
             Formatted prompt string
         """
+
+        grade_display = settings.get_grade_display(grade)
 
         # Map domain to passage type and question focus
         domain_config = {
@@ -427,23 +438,37 @@ FORMAT RULES:
         }
         diff_instruction = difficulty_instructions.get(difficulty, difficulty_instructions["medium"])
 
-        # Question type distribution based on count
-        if count <= 5:
-            mcq_count = count - 1
+        # ── MCQ / short-answer distribution ──────────────────────────
+        # Guarantees at least 1 MCQ whenever count >= 1.
+        if count == 1:
+            mcq_count   = 1
+            short_count = 0
+        elif count <= 5:
+            mcq_count   = count - 1
             short_count = 1
         elif count <= 10:
-            mcq_count = count - 2
+            mcq_count   = count - 2
             short_count = 2
         else:
-            mcq_count = count - 3
+            mcq_count   = count - 3
             short_count = 3
 
-        prompt = f"""You are a Grade 4 PSSA ELA expert creating a fresh practice session for a student.
+        # Safety net — never allow 0 MCQs for any count >= 1
+        if mcq_count <= 0 and count >= 1:
+            mcq_count   = 1
+            short_count = max(0, count - 1)
+        # ──────────────────────────────────────────────────────────────────
 
-REFERENCE CONTEXT:
-{PSSAPrompts.PDF_CONTEXT}
+        prompt = f"""You are a {grade_display} PSSA ELA expert creating a fresh practice session for a student.
+
+GRADE-SPECIFIC REFERENCE CONTENT ({grade_display}):
+{grade_content}
+
+GENERAL FORMAT RULES:
+{PSSAPrompts.STATIC_FORMAT_RULES}
 
 SESSION REQUIREMENTS:
+- Grade: {grade_display}
 - Domain: {domain.replace('_', ' ').title()}
 - Difficulty: {difficulty.title()}
 - Total Questions: {count}
@@ -457,13 +482,13 @@ PASSAGE TYPE: {passage_type}
 QUESTION FOCUS: {focus}
 
 INSTRUCTIONS:
-1. Write a fresh, original passage appropriate for the domain and difficulty.
+1. Write a fresh, original passage appropriate for the domain, difficulty, and {grade_display} reading level, grounded in the grade-specific reference content above.
 2. Generate exactly {mcq_count} MCQ questions and {short_count} short answer questions based on the passage.
 3. For MCQ: provide 4 options (A/B/C/D), mark the correct answer, and give a brief explanation.
 4. For Short Answer: provide a model answer (1-2 sentences) for student self-check.
 5. Questions must directly relate to the passage.
 6. Never reuse passages or questions from previous sessions.
-7. Keep language age-appropriate for Grade 4 students.
+7. Keep language age-appropriate for {grade_display} students.
 
 Return ONLY valid JSON, no markdown, no extra text:
 
@@ -505,21 +530,25 @@ Return ONLY valid JSON, no markdown, no extra text:
     def get_writing_evaluation_prompt(
         question: str,
         student_answer: str,
-        difficulty: str
+        difficulty: str,
+        grade: str = "4",
     ) -> str:
         """
         Evaluate a student's short answer or writing response.
 
         Args:
-            question: The question asked
+            question:       The question asked
             student_answer: What the student wrote
-            difficulty: 'easy', 'medium', or 'hard'
+            difficulty:     'easy', 'medium', or 'hard'
+            grade:          grade string e.g. '3', '4' — used for grade-appropriate scoring language
 
         Returns:
             Formatted evaluation prompt
         """
 
-        prompt = f"""You are a supportive Grade 4 PSSA ELA writing coach evaluating a student's short answer.
+        grade_display = settings.get_grade_display(grade)
+
+        prompt = f"""You are a supportive {grade_display} PSSA ELA writing coach evaluating a student's short answer.
 
 QUESTION ASKED:
 "{question}"
@@ -536,10 +565,11 @@ EVALUATION CRITERIA:
 - Score 4: Excellent answer — clear, complete, uses text evidence or specific details
 
 SCORING RULES:
-1. Be encouraging — this is a Grade 4 student learning to write
+1. Be encouraging — this is a {grade_display} student learning to write
 2. If the answer is blank or just one word, score is 1
 3. Focus on whether the student understood the question and responded meaningfully
 4. Do not penalize for minor spelling or grammar errors
+5. Calibrate your expectations to what is realistic for a {grade_display} student
 
 XP MAPPING:
 - Score 1 → xp_earned: 5

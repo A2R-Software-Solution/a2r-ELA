@@ -4,6 +4,7 @@
  *
  * ✅ FIXED: Replaced hardcoded paddingTop: 32 with useSafeAreaInsets()
  *           so the avatar doesn't hide behind the dynamic island / notch
+ * ✅ UPDATED: Dark C-palette theme (near-black base, glassy purple surfaces)
  */
 
 import React, { useState, useRef } from 'react';
@@ -24,16 +25,18 @@ import {
 } from '../../../models/ui/ProfileUiModel';
 
 // ============================================================================
-// COLORS
+// COLORS — C palette (dark theme)
 // ============================================================================
 
 const PURPLE = '#7D55FF';
-const LIGHT_PURPLE = '#F0EBFF';
-const GRAY_TEXT = '#6B7280';
-const DARK_TEXT = '#111827';
-const MID_TEXT = '#374151';
+const PURPLE_SURFACE = 'rgba(125, 85, 255, 0.16)';
+const PURPLE_BORDER = 'rgba(125, 85, 255, 0.35)';
+const TEXT_PRIMARY = '#F5F3FF';
+const TEXT_SECONDARY = 'rgba(245, 243, 255, 0.6)';
+const TEXT_MUTED = 'rgba(245, 243, 255, 0.45)';
 const GREEN = '#22C55E';
 const RED = '#EF4444';
+const CARD_BORDER = 'rgba(255, 255, 255, 0.08)';
 
 // ============================================================================
 // PROPS
@@ -143,7 +146,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             value={nameInput}
             onChangeText={setNameInput}
             placeholder="Your name"
-            placeholderTextColor={GRAY_TEXT}
+            placeholderTextColor={TEXT_MUTED}
             maxLength={50}
             returnKeyType="done"
             onSubmitEditing={() => onNameSave(nameInput)}
@@ -193,7 +196,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             value={birthdateInput}
             onChangeText={setBirthdateInput}
             placeholder="MM/DD/YYYY"
-            placeholderTextColor={GRAY_TEXT}
+            placeholderTextColor={TEXT_MUTED}
             keyboardType="numeric"
             maxLength={10}
             returnKeyType="done"
@@ -271,7 +274,7 @@ const styles = StyleSheet.create({
     // ✅ paddingTop is now set dynamically via insets in JSX above
     paddingBottom: 24,
     paddingHorizontal: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent', // ← was '#FFFFFF', now transparent so bg bloom layers show through
   },
 
   // Avatar
@@ -285,6 +288,8 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
+    borderWidth: 2,
+    borderColor: PURPLE_BORDER,
   },
   avatarInitials: {
     width: 96,
@@ -293,6 +298,8 @@ const styles = StyleSheet.create({
     backgroundColor: PURPLE,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: PURPLE_BORDER,
   },
   initialsText: {
     fontSize: 32,
@@ -302,7 +309,7 @@ const styles = StyleSheet.create({
   avatarOverlay: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: 48,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: 'rgba(0,0,0,0.55)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -313,12 +320,14 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1A1626', // dark surface instead of white
+    borderWidth: 1,
+    borderColor: PURPLE_BORDER,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.3,
     shadowRadius: 3,
     elevation: 3,
   },
@@ -334,7 +343,7 @@ const styles = StyleSheet.create({
   displayName: {
     fontSize: 22,
     fontWeight: '700',
-    color: DARK_TEXT,
+    color: TEXT_PRIMARY,
   },
   editIcon: { fontSize: 14 },
 
@@ -349,7 +358,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 18,
     fontWeight: '600',
-    color: DARK_TEXT,
+    color: TEXT_PRIMARY,
     borderBottomWidth: 2,
     borderBottomColor: PURPLE,
     paddingVertical: 4,
@@ -376,7 +385,7 @@ const styles = StyleSheet.create({
   // Email
   email: {
     fontSize: 14,
-    color: GRAY_TEXT,
+    color: TEXT_SECONDARY,
     marginBottom: 8,
   },
 
@@ -388,7 +397,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   birthdateIcon: { fontSize: 14 },
-  birthdateText: { fontSize: 14, color: MID_TEXT },
+  birthdateText: { fontSize: 14, color: TEXT_SECONDARY },
   editIconSmall: { fontSize: 11 },
   addBirthdateRow: { marginBottom: 8 },
   addBirthdateText: { fontSize: 14, color: PURPLE, fontWeight: '500' },
@@ -396,7 +405,7 @@ const styles = StyleSheet.create({
   // Joined
   joinedDate: {
     fontSize: 12,
-    color: GRAY_TEXT,
+    color: TEXT_MUTED,
     marginBottom: 12,
   },
 
@@ -406,7 +415,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   pill: {
-    backgroundColor: LIGHT_PURPLE,
+    backgroundColor: PURPLE_SURFACE,
+    borderWidth: 1,
+    borderColor: PURPLE_BORDER,
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 20,

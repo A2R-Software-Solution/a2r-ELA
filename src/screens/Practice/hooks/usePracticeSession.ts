@@ -1,197 +1,311 @@
 /**
- * usePracticeSession
- * Fetches PSSA questions across domains (respecting 20-per-call backend cap),
- * tracks student answers, evaluates writing responses, computes final results.
+ * usePracticeSession — Lazy Loading Version
+ *
+ * Instead of fetching all questions upfront, questions are fetched ONE AT A TIME
+ * when the user presses Next. This:
+ *   1. Eliminates the long initial loading spinner
+ *   2. Spreads TPM usage over time → no more LLM failures
+ *   3. Allows higher total question counts reliably
+ *
+ * Flow:
+ *   Mount        → build question plan → fetch Q1 → show Q1
+ *   User → Next  → fetch Q2 in background → navigate to Q2
+ *   User → Next  → fetch Q3 in background → navigate to Q3
+ *   ...
+ *   Last Q → Finish → results screen
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { apiService, PssaDomain, PssaDifficulty, PssaQuestion } from '../../../api/apiService';
+import { apiService, PssaDomain, PssaDifficulty } from '../../../api/apiService';
 import {
   PracticeSessionConfig,
+  PracticeSessionParams,
+  PreloadedSessionData,
   PracticeSessionUiState,
   RuntimeQuestion,
   AnswerState,
-  DomainBatch,
+  SessionCategory,
   createInitialSessionState,
   isMcqQuestion,
   isShortAnswerQuestion,
 } from '../types/PracticeSessionUiState';
 
-const MAX_PER_CALL = 20;
+// ============================================================================
+// QUESTION PLAN
+// A flat ordered list of { domain, category } slots built from config.
+// Each slot = one API call = one question fetched lazily.
+// ============================================================================
 
-// Domains used for "comprehension" count — rotated for variety
+interface QuestionSlot {
+  domain:   PssaDomain;
+  category: SessionCategory;
+}
+
 const COMPREHENSION_DOMAINS: PssaDomain[] = [
   'reading_fiction',
   'reading_informational',
   'poetry',
 ];
-
-// Domains used for "mcq" count — standalone MCQ-style domains
 const MCQ_DOMAINS: PssaDomain[] = [
   'vocabulary',
   'craft_and_structure',
 ];
+const WRITING_DOMAIN: PssaDomain = 'reading_informational';
+
+// Fallback when PracticeSessionConfig.grade isn't provided (CreateCustomTest
+// flow doesn't collect grade yet) — keeps behavior working until that's added.
+const FALLBACK_GRADE = '4';
 
 /**
- * Split a total count across a list of domains, rotating until
- * each request is <= MAX_PER_CALL.
+ * Build a flat ordered list of question slots from config.
+ * Order: MCQ → Comprehension → Writing
  */
-function buildDomainRequests(
-  totalCount: number,
-  domains: PssaDomain[],
-  category: 'mcq' | 'comprehension',
-): { domain: PssaDomain; count: number; category: 'mcq' | 'comprehension' }[] {
-  if (totalCount <= 0 || domains.length === 0) return [];
+function buildQuestionPlan(config: PracticeSessionConfig): QuestionSlot[] {
+  const slots: QuestionSlot[] = [];
 
-  const requests: { domain: PssaDomain; count: number; category: 'mcq' | 'comprehension' }[] = [];
-  let remaining = totalCount;
-  let domainIdx = 0;
-
-  while (remaining > 0) {
-    const domain = domains[domainIdx % domains.length];
-    const chunk = Math.min(remaining, MAX_PER_CALL, Math.ceil(totalCount / domains.length) || remaining);
-    requests.push({ domain, count: chunk, category });
-    remaining -= chunk;
-    domainIdx += 1;
-
-    // Safety valve — never loop forever
-    if (requests.length > 20) break;
+  for (let i = 0; i < config.mcq; i++) {
+    slots.push({ domain: MCQ_DOMAINS[i % MCQ_DOMAINS.length], category: 'mcq' });
+  }
+  for (let i = 0; i < config.comprehension; i++) {
+    slots.push({ domain: COMPREHENSION_DOMAINS[i % COMPREHENSION_DOMAINS.length], category: 'comprehension' });
+  }
+  for (let i = 0; i < config.writing; i++) {
+    slots.push({ domain: WRITING_DOMAIN, category: 'writing' });
   }
 
-  return requests;
+  return slots;
 }
 
-export function usePracticeSession(config: PracticeSessionConfig) {
-  const [state, setState] = useState<PracticeSessionUiState>(
-    createInitialSessionState(config),
-  );
+// ============================================================================
+// BUILD PRELOADED QUESTIONS — ExamPrep flow, data already fetched upstream
+// (single generatePssaQuestions call in useExamPrep.onContinue). No further
+// API calls are made here — this just flattens the response into
+// RuntimeQuestion[] the screen already knows how to render.
+// ============================================================================
 
-  const hasFetchedRef = useRef(false);
+function buildPreloadedQuestions(data: PreloadedSessionData): RuntimeQuestion[] {
+  const { response, domain } = data;
+  const { passage, questions } = response;
+
+  if (!passage || !questions || questions.length === 0) return [];
+
+  return questions.map((q, index) => ({
+    uid:          `${domain}_${q.id ?? index}_${index}`,
+    category:     (isMcqQuestion(q) ? 'mcq' : 'comprehension') as SessionCategory,
+    domain,
+    passageTitle: passage.title,
+    passageText:  passage.text,
+    question:     q,
+  }));
+}
+
+// ============================================================================
+// FETCH ONE QUESTION
+// ============================================================================
+
+async function fetchOneQuestion(
+  slot: QuestionSlot,
+  difficulty: PssaDifficulty,
+  grade: string,
+  index: number,
+): Promise<RuntimeQuestion | null> {
+  try {
+    const res = await apiService.generatePssaQuestions({
+      grade,
+      domain:     slot.domain,
+      difficulty,
+      count:      1,
+    });
+
+    if (!res.data.success || !res.data.data) return null;
+
+    const { passage, questions } = res.data.data;
+    if (!questions || questions.length === 0) return null;
+
+    const matchingQuestion = questions.find(q => {
+      if (slot.category === 'mcq')           return isMcqQuestion(q);
+      if (slot.category === 'comprehension') return isShortAnswerQuestion(q);
+      if (slot.category === 'writing')       return isShortAnswerQuestion(q);
+      return false;
+    });
+
+    if (!matchingQuestion) return null;
+
+    return {
+      uid:          `${slot.domain}_${slot.category}_${index}_${Math.random().toString(36).slice(2, 6)}`,
+      category:     slot.category,
+      domain:       slot.domain,
+      passageTitle: passage.title,
+      passageText:  passage.text,
+      question:     matchingQuestion,
+    };
+  } catch (err) {
+    console.error(`fetchOneQuestion error (slot ${index}):`, err);
+    return null;
+  }
+}
+
+// ============================================================================
+// INITIAL ANSWER STATE
+// ============================================================================
+
+function buildAnswerState(rq: RuntimeQuestion): AnswerState {
+  if (isMcqQuestion(rq.question)) {
+    return {
+      type:           'mcq',
+      selectedOption: null,
+      isCorrect:      null,
+      isAnswered:     false,
+    };
+  }
+  return {
+    type:             'short_answer',
+    studentAnswer:    '',
+    isAnswered:       false,
+    isEvaluating:     false,
+    score:            null,
+    maxScore:         null,
+    feedback:         null,
+    whatTheyDidWell:  null,
+    howToImprove:     null,
+    xpEarned:         null,
+    evaluationFailed: false,
+  };
+}
+
+// ============================================================================
+// EXTENDED STATE — adds isNextLoading flag
+// ============================================================================
+
+interface ExtendedSessionState extends PracticeSessionUiState {
+  isNextLoading: boolean;
+}
+
+// ============================================================================
+// HOOK
+// ============================================================================
+
+export function usePracticeSession(params: PracticeSessionParams) {
+  const [state, setState] = useState<ExtendedSessionState>({
+    ...createInitialSessionState(params),
+    isNextLoading: false,
+  });
+
+  const planRef           = useRef<QuestionSlot[]>([]);
+  const fetchingIndexRef  = useRef<number>(-1);
+  const initialisedRef    = useRef(false);
 
   // --------------------------------------------------------------------------
-  // FETCH ALL QUESTIONS ON MOUNT
+  // FETCH QUESTION AT PLAN INDEX
   // --------------------------------------------------------------------------
 
-  const fetchSession = useCallback(async () => {
-    setState(prev => ({ ...prev, phase: 'loading', errorMessage: null }));
+  const fetchQuestionAtIndex = useCallback(async (index: number) => {
+    const plan = planRef.current;
+    if (index >= plan.length) return;
+    if (fetchingIndexRef.current === index) return;
 
-    try {
-      const difficulty = config.difficulty as PssaDifficulty;
+    fetchingIndexRef.current = index;
 
-      const comprehensionReqs = buildDomainRequests(
-        config.comprehension,
-        COMPREHENSION_DOMAINS,
-        'comprehension',
-      );
-      const mcqReqs = buildDomainRequests(config.mcq, MCQ_DOMAINS, 'mcq');
+    // Full-screen loader for Q1, inline loader for subsequent
+    if (index === 0) {
+      setState(prev => ({ ...prev, phase: 'loading', errorMessage: null, isNextLoading: false }));
+    } else {
+      setState(prev => ({ ...prev, isNextLoading: true }));
+    }
 
-      const allReqs = [...comprehensionReqs, ...mcqReqs];
+    const slot       = plan[index];
+    const difficulty = (params.mode === 'lazy' ? params.config.difficulty : 'medium') as PssaDifficulty;
+    const grade      = (params.mode === 'lazy' ? params.config.grade : undefined) ?? FALLBACK_GRADE;
+    const rq         = await fetchOneQuestion(slot, difficulty, grade, index);
 
-      // Fire all domain calls in parallel
-      const responses: { req: typeof allReqs[0]; res: any }[] = [];
-        for (const req of allReqs) {
-          const res = await apiService.generatePssaQuestions({
-            domain:     req.domain,
-            difficulty,
-            count:      req.count,
-          });
-          responses.push({ req, res });
-          // Small delay between calls to stay under TPM limit
-          if (allReqs.indexOf(req) < allReqs.length - 1) {
-            await new Promise<void>(resolve => setTimeout(resolve, 1500));
-          }
-        }
-
-      const runtimeQuestions: RuntimeQuestion[] = [];
-
-      for (const { req, res } of responses) {
-        if (!res.data.success || !res.data.data) continue;
-
-        const { passage, questions } = res.data.data;
-
-        for (const q of questions) {
-          runtimeQuestions.push({
-            uid:          `${req.domain}_${q.id}`,
-            category:     req.category,
-            domain:       req.domain,
-            passageTitle: passage.title,
-            passageText:  passage.text,
-            question:     q,
-          });
-        }
+    if (!rq) {
+      if (index === 0) {
+        setState(prev => ({
+          ...prev,
+          phase:         'error',
+          errorMessage:  'Could not generate the first question. Please try again.',
+          isNextLoading: false,
+        }));
+      } else {
+        // Non-fatal — skip this slot
+        console.warn(`Skipping question slot ${index} — fetch returned null`);
+        setState(prev => ({ ...prev, isNextLoading: false }));
       }
+      fetchingIndexRef.current = -1;
+      return;
+    }
 
-      // Writing questions: reuse short_answer questions already fetched
-      // as the "writing" category — tag the last N short_answer questions as writing
-      let writingNeeded = config.writing;
-      for (let i = runtimeQuestions.length - 1; i >= 0 && writingNeeded > 0; i--) {
-        if (isShortAnswerQuestion(runtimeQuestions[i].question)) {
-          runtimeQuestions[i] = { ...runtimeQuestions[i], category: 'writing' };
-          writingNeeded -= 1;
-        }
-      }
+    const answerState = buildAnswerState(rq);
+
+    setState(prev => ({
+      ...prev,
+      phase:         'in_progress',
+      isNextLoading: false,
+      questions:     [...prev.questions, rq],
+      answers:       { ...prev.answers, [rq.uid]: answerState },
+    }));
+
+    fetchingIndexRef.current = -1;
+  }, [params]);
+
+  // --------------------------------------------------------------------------
+  // INITIALISE ON MOUNT
+  // Preloaded (ExamPrep) mode: flatten the already-fetched response into
+  // RuntimeQuestion[] immediately — no API call, no loading spinner needed.
+  // Lazy (CreateCustomTest) mode: unchanged — build a fetch plan and fetch Q1.
+  // --------------------------------------------------------------------------
+
+  useEffect(() => {
+    if (initialisedRef.current) return;
+    initialisedRef.current = true;
+
+    if (params.mode === 'preloaded') {
+      const runtimeQuestions = buildPreloadedQuestions(params.data);
 
       if (runtimeQuestions.length === 0) {
         setState(prev => ({
           ...prev,
-          phase: 'error',
-          errorMessage: 'Could not generate any questions. Please try again.',
+          phase:        'error',
+          errorMessage: 'No questions were generated. Please try again.',
         }));
         return;
       }
 
-      // Build initial answer state map
       const answers: Record<string, AnswerState> = {};
       for (const rq of runtimeQuestions) {
-        if (isMcqQuestion(rq.question)) {
-          answers[rq.uid] = {
-            type:           'mcq',
-            selectedOption: null,
-            isCorrect:      null,
-            isAnswered:     false,
-          };
-        } else {
-          answers[rq.uid] = {
-            type:             'short_answer',
-            studentAnswer:    '',
-            isAnswered:       false,
-            isEvaluating:     false,
-            score:            null,
-            maxScore:         null,
-            feedback:         null,
-            whatTheyDidWell:  null,
-            howToImprove:     null,
-            xpEarned:         null,
-            evaluationFailed: false,
-          };
-        }
+        answers[rq.uid] = buildAnswerState(rq);
       }
 
       setState(prev => ({
         ...prev,
-        phase:        'in_progress',
-        questions:    runtimeQuestions,
+        phase:     'in_progress',
+        questions: runtimeQuestions,
         answers,
-        currentIndex: 0,
       }));
-    } catch (err: any) {
-      console.error('usePracticeSession fetch error:', err);
-      const message = (err && typeof err === 'object' && err.message)
-        ? String(err.message)
-        : 'Something went wrong while loading your practice session.';
-      setState(prev => ({
-        ...prev,
-        phase: 'error',
-        errorMessage: message,
-      }));
+      return;
     }
-  }, [config]);
 
-  useEffect(() => {
-    if (hasFetchedRef.current) return;
-    hasFetchedRef.current = true;
-    fetchSession();
-  }, [fetchSession]);
+    planRef.current = buildQuestionPlan(params.config);
+    fetchQuestionAtIndex(0);
+  }, [params, fetchQuestionAtIndex]);
+
+  // --------------------------------------------------------------------------
+  // RETRY
+  // --------------------------------------------------------------------------
+
+  const retryFetch = useCallback(() => {
+    initialisedRef.current  = false;
+    fetchingIndexRef.current = -1;
+    setState({ ...createInitialSessionState(params), isNextLoading: false });
+
+    if (params.mode === 'lazy') {
+      initialisedRef.current = true;
+      planRef.current = buildQuestionPlan(params.config);
+      fetchQuestionAtIndex(0);
+    }
+    // Preloaded mode: initialisedRef reset to false lets the mount effect
+    // above re-run and rebuild from params.data again.
+  }, [params, fetchQuestionAtIndex]);
 
   // --------------------------------------------------------------------------
   // MCQ ANSWER
@@ -205,8 +319,6 @@ export function usePracticeSession(config: PracticeSessionConfig) {
       const rq = prev.questions.find(q => q.uid === uid);
       if (!rq || !isMcqQuestion(rq.question)) return prev;
 
-      const isCorrect = option === rq.question.correct_answer;
-
       return {
         ...prev,
         answers: {
@@ -214,7 +326,7 @@ export function usePracticeSession(config: PracticeSessionConfig) {
           [uid]: {
             type:           'mcq',
             selectedOption: option,
-            isCorrect,
+            isCorrect:      option === rq.question.correct_answer,
             isAnswered:     true,
           },
         },
@@ -223,33 +335,31 @@ export function usePracticeSession(config: PracticeSessionConfig) {
   }, []);
 
   // --------------------------------------------------------------------------
-  // SHORT ANSWER / WRITING — text input
+  // SHORT ANSWER / WRITING
   // --------------------------------------------------------------------------
 
   const updateShortAnswerText = useCallback((uid: string, text: string) => {
     setState(prev => {
       const current = prev.answers[uid];
       if (!current || current.type !== 'short_answer') return prev;
-
       return {
         ...prev,
-        answers: {
-          ...prev.answers,
-          [uid]: { ...current, studentAnswer: text },
-        },
+        answers: { ...prev.answers, [uid]: { ...current, studentAnswer: text } },
       };
     });
   }, []);
 
   const submitShortAnswer = useCallback(async (uid: string) => {
-    const rq = state.questions.find(q => q.uid === uid);
+    const rq     = state.questions.find(q => q.uid === uid);
     const answer = state.answers[uid];
 
-    if (!rq || !answer || answer.type !== 'short_answer' || !isShortAnswerQuestion(rq.question)) {
-      return;
-    }
-
-    if (!answer.studentAnswer.trim()) return;
+    if (
+      !rq ||
+      !answer ||
+      answer.type !== 'short_answer' ||
+      !isShortAnswerQuestion(rq.question) ||
+      !answer.studentAnswer.trim()
+    ) return;
 
     setState(prev => ({
       ...prev,
@@ -264,11 +374,11 @@ export function usePracticeSession(config: PracticeSessionConfig) {
         question:       rq.question.question,
         student_answer: answer.studentAnswer,
         difficulty:     state.config.difficulty as PssaDifficulty,
+        grade:          state.config.grade ?? FALLBACK_GRADE,
       });
 
       if (res.data.success && res.data.data) {
-        const evalData = res.data.data;
-
+        const d = res.data.data;
         setState(prev => ({
           ...prev,
           answers: {
@@ -278,12 +388,12 @@ export function usePracticeSession(config: PracticeSessionConfig) {
               studentAnswer:    answer.studentAnswer,
               isAnswered:       true,
               isEvaluating:     false,
-              score:            evalData.score,
-              maxScore:         evalData.max_score,
-              feedback:         evalData.feedback,
-              whatTheyDidWell:  evalData.what_they_did_well,
-              howToImprove:     evalData.how_to_improve,
-              xpEarned:         evalData.xp_earned,
+              score:            d.score,
+              maxScore:         d.max_score,
+              feedback:         d.feedback,
+              whatTheyDidWell:  d.what_they_did_well,
+              howToImprove:     d.how_to_improve,
+              xpEarned:         d.xp_earned,
               evaluationFailed: false,
             },
           },
@@ -291,8 +401,7 @@ export function usePracticeSession(config: PracticeSessionConfig) {
       } else {
         throw new Error('Evaluation failed');
       }
-    } catch (err) {
-      console.error('submitShortAnswer error:', err);
+    } catch {
       setState(prev => ({
         ...prev,
         answers: {
@@ -313,21 +422,26 @@ export function usePracticeSession(config: PracticeSessionConfig) {
         },
       }));
     }
-  }, [state.questions, state.answers, state.config.difficulty]);
+  }, [state.questions, state.answers, state.config.difficulty, state.config.grade]);
 
   // --------------------------------------------------------------------------
-  // NAVIGATION BETWEEN QUESTIONS
+  // NAVIGATION — Next triggers lazy fetch of the following question
   // --------------------------------------------------------------------------
 
   const goToNext = useCallback(() => {
     setState(prev => {
-      const nextIndex = prev.currentIndex + 1;
-      if (nextIndex >= prev.questions.length) {
-        return prev; // caller should call finishSession instead
+      const nextIndex     = prev.currentIndex + 1;
+      const nextSlotIndex = prev.questions.length; // next un-fetched slot index
+
+      // Trigger fetch for the next slot if not yet fetched
+      if (nextSlotIndex < planRef.current.length) {
+        // Use setTimeout to let state update first, then fetch
+        setTimeout(() => fetchQuestionAtIndex(nextSlotIndex), 0);
       }
+
       return { ...prev, currentIndex: nextIndex };
     });
-  }, []);
+  }, [fetchQuestionAtIndex]);
 
   const goToPrevious = useCallback(() => {
     setState(prev => ({
@@ -337,14 +451,14 @@ export function usePracticeSession(config: PracticeSessionConfig) {
   }, []);
 
   // --------------------------------------------------------------------------
-  // FINISH SESSION — compute results
+  // FINISH SESSION
   // --------------------------------------------------------------------------
 
   const finishSession = useCallback(() => {
     setState(prev => {
       let totalCorrectMcq = 0;
-      let totalMcq = 0;
-      let totalXpEarned = 0;
+      let totalMcq        = 0;
+      let totalXpEarned   = 0;
 
       for (const rq of prev.questions) {
         const answer = prev.answers[rq.uid];
@@ -375,24 +489,27 @@ export function usePracticeSession(config: PracticeSessionConfig) {
   // DERIVED
   // --------------------------------------------------------------------------
 
+  const totalPlanned    = planRef.current.length || state.config.total;
   const currentQuestion = state.questions[state.currentIndex] ?? null;
-  const currentAnswer = currentQuestion ? state.answers[currentQuestion.uid] : null;
-  const isLastQuestion = state.currentIndex === state.questions.length - 1;
-  const answeredCount = Object.values(state.answers).filter(a => a.isAnswered).length;
+  const currentAnswer   = currentQuestion ? state.answers[currentQuestion.uid] : null;
+  const isLastQuestion  = state.currentIndex === totalPlanned - 1;
+  const answeredCount   = Object.values(state.answers).filter(a => a.isAnswered).length;
 
   return {
     state,
     currentQuestion,
     currentAnswer,
     isLastQuestion,
+    isNextLoading:  state.isNextLoading,
     answeredCount,
+    totalPlanned,
     selectMcqOption,
     updateShortAnswerText,
     submitShortAnswer,
     goToNext,
     goToPrevious,
     finishSession,
-    retryFetch: fetchSession,
+    retryFetch,
   };
 }
 

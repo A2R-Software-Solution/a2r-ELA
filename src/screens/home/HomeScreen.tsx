@@ -3,6 +3,8 @@
  * ✅ Updated with new UI components
  * ✅ ExamPrepScreen wired to EXAM_PREP tab
  * ✅ Continue → CreateCustomTest
+ * ✅ FIXED: Bottom navigation overlap, scroll padding, layout issues
+ * ✅ UPDATED: Background color to C — Red-Orange + Emerald + Deep Purple
  */
 
 import React, { useEffect } from 'react';
@@ -50,7 +52,7 @@ interface HomeScreenProps {
   onSeeAllCategories?:        () => void;
   onEssayWritingClick?:       () => void;
   onSeeAllEssaysClick?:       () => void;
-  onCreateCustomTestClick?:   () => void;   // ← NEW
+  onCreateCustomTestClick?:   () => void;
 }
 
 // ============================================================================
@@ -66,7 +68,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onSeeAllCategories       = () => {},
   onEssayWritingClick      = () => {},
   onSeeAllEssaysClick      = () => {},
-  onCreateCustomTestClick  = () => {},   // ← NEW
+  onCreateCustomTestClick  = () => {},
 }) => {
   const { uiState, onTabSelected, onCategorySelected, onFeaturePress } = useHome();
 
@@ -110,6 +112,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <View style={styles.container}>
+
+      {/* ── Background color layers (C palette) ── */}
+      <View style={styles.bgBase} />
+      <View style={styles.bgOrangeRed} />
+      <View style={styles.bgEmerald} />
+      <View style={styles.bgPurple} />
+
       <View style={styles.content}>
 
         {uiState.selectedTab === HomeTab.HOME && (
@@ -136,7 +145,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
         {uiState.selectedTab === HomeTab.EXAM_PREP && (
           <ExamPrepContent
-            onNavigateToCreateTest={onCreateCustomTestClick}  // ← NEW
+            onNavigateToCreateTest={onCreateCustomTestClick}
             onBackClick={() => onTabSelected(HomeTab.HOME)}
           />
         )}
@@ -189,6 +198,7 @@ const HomeContent: React.FC<HomeContentProps> = ({
     style={styles.scrollView}
     showsVerticalScrollIndicator={false}
     contentContainerStyle={styles.scrollContent}
+    scrollEventThrottle={16}
   >
     <HomeHeader username={username} />
     <StreakCard
@@ -203,7 +213,6 @@ const HomeContent: React.FC<HomeContentProps> = ({
       onFeatureClick={onFeatureClick}
     />
     <RecentActivity essays={recentEssays} />
-    <View style={styles.bottomSpacer} />
   </ScrollView>
 );
 
@@ -273,7 +282,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
   if (uiState.isLoading) {
     return (
       <View style={styles.centeredContainer}>
-        <ActivityIndicator size="large" color="#6C4DFF" />
+        <ActivityIndicator size="large" color="#7C5CFC" />
       </View>
     );
   }
@@ -299,6 +308,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.profileScrollContent}
+        scrollEventThrottle={16}
       >
         <ProfileHeader
           profile={profile}
@@ -327,7 +337,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
           onLogoutClick={onLogoutClick}
           onDeleteAccountClick={onDeleteAccountClick}
         />
-        <View style={styles.bottomSpacer} />
       </ScrollView>
 
       <StateSelectorSheet
@@ -348,57 +357,126 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
 // ============================================================================
 
 const styles = StyleSheet.create({
+
+  // ── Root container ──────────────────────────────────────────────────────
   container: {
     flex:            1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#07050E', // deepest base — near black with purple tint
   },
+
+  // ── Background layers (C palette: red-orange + emerald + deep purple) ───
+  //
+  //  We stack 3 absolute Views on top of the base black,
+  //  each simulating one radial color zone:
+  //
+  //   bgOrangeRed  → bottom-left  (red-orange)
+  //   bgEmerald    → bottom-right (emerald green)
+  //   bgPurple     → top-center  (deep purple)
+  //
+  //  Opacity kept at 0.55–0.65 so they feel atmospheric, not neon.
+
+  bgBase: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#07050E',
+  },
+
+  // Red-orange bloom — bottom-left corner
+  bgOrangeRed: {
+    position:        'absolute',
+    bottom:          -120,
+    left:            -80,
+    width:           320,
+    height:          320,
+    borderRadius:    160,
+    backgroundColor: '#D93A00',
+    opacity:         0.38,
+  },
+
+  // Emerald bloom — bottom-right corner
+  bgEmerald: {
+    position:        'absolute',
+    bottom:          -100,
+    right:           -60,
+    width:           280,
+    height:          280,
+    borderRadius:    140,
+    backgroundColor: '#005C25',
+    opacity:         0.42,
+  },
+
+  // Deep purple bloom — top center
+  bgPurple: {
+    position:        'absolute',
+    top:             -100,
+    left:            '25%',
+    width:           300,
+    height:          300,
+    borderRadius:    150,
+    backgroundColor: '#4A007A',
+    opacity:         0.45,
+  },
+
+  // ── Layout ──────────────────────────────────────────────────────────────
   content: {
     flex: 1,
   },
+
   scrollView: {
     flex: 1,
   },
+
   scrollContent: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor:   'transparent', // ← was '#12102A', now transparent so bg layers show through
+    paddingBottom:     100,
+    flexGrow:          1,
   },
+
+  profileScrollContent: {
+    backgroundColor: 'transparent', // ← was '#12102A'
+    paddingBottom:   100,
+    flexGrow:        1,
+  },
+
+  // ── Placeholder / error states ───────────────────────────────────────────
   placeholderContainer: {
-    flex:           1,
-    justifyContent: 'center',
-    alignItems:     'center',
+    flex:            1,
+    justifyContent:  'center',
+    alignItems:      'center',
+    backgroundColor: 'transparent', // ← was '#12102A'
   },
+
   placeholderText: {
     fontSize: 18,
-    color:    '#94A3B8',
+    color:    '#A78BFA',
   },
+
   centeredContainer: {
-    flex:           1,
-    justifyContent: 'center',
-    alignItems:     'center',
-    padding:        24,
+    flex:            1,
+    justifyContent:  'center',
+    alignItems:      'center',
+    padding:         24,
+    backgroundColor: 'transparent', // ← was '#12102A'
   },
+
   errorText: {
     fontSize:     15,
-    color:        '#6B7280',
+    color:        'rgba(255,255,255,0.55)',
     textAlign:    'center',
     marginBottom: 20,
     lineHeight:   22,
   },
+
   retryButton: {
-    backgroundColor:   '#6C4DFF',
+    backgroundColor:   '#7C5CFC',
     paddingHorizontal: 32,
     paddingVertical:   12,
     borderRadius:      12,
   },
+
   retryText: {
     color:      '#FFFFFF',
     fontSize:   15,
     fontWeight: '600',
-  },
-  profileScrollContent: {
-    backgroundColor: '#F8FAFC',
-  },
-  bottomSpacer: {
-    height: 80,
   },
 });
 

@@ -10,13 +10,15 @@ import {
   PssaPassage,
   PssaMcqQuestion,
   PssaShortAnswerQuestion,
+  PssaQuestionsResponse,
 } from '../../../api/apiService';
 
 // ============================================================================
-// SESSION CONFIG (passed in via navigation params)
+// SESSION CONFIG (passed in via navigation params) — CreateCustomTest flow
 // ============================================================================
 
 export interface PracticeSessionConfig {
+  grade?:        string;   // optional — CreateCustomTest flow may not collect grade yet; defaults to '4'
   difficulty:    string;
   mcq:           number;
   comprehension: number;
@@ -25,6 +27,27 @@ export interface PracticeSessionConfig {
   estimatedTime: string;
   xpReward:      number;
 }
+
+// ============================================================================
+// PRELOADED SESSION DATA — ExamPrep (Grade selector) flow
+// Questions are already fetched (single API call in useExamPrep.onContinue)
+// so the session should render them directly with no further fetching.
+// ============================================================================
+
+export interface PreloadedSessionData {
+  grade:      string;
+  domain:     PssaDomain;
+  difficulty: PssaDifficulty;
+  response:   PssaQuestionsResponse;
+}
+
+// ============================================================================
+// SESSION PARAMS — union of both entry points into PracticeSessionScreen
+// ============================================================================
+
+export type PracticeSessionParams =
+  | { mode: 'lazy';      config: PracticeSessionConfig }
+  | { mode: 'preloaded'; data: PreloadedSessionData };
 
 // ============================================================================
 // DOMAIN BATCH — one passage + its questions, tagged with category
@@ -118,11 +141,11 @@ export const isShortAnswerQuestion = (q: PssaQuestion): q is PssaShortAnswerQues
 // ============================================================================
 
 export const createInitialSessionState = (
-  config: PracticeSessionConfig,
+  params: PracticeSessionParams,
 ): PracticeSessionUiState => ({
   phase:           'loading',
   errorMessage:    null,
-  config,
+  config:          deriveConfig(params),
   questions:       [],
   answers:         {},
   currentIndex:    0,
@@ -131,3 +154,30 @@ export const createInitialSessionState = (
   totalXpEarned:   0,
   overallScorePct: 0,
 });
+
+/**
+ * Always produce a PracticeSessionConfig, even for the preloaded (ExamPrep)
+ * flow, so existing code that reads `state.config.difficulty` etc. keeps
+ * working unchanged regardless of which entry point was used.
+ */
+function deriveConfig(params: PracticeSessionParams): PracticeSessionConfig {
+  if (params.mode === 'lazy') {
+    return params.config;
+  }
+
+  const { response, difficulty, grade } = params.data;
+  const questions = response.questions ?? [];
+  const mcqCount   = questions.filter(isMcqQuestion).length;
+  const otherCount = questions.length - mcqCount;
+
+  return {
+    grade,
+    difficulty,
+    mcq:           mcqCount,
+    comprehension: otherCount,
+    writing:       0,
+    total:         questions.length,
+    estimatedTime: `${Math.max(5, questions.length * 2)} min`,
+    xpReward:      questions.length * 10,
+  };
+}

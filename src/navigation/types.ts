@@ -3,6 +3,8 @@
  * Route names and parameter types for navigation
  */
 
+import { PracticeSessionParams } from '../screens/Practice/types/PracticeSessionUiState';
+
 // Root Stack Navigator (Auth Flow)
 export type RootStackParamList = {
   Splash:      undefined;
@@ -24,15 +26,9 @@ export type RootStackParamList = {
     estimatedTime: string;
     xpReward:      number;
   };
-  PracticeSession: {                          // ← ADD
-    difficulty:    string;
-    mcq:           number;
-    comprehension: number;
-    writing:       number;
-    total:         number;
-    estimatedTime: string;
-    xpReward:      number;
-  };
+  PracticeSession: PracticeSessionParams;     // ← UPDATED — supports both
+                                               //   { mode: 'preloaded', data } (ExamPrep)
+                                               //   { mode: 'lazy', config } (CreateCustomTest)
 };
 
 // Main Tab Navigator (Authenticated User) - For future use

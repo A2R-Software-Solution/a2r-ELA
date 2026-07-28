@@ -2,6 +2,10 @@
  * StateSelectorSheet.tsx
  * Bottom sheet component for selecting state and grade
  * Uses React Native Modal for reliability across platforms
+ *
+ * Grade-only mode: pass an empty stateOptions array to hide the State
+ * section entirely and show only the Grade grid (used by ExamPrep's
+ * PSSA grade selector, which has no concept of "state").
  */
 
 import React, { useCallback, useMemo, useEffect } from 'react';
@@ -46,6 +50,9 @@ export const StateSelectorSheet: React.FC<StateSelectorSheetProps> = ({
   const [selectedState, setSelectedState] = React.useState(currentState);
   const [selectedGrade, setSelectedGrade] = React.useState(currentGrade);
 
+  // Grade-only mode — no state section rendered, no state comparison needed
+  const isGradeOnly = stateOptions.length === 0;
+
   // Sync with props when they change
   useEffect(() => {
     setSelectedState(currentState);
@@ -75,8 +82,11 @@ export const StateSelectorSheet: React.FC<StateSelectorSheetProps> = ({
   }, [selectedState, selectedGrade, onSave]);
 
   const hasChanged = useMemo(
-    () => selectedState !== currentState || selectedGrade !== currentGrade,
-    [selectedState, selectedGrade, currentState, currentGrade],
+    () =>
+      isGradeOnly
+        ? selectedGrade !== currentGrade
+        : selectedState !== currentState || selectedGrade !== currentGrade,
+    [selectedState, selectedGrade, currentState, currentGrade, isGradeOnly],
   );
 
   return (
@@ -109,7 +119,9 @@ export const StateSelectorSheet: React.FC<StateSelectorSheetProps> = ({
           <View style={styles.header}>
             <Text style={styles.title}>Select Your Grade Level</Text>
             <Text style={styles.subtitle}>
-              Choose your state and grade for personalized rubrics
+              {isGradeOnly
+                ? 'Choose your grade for grade-appropriate practice questions'
+                : 'Choose your state and grade for personalized rubrics'}
             </Text>
           </View>
 
@@ -123,31 +135,33 @@ export const StateSelectorSheet: React.FC<StateSelectorSheetProps> = ({
               style={styles.scrollView}
               showsVerticalScrollIndicator={false}
             >
-              {/* State Selection */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>State</Text>
-                <View style={styles.optionsGrid}>
-                  {stateOptions.map(option => (
-                    <TouchableOpacity
-                      key={option.code}
-                      style={[
-                        styles.optionButton,
-                        selectedState === option.code && styles.optionButtonSelected,
-                      ]}
-                      onPress={() => setSelectedState(option.code)}
-                    >
-                      <Text
+              {/* State Selection — hidden entirely in grade-only mode */}
+              {!isGradeOnly && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>State</Text>
+                  <View style={styles.optionsGrid}>
+                    {stateOptions.map(option => (
+                      <TouchableOpacity
+                        key={option.code}
                         style={[
-                          styles.optionText,
-                          selectedState === option.code && styles.optionTextSelected,
+                          styles.optionButton,
+                          selectedState === option.code && styles.optionButtonSelected,
                         ]}
+                        onPress={() => setSelectedState(option.code)}
                       >
-                        {option.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                        <Text
+                          style={[
+                            styles.optionText,
+                            selectedState === option.code && styles.optionTextSelected,
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
-              </View>
+              )}
 
               {/* Grade Selection */}
               <View style={styles.section}>
@@ -175,16 +189,18 @@ export const StateSelectorSheet: React.FC<StateSelectorSheetProps> = ({
                 </View>
               </View>
 
-              {/* Info Note */}
-              <View style={styles.infoBox}>
-                <Text style={styles.infoText}>
-                  📝 Your essays will be evaluated using the{' '}
-                  <Text style={styles.infoBold}>
-                    {selectedState} standards for{' '}
-                    {gradeOptions.find(g => g.code === selectedGrade)?.label || selectedGrade}
+              {/* Info Note — only makes sense when we have a state + rubric context */}
+              {!isGradeOnly && (
+                <View style={styles.infoBox}>
+                  <Text style={styles.infoText}>
+                    📝 Your essays will be evaluated using the{' '}
+                    <Text style={styles.infoBold}>
+                      {selectedState} standards for{' '}
+                      {gradeOptions.find(g => g.code === selectedGrade)?.label || selectedGrade}
+                    </Text>
                   </Text>
-                </Text>
-              </View>
+                </View>
+              )}
             </ScrollView>
           )}
 

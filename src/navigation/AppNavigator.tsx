@@ -1,8 +1,8 @@
 /**
  * App Navigator
  * ✅ Added CreateCustomTest and TestInstructions routes
- * ✅ ExamPrep Continue → CreateCustomTest
- * ✅ Added PracticeSession route — TestInstructions Begin Test → PracticeSession
+ * ✅ ExamPrep Continue → PracticeSession directly (preloaded mode — no double fetch)
+ * ✅ CreateCustomTest → TestInstructions → PracticeSession (lazy mode — unchanged behavior)
  */
 
 import React from 'react';
@@ -113,12 +113,14 @@ const AppNavigator = () => {
             )}
           </Stack.Screen>
 
-          {/* Exam Prep — Continue → CreateCustomTest */}
+          {/* Exam Prep — Continue → PracticeSession directly (questions already generated) */}
           <Stack.Screen name={Routes.EXAM_PREP}>
             {({ navigation }) => (
               <ExamPrepScreen
                 onBackClick={()     => navigation.goBack()}
-                onStartPractice={() => navigation.navigate(Routes.CREATE_CUSTOM_TEST)}
+                onStartPractice={(data) =>
+                  navigation.navigate(Routes.PRACTICE_SESSION, { mode: 'preloaded', data })
+                }
                 onViewProgress={()  => navigation.navigate(Routes.PROGRESS)}
               />
             )}
@@ -143,17 +145,20 @@ const AppNavigator = () => {
                 config={route.params}
                 onBackClick={() => navigation.goBack()}
                 onBeginTest={()  =>
-                  navigation.navigate(Routes.PRACTICE_SESSION, route.params)
+                  navigation.navigate(Routes.PRACTICE_SESSION, { mode: 'lazy', config: route.params })
                 }
               />
             )}
           </Stack.Screen>
 
-          {/* Practice Session — the actual exam-taking experience */}
+          {/* Practice Session — the actual exam-taking experience.
+              Accepts either { mode: 'preloaded', data } (from ExamPrep, already
+              fetched — no further API calls) or { mode: 'lazy', config } (from
+              CreateCustomTest — fetches questions one at a time, unchanged). */}
           <Stack.Screen name={Routes.PRACTICE_SESSION}>
             {({ navigation, route }) => (
               <PracticeSessionScreen
-                config={route.params}
+                params={route.params}
                 onBackClick={() => navigation.goBack()}
                 onFinish={()    => navigation.navigate(Routes.MAIN)}
               />

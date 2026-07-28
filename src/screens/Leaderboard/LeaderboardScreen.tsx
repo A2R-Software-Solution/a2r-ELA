@@ -2,6 +2,9 @@
  * Leaderboard Screen
  * Displays the top 10 leaderboard filtered by Grade or State.
  * Assembled from TabSelector, TopThreeCard, and LeaderboardRow components.
+ *
+ * ✅ UPDATED: Restyled to match HomeScreen's dark gradient theme
+ *    (Red-Orange + Emerald + Deep Purple radial blooms over near-black base)
  */
 
 import React from 'react';
@@ -30,10 +33,12 @@ interface LeaderboardScreenProps {
 }
 
 // --------------------------------------------------------------------------
-// CONSTANTS
+// CONSTANTS — matched to HomeScreen palette
 // --------------------------------------------------------------------------
 
-const PURPLE = '#6C63FF';
+const PURPLE = '#7C5CFC';        // primary accent (matches HomeScreen retry button / icons)
+const PURPLE_SOFT = '#A78BFA';   // secondary accent (matches HomeScreen placeholder text)
+const BASE_BG = '#07050E';       // deepest base — near black with purple tint
 
 // --------------------------------------------------------------------------
 // COMPONENT
@@ -67,7 +72,7 @@ const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({
 
   const renderLoading = () => (
     <View style={styles.centeredContainer}>
-      <ActivityIndicator size="large" color={PURPLE} />
+      <ActivityIndicator size="large" color={PURPLE_SOFT} />
       <Text style={styles.loadingText}>Loading leaderboard...</Text>
     </View>
   );
@@ -107,12 +112,13 @@ const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({
   const renderContent = () => (
     <ScrollView
       showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.scrollContent}
       refreshControl={
         <RefreshControl
           refreshing={isLoading}
           onRefresh={onRefresh}
-          colors={[PURPLE]}
-          tintColor={PURPLE}
+          colors={[PURPLE_SOFT]}
+          tintColor={PURPLE_SOFT}
         />
       }
     >
@@ -187,52 +193,60 @@ const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({
   // --------------------------------------------------------------------------
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+    <View style={styles.root}>
+      {/* ── Background color layers (matches HomeScreen C palette) ── */}
+      <View style={styles.bgBase} />
+      <View style={styles.bgOrangeRed} />
+      <View style={styles.bgEmerald} />
+      <View style={styles.bgPurple} />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={onBackClick}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.backIcon}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Leaderboard</Text>
-          <Text style={styles.headerSubtitle}>
-            Climb the ranks and earn XP
-          </Text>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" backgroundColor={BASE_BG} />
+
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={onBackClick}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.backIcon}>←</Text>
+          </TouchableOpacity>
+          <View style={styles.headerTitleContainer}>
+            <Text style={styles.headerTitle}>Leaderboard</Text>
+            <Text style={styles.headerSubtitle}>
+              Climb the ranks and earn XP
+            </Text>
+          </View>
+          <Text style={styles.trophyIcon}>🏆</Text>
         </View>
-        <Text style={styles.trophyIcon}>🏆</Text>
-      </View>
 
-      {/* Tab Selector */}
-      <TabSelector
-        activeTab={activeTab}
-        onTabChange={onTabChange}
-        gradeLabel={
-          activeTab === 'grade' && filterLabel
-            ? filterLabel
-            : 'My Grade'
-        }
-        stateLabel={
-          activeTab === 'state' && filterLabel
-            ? filterLabel
-            : 'My State'
-        }
-      />
+        {/* Tab Selector */}
+        <TabSelector
+          activeTab={activeTab}
+          onTabChange={onTabChange}
+          gradeLabel={
+            activeTab === 'grade' && filterLabel
+              ? filterLabel
+              : 'My Grade'
+          }
+          stateLabel={
+            activeTab === 'state' && filterLabel
+              ? filterLabel
+              : 'My State'
+          }
+        />
 
-      {/* Body */}
-      {isLoading && entries.length === 0
-        ? renderLoading()
-        : errorMessage
-        ? renderError()
-        : entries.length === 0
-        ? renderEmpty()
-        : renderContent()}
-    </SafeAreaView>
+        {/* Body */}
+        {isLoading && entries.length === 0
+          ? renderLoading()
+          : errorMessage
+          ? renderError()
+          : entries.length === 0
+          ? renderEmpty()
+          : renderContent()}
+      </SafeAreaView>
+    </View>
   );
 };
 
@@ -241,9 +255,48 @@ const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({
 // --------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
+  // ── Root + background layers ─────────────────────────────────────────
+  root: {
+    flex: 1,
+  },
   safeArea: {
     flex:            1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
+  },
+
+  bgBase: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: BASE_BG,
+  },
+  bgOrangeRed: {
+    position:        'absolute',
+    bottom:          -120,
+    left:            -80,
+    width:           320,
+    height:          320,
+    borderRadius:    160,
+    backgroundColor: '#D93A00',
+    opacity:         0.38,
+  },
+  bgEmerald: {
+    position:        'absolute',
+    bottom:          -100,
+    right:           -60,
+    width:           280,
+    height:          280,
+    borderRadius:    140,
+    backgroundColor: '#005C25',
+    opacity:         0.42,
+  },
+  bgPurple: {
+    position:        'absolute',
+    top:             -100,
+    left:            '25%',
+    width:           300,
+    height:          300,
+    borderRadius:    150,
+    backgroundColor: '#4A007A',
+    opacity:         0.45,
   },
 
   // Header
@@ -252,22 +305,22 @@ const styles = StyleSheet.create({
     alignItems:        'center',
     paddingHorizontal: 16,
     paddingVertical:   12,
-    backgroundColor:   '#FFFFFF',
+    backgroundColor:   'transparent',
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
+    borderBottomColor: 'rgba(255,255,255,0.08)',
   },
   backButton: {
     width:           36,
     height:          36,
     borderRadius:    10,
-    backgroundColor: '#F4F3FF',
+    backgroundColor: 'rgba(124,92,252,0.18)',
     justifyContent:  'center',
     alignItems:      'center',
     marginRight:     12,
   },
   backIcon: {
     fontSize:   18,
-    color:      PURPLE,
+    color:      PURPLE_SOFT,
     fontWeight: '700',
   },
   headerTitleContainer: {
@@ -276,11 +329,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize:   20,
     fontWeight: '700',
-    color:      PURPLE,
+    color:      '#FFFFFF',
   },
   headerSubtitle: {
     fontSize:  12,
-    color:     '#9E9E9E',
+    color:     'rgba(255,255,255,0.55)',
     marginTop: 1,
   },
   trophyIcon: {
@@ -293,7 +346,9 @@ const styles = StyleSheet.create({
     marginTop:        8,
     padding:          18,
     borderRadius:     20,
-    backgroundColor:  '#6C63FF',
+    backgroundColor:  'rgba(124,92,252,0.22)',
+    borderWidth:      1,
+    borderColor:      'rgba(167,139,250,0.3)',
   },
   heroHeader: {
     marginBottom: 16,
@@ -304,7 +359,7 @@ const styles = StyleSheet.create({
     color:      '#FFFFFF',
   },
   heroSubtitle: {
-    color:     'rgba(255,255,255,0.8)',
+    color:     'rgba(255,255,255,0.7)',
     marginTop: 4,
   },
   heroStatsRow: {
@@ -320,13 +375,13 @@ const styles = StyleSheet.create({
     fontSize:   16,
   },
   heroLabel: {
-    color:     'rgba(255,255,255,0.7)',
+    color:     'rgba(255,255,255,0.6)',
     fontSize:  11,
     marginTop: 4,
   },
   heroDivider: {
     width:           1,
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
 
   // Podium
@@ -338,7 +393,7 @@ const styles = StyleSheet.create({
   // List
   listDivider: {
     height:           1,
-    backgroundColor:  '#F5F5F5',
+    backgroundColor:  'rgba(255,255,255,0.08)',
     marginHorizontal: 16,
     marginTop:        16,
     marginBottom:     8,
@@ -349,9 +404,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize:         18,
     fontWeight:       '700',
-    color:            '#212121',
+    color:            '#FFFFFF',
     marginHorizontal: 16,
     marginBottom:     8,
+  },
+
+  // Scroll content
+  scrollContent: {
+    backgroundColor: 'transparent',
   },
 
   // Centered states
@@ -361,11 +421,12 @@ const styles = StyleSheet.create({
     alignItems:        'center',
     paddingHorizontal: 32,
     paddingTop:        60,
+    backgroundColor:   'transparent',
   },
   loadingText: {
     marginTop: 12,
     fontSize:  14,
-    color:     '#9E9E9E',
+    color:     'rgba(255,255,255,0.55)',
   },
   errorEmoji: {
     fontSize:     48,
@@ -373,19 +434,20 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize:     14,
-    color:        '#757575',
+    color:        'rgba(255,255,255,0.55)',
     textAlign:    'center',
     marginBottom: 16,
+    lineHeight:   20,
   },
   emptyText: {
     fontSize:     18,
     fontWeight:   '700',
-    color:        '#424242',
+    color:        '#FFFFFF',
     marginBottom: 8,
   },
   emptySubText: {
     fontSize:  13,
-    color:     '#9E9E9E',
+    color:     'rgba(255,255,255,0.55)',
     textAlign: 'center',
   },
   retryButton: {

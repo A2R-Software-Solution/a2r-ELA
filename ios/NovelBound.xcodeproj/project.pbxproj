@@ -298,7 +298,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.elearningapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.a2rsoftwaresolution.novelbound;
 				PRODUCT_NAME = NovelBound;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -329,7 +329,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.elearningapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.a2rsoftwaresolution.novelbound;
 				PRODUCT_NAME = NovelBound;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;

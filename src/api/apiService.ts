@@ -53,6 +53,7 @@ export type PssaDomain =
 export type PssaDifficulty = 'easy' | 'medium' | 'hard';
 
 export interface GeneratePssaQuestionsRequest {
+  grade:      string; // e.g. "3", "4" — ← NEW, drives grade-specific content on backend
   domain:     PssaDomain;
   difficulty: PssaDifficulty;
   count:      number; // max 20 per call
@@ -94,6 +95,7 @@ export interface EvaluatePssaWritingRequest {
   question:       string;
   student_answer: string;
   difficulty:     PssaDifficulty;
+  grade:          string; // e.g. "3", "4" — ← NEW, grade-appropriate scoring language
 }
 
 export interface PssaWritingEvaluationResponse {

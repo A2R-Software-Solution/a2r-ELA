@@ -24,6 +24,16 @@ import {
 import { ProfileStatsUiModel } from '../../../models/ui/ProfileUiModel';
 
 // ============================================================================
+// COLORS — C palette (dark theme)
+// ============================================================================
+
+const PURPLE = '#7D55FF';
+const PURPLE_SURFACE = 'rgba(125, 85, 255, 0.10)';
+const PURPLE_BORDER = 'rgba(125, 85, 255, 0.28)';
+const TEXT_PRIMARY = '#F5F3FF';
+const TEXT_MUTED = 'rgba(245, 243, 255, 0.45)';
+
+// ============================================================================
 // PROPS
 // ============================================================================
 
@@ -98,14 +108,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: 16,
     marginVertical: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: PURPLE_SURFACE, // ← was '#FFFFFF'
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#F0EBFF',
+    borderColor: PURPLE_BORDER, // ← was '#F0EBFF'
     // Shadow — iOS
-    shadowColor: '#7D55FF',
+    shadowColor: PURPLE,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.15,
     shadowRadius: 8,
     // Shadow — Android
     elevation: 3,
@@ -125,20 +135,20 @@ const styles = StyleSheet.create({
   cardValue: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#1A1A2E',
+    color: TEXT_PRIMARY, // ← was '#1A1A2E'
     marginBottom: 4,
   },
   cardLabel: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#9CA3AF',
+    color: TEXT_MUTED, // ← was '#9CA3AF'
     textAlign: 'center',
   },
 
   // ---------- Divider ----------
   divider: {
     width: 1,
-    backgroundColor: '#F0EBFF',
+    backgroundColor: PURPLE_BORDER, // ← was '#F0EBFF'
     marginVertical: 16,
   },
 });

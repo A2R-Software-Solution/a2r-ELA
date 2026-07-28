@@ -2,6 +2,8 @@
  * Recent Activity Component
  * Shows recent essay submissions on the HOME tab
  * (separate from RecentEssaysList which is on the Profile tab)
+ *
+ * ✅ UPDATED: Dark C-palette theme (glassy purple surface, light-on-dark text)
  */
 
 import React from 'react';
@@ -104,7 +106,7 @@ const ScoreChip: React.FC<ScoreChipProps> = ({ score, letterGrade, color }) => {
   const isGood = score >= 70;
   return (
     <View style={styles.chipWrap}>
-      <View style={[styles.chip, { backgroundColor: `${color}18` }]}>
+      <View style={[styles.chip, { backgroundColor: `${color}26` }]}>
         <Text style={[styles.chipScore, { color }]}>{score}</Text>
       </View>
       {isGood && (
@@ -128,20 +130,29 @@ const EmptyState: React.FC = () => (
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
+const PURPLE         = '#7D55FF';
+const PURPLE_SURFACE = 'rgba(125, 85, 255, 0.10)';
+const PURPLE_BORDER  = 'rgba(125, 85, 255, 0.28)';
+const ICON_BUBBLE_BG = 'rgba(125, 85, 255, 0.18)';
+const ROW_BORDER     = 'rgba(255, 255, 255, 0.06)';
+const TEXT_PRIMARY   = '#F5F3FF';
+const TEXT_MUTED     = 'rgba(245, 243, 255, 0.45)';
+const GREEN          = '#4ADE80'; // ← brightened for visibility on dark bg
+
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 16,
     marginTop: 16,
     marginBottom: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: PURPLE_SURFACE, // ← was '#FFFFFF'
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: PURPLE_BORDER, // ← was '#E2E8F0'
     overflow: 'hidden',
     // Shadow
-    shadowColor: '#000',
+    shadowColor: PURPLE,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 3,
   },
@@ -158,12 +169,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#0F172A',
+    color: TEXT_PRIMARY, // ← was '#0F172A'
   },
   seeAll: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#6C4DFF',
+    color: PURPLE, // ← was '#6C4DFF'
   },
 
   // List
@@ -180,7 +191,7 @@ const styles = StyleSheet.create({
   },
   rowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: ROW_BORDER, // ← was '#F1F5F9'
   },
 
   // Icon bubble
@@ -188,7 +199,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#EDE9FF',
+    backgroundColor: ICON_BUBBLE_BG, // ← was '#EDE9FF'
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -205,12 +216,12 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#0F172A',
+    color: TEXT_PRIMARY, // ← was '#0F172A'
     marginBottom: 3,
   },
   rowTime: {
     fontSize: 12,
-    color: '#94A3B8',
+    color: TEXT_MUTED, // ← was '#94A3B8'
   },
 
   // Score chip
@@ -230,7 +241,7 @@ const styles = StyleSheet.create({
   chipLabel: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#22C55E',
+    color: GREEN, // ← was '#22C55E'
   },
 
   // Empty state
@@ -246,12 +257,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#0F172A',
+    color: TEXT_PRIMARY, // ← was '#0F172A'
     marginBottom: 4,
   },
   emptySubtitle: {
     fontSize: 12,
-    color: '#94A3B8',
+    color: TEXT_MUTED, // ← was '#94A3B8'
     textAlign: 'center',
     lineHeight: 18,
   },

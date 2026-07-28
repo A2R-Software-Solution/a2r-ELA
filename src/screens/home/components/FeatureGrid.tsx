@@ -1,7 +1,6 @@
 /**
- * Feature Grid Component
- * 5 quick access items in a single row
- * Each: colored icon bubble + label
+ * Feature Grid Component — REDESIGNED
+ * Dark glowing icon bubbles, gradient backgrounds per feature
  */
 
 import React from 'react';
@@ -12,6 +11,7 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { FeatureUiModel } from '../../../models/ui/FeatureUiModel';
 
 interface FeatureGridProps {
@@ -19,137 +19,148 @@ interface FeatureGridProps {
   onFeatureClick?: (feature: FeatureUiModel) => void;
 }
 
-// Icon + background color per feature id
-const FEATURE_STYLE: Record<string, { emoji: string; bg: string; iconBg: string }> = {
-  essay:       { emoji: '✏️', bg: '#F5F3FF', iconBg: '#EDE9FF' },
-  games:       { emoji: '🎮', bg: '#FFF7ED', iconBg: '#FFEDD5' },
-  practice:    { emoji: '🎯', bg: '#F0FDF4', iconBg: '#DCFCE7' },
-  progress:    { emoji: '📊', bg: '#EFF6FF', iconBg: '#DBEAFE' },
-  leaderboard: { emoji: '🏆', bg: '#FFFBEB', iconBg: '#FEF3C7' },
+// Gradient colors + glow per feature
+const FEATURE_STYLE: Record<string, {
+  emoji:   string;
+  colors:  [string, string];
+  glow:    string;
+}> = {
+  essay:       { emoji: '✏️', colors: ['#5B3FE8', '#7C5CFC'], glow: '#7C5CFC' },
+  games:       { emoji: '🎮', colors: ['#EA580C', '#F97316'], glow: '#F97316' },
+  practice:    { emoji: '🎯', colors: ['#15803D', '#22C55E'], glow: '#22C55E' },
+  progress:    { emoji: '📊', colors: ['#1D4ED8', '#3B82F6'], glow: '#3B82F6' },
+  leaderboard: { emoji: '🏆', colors: ['#B45309', '#F59E0B'], glow: '#F59E0B' },
 };
 
-const FALLBACK = { emoji: '📚', bg: '#F8FAFC', iconBg: '#E2E8F0' };
+const FALLBACK = { emoji: '📚', colors: ['#374151', '#6B7280'] as [string, string], glow: '#6B7280' };
 
 const FeatureGrid: React.FC<FeatureGridProps> = ({
   features,
   onFeatureClick = () => {},
-}) => {
-  return (
-    <View style={styles.container}>
-
-      {/* Section Header */}
+}) => (
+  <View style={styles.container}>
+    <View style={styles.sectionRow}>
+      <View style={styles.sectionDot} />
       <Text style={styles.title}>Quick Access</Text>
-
-      {/* Items row */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.row}
-      >
-        {features.map((feature) => {
-          const style = FEATURE_STYLE[feature.id] ?? FALLBACK;
-          return (
-            <FeatureItem
-              key={feature.id}
-              feature={feature}
-              emoji={style.emoji}
-              iconBg={style.iconBg}
-              onPress={() => onFeatureClick(feature)}
-            />
-          );
-        })}
-      </ScrollView>
-
     </View>
-  );
-};
 
-// ── Single Item ───────────────────────────────────────────────────────────────
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.row}
+    >
+      {features.map((feature) => {
+        const s = FEATURE_STYLE[feature.id] ?? FALLBACK;
+        return (
+          <FeatureItem
+            key={feature.id}
+            feature={feature}
+            emoji={s.emoji}
+            gradientColors={s.colors}
+            glowColor={s.glow}
+            onPress={() => onFeatureClick(feature)}
+          />
+        );
+      })}
+    </ScrollView>
+  </View>
+);
+
+// ── Single Item ───────────────────────────────────────────────────
 
 interface FeatureItemProps {
-  feature: FeatureUiModel;
-  emoji: string;
-  iconBg: string;
-  onPress: () => void;
+  feature:        FeatureUiModel;
+  emoji:          string;
+  gradientColors: [string, string];
+  glowColor:      string;
+  onPress:        () => void;
 }
 
 const FeatureItem: React.FC<FeatureItemProps> = ({
   feature,
   emoji,
-  iconBg,
+  gradientColors,
+  glowColor,
   onPress,
 }) => (
-  <TouchableOpacity
-    style={styles.item}
-    onPress={onPress}
-    activeOpacity={0.7}
-  >
-    {/* Icon bubble */}
-    <View style={[styles.iconBubble, { backgroundColor: iconBg }]}>
-      <Text style={styles.emoji}>
-        {feature.iconRes || emoji}
-      </Text>
+  <TouchableOpacity style={styles.item} onPress={onPress} activeOpacity={0.75}>
+    {/* Glow wrap */}
+    <View style={[styles.glowWrap, { shadowColor: glowColor }]}>
+      <LinearGradient
+        colors={gradientColors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.iconBubble}
+      >
+        <Text style={styles.emoji}>{feature.iconRes || emoji}</Text>
+      </LinearGradient>
     </View>
-
-    {/* Label */}
-    <Text style={styles.label} numberOfLines={1}>
-      {feature.title}
-    </Text>
+    <Text style={styles.label} numberOfLines={1}>{feature.title}</Text>
   </TouchableOpacity>
 );
 
-// ── Styles ────────────────────────────────────────────────────────────────────
+// ── Styles ────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop:         20,
+    marginBottom:      8,
   },
-
+  sectionRow: {
+    flexDirection: 'row',
+    alignItems:    'center',
+    marginBottom:  16,
+    gap:           8,
+  },
+  sectionDot: {
+    width:           6,
+    height:          6,
+    borderRadius:    3,
+    backgroundColor: '#7C5CFC',
+  },
   title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#0F172A',
-    marginBottom: 14,
+    fontSize:      18,
+    fontWeight:    '700',
+    color:         '#EDE9FF',
+    letterSpacing: 0.2,
   },
-
   row: {
     flexDirection: 'row',
-    gap: 12,
-    paddingBottom: 4,
+    gap:           16,
+    paddingBottom: 6,
+    paddingRight:  4,
   },
-
-  // Each item
   item: {
     alignItems: 'center',
-    width: 64,
+    width:      66,
   },
-
+  glowWrap: {
+    borderRadius:  18,
+    shadowOffset:  { width: 0, height: 6 },
+    shadowOpacity: 0.50,
+    shadowRadius:  10,
+    elevation:     8,
+    marginBottom:  9,
+  },
   iconBubble: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
+    width:          58,
+    height:         58,
+    borderRadius:   18,
     justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-    // subtle shadow
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    alignItems:     'center',
+    borderWidth:    1,
+    borderColor:    'rgba(255,255,255,0.15)',
   },
-
   emoji: {
     fontSize: 26,
   },
-
   label: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#475569',
-    textAlign: 'center',
+    fontSize:      11,
+    fontWeight:    '600',
+    color:         'rgba(255,255,255,0.65)',
+    textAlign:     'center',
+    letterSpacing: 0.1,
   },
 });
 

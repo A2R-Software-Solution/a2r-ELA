@@ -19,7 +19,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import usePracticeSession from './hooks/usePracticeSession';
 import {
-  PracticeSessionConfig,
+  PracticeSessionParams,
   isMcqQuestion,
   isShortAnswerQuestion,
 } from './types/PracticeSessionUiState';
@@ -29,7 +29,7 @@ import {
 // ============================================================================
 
 interface PracticeSessionScreenProps {
-  config:        PracticeSessionConfig;
+  params:        PracticeSessionParams;
   onBackClick:   () => void;
   onFinish:      () => void;
 }
@@ -66,7 +66,7 @@ const CATEGORY_COLOR: Record<string, string> = {
 // ============================================================================
 
 const PracticeSessionScreen: React.FC<PracticeSessionScreenProps> = ({
-  config,
+  params,
   onBackClick,
   onFinish,
 }) => {
@@ -76,6 +76,7 @@ const PracticeSessionScreen: React.FC<PracticeSessionScreenProps> = ({
     currentQuestion,
     currentAnswer,
     isLastQuestion,
+    isNextLoading,
     answeredCount,
     selectMcqOption,
     updateShortAnswerText,
@@ -84,7 +85,7 @@ const PracticeSessionScreen: React.FC<PracticeSessionScreenProps> = ({
     goToPrevious,
     finishSession,
     retryFetch,
-  } = usePracticeSession(config);
+  } = usePracticeSession(params);
 
   // ── Loading ───────────────────────────────────────────────────────────────
   if (state.phase === 'loading') {
@@ -213,13 +214,17 @@ const PracticeSessionScreen: React.FC<PracticeSessionScreenProps> = ({
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.navBtn, styles.navBtnPrimary]}
+          style={[styles.navBtn, styles.navBtnPrimary, isNextLoading && styles.navBtnDisabled]}
           onPress={handleNext}
+          disabled={isNextLoading}
           activeOpacity={0.85}
         >
-          <Text style={styles.navBtnPrimaryText}>
-            {isLastQuestion ? 'Finish Test 🏁' : 'Next →'}
-          </Text>
+          {isNextLoading
+            ? <ActivityIndicator size="small" color={WHITE} />
+            : <Text style={styles.navBtnPrimaryText}>
+                {isLastQuestion ? 'Finish Test 🏁' : 'Next →'}
+              </Text>
+          }
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>

@@ -7,6 +7,8 @@
  * In-progress      — progress bar + x/y label shown beneath the badge
  *
  * Pure presentational — receives BadgeDefinition[] from useProfile via HomeScreen.
+ *
+ * ✅ UPDATED: Dark C-palette theme (glassy purple surfaces, light-on-dark text)
  */
 
 import React from 'react';
@@ -18,16 +20,18 @@ import {
 import { BadgeDefinition } from '../../../models/GamificationModels';
 
 // ============================================================================
-// COLORS — matches existing design system (ProfileHeader, StreakCard)
+// COLORS — C palette (dark theme)
 // ============================================================================
 
-const PURPLE        = '#7D55FF';
-const LIGHT_PURPLE  = '#F0EBFF';
-const DARK_TEXT     = '#111827';
-const GRAY_TEXT     = '#6B7280';
-const LIGHT_GRAY    = '#F3F4F6';
-const BORDER_COLOR  = '#E5E7EB';
-const WHITE         = '#FFFFFF';
+const PURPLE              = '#7D55FF';
+const PURPLE_SURFACE      = 'rgba(125, 85, 255, 0.14)';
+const PURPLE_BORDER       = 'rgba(125, 85, 255, 0.4)';
+const LOCKED_SURFACE      = 'rgba(255, 255, 255, 0.04)';
+const LOCKED_BORDER       = 'rgba(255, 255, 255, 0.08)';
+const CONTAINER_BORDER    = 'rgba(255, 255, 255, 0.08)';
+const ICON_WRAPPER_BG     = 'rgba(125, 85, 255, 0.18)';
+const TEXT_PRIMARY        = '#F5F3FF';
+const TEXT_MUTED          = 'rgba(245, 243, 255, 0.45)';
 
 // ============================================================================
 // PROPS
@@ -155,10 +159,10 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: 16,
     marginVertical: 12,
-    backgroundColor: WHITE,
+    backgroundColor: PURPLE_SURFACE, // ← was WHITE
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: BORDER_COLOR,
+    borderColor: CONTAINER_BORDER, // ← was BORDER_COLOR
     overflow: 'hidden',
   },
 
@@ -171,12 +175,12 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_COLOR,
+    borderBottomColor: CONTAINER_BORDER, // ← was BORDER_COLOR
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: DARK_TEXT,
+    color: TEXT_PRIMARY, // ← was DARK_TEXT
   },
   badgeCount: {
     fontSize: 13,
@@ -206,14 +210,14 @@ const styles = StyleSheet.create({
     minHeight: 120,
   },
   cardUnlocked: {
-    backgroundColor: LIGHT_PURPLE,
+    backgroundColor: PURPLE_SURFACE, // ← was LIGHT_PURPLE
     borderWidth: 1.5,
-    borderColor: PURPLE,
+    borderColor: PURPLE_BORDER, // ← was PURPLE (solid)
   },
   cardLocked: {
-    backgroundColor: LIGHT_GRAY,
+    backgroundColor: LOCKED_SURFACE, // ← was LIGHT_GRAY
     borderWidth: 1,
-    borderColor: BORDER_COLOR,
+    borderColor: LOCKED_BORDER, // ← was BORDER_COLOR
   },
 
   // ---------- Icon ----------
@@ -227,15 +231,15 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   iconWrapperUnlocked: {
-    backgroundColor: WHITE,
+    backgroundColor: ICON_WRAPPER_BG, // ← was WHITE
     shadowColor: PURPLE,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 3,
   },
   iconWrapperLocked: {
-    backgroundColor: BORDER_COLOR,
+    backgroundColor: LOCKED_BORDER, // ← was BORDER_COLOR
   },
   icon: {
     fontSize: 24,
@@ -250,7 +254,7 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: WHITE,
+    backgroundColor: '#1A1626', // ← was WHITE — dark surface for badge contrast
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -270,17 +274,17 @@ const styles = StyleSheet.create({
     color: PURPLE,
   },
   badgeNameLocked: {
-    color: GRAY_TEXT,
+    color: TEXT_MUTED, // ← was GRAY_TEXT
   },
   badgeDescription: {
     fontSize: 10,
-    color: GRAY_TEXT,
+    color: TEXT_MUTED, // ← was GRAY_TEXT
     textAlign: 'center',
     lineHeight: 14,
   },
   lockedHint: {
     fontSize: 10,
-    color: GRAY_TEXT,
+    color: TEXT_MUTED, // ← was GRAY_TEXT
     textAlign: 'center',
     lineHeight: 14,
     opacity: 0.8,
@@ -296,7 +300,7 @@ const styles = StyleSheet.create({
   progressTrack: {
     width: '100%',
     height: 4,
-    backgroundColor: BORDER_COLOR,
+    backgroundColor: LOCKED_BORDER, // ← was BORDER_COLOR
     borderRadius: 2,
     overflow: 'hidden',
   },
@@ -307,7 +311,7 @@ const styles = StyleSheet.create({
   },
   progressLabel: {
     fontSize: 10,
-    color: GRAY_TEXT,
+    color: TEXT_MUTED, // ← was GRAY_TEXT
     fontWeight: '600',
   },
 });
