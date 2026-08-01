@@ -71,7 +71,10 @@ const TodaysPlan: React.FC<TodaysPlanProps> = ({
             colors={['rgba(74,0,122,0.55)', 'rgba(109,0,160,0.30)']}
             style={styles.vocabPill}
           >
-            <Text style={styles.vocabPillText}>📚  Word of the Day</Text>
+            <View style={styles.vocabPillInner}>
+              <Text style={styles.vocabPillEmoji}>📚</Text>
+              <Text style={styles.vocabPillText}>Word of the Day</Text>
+            </View>
           </LinearGradient>
         </View>
 
@@ -122,13 +125,15 @@ const TodaysPlan: React.FC<TodaysPlanProps> = ({
           activeOpacity={0.8}
         >
           <LinearGradient
-            colors={['#00A845', '#005C25']}
+            colors={['#16A34A', '#0A5C2E']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={styles.playBtn}
-          >
+            style={styles.playBtnGradientFill}
+          />
+          <View style={styles.playBtnOverlay} />
+          <View style={styles.playBtnContent}>
             <Text style={styles.playBtnText}>Play Now  ▶</Text>
-          </LinearGradient>
+          </View>
         </TouchableOpacity>
       </View>
 
@@ -192,13 +197,30 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     marginTop:    6,
   },
+
+  // ← FIX: padding/layout moved OFF the LinearGradient itself.
+  // LinearGradient doesn't always shrink-wrap children reliably across RN
+  // versions when padding is applied directly to it — this caused the
+  // pill to hold a stale/too-small width and clip the text mid-word.
+  // Now the gradient just clips to a rounded box (overflow hidden),
+  // and an inner plain View handles the row layout + padding, which
+  // measures its children correctly every time.
   vocabPill: {
-    alignSelf:         'flex-start',
+    alignSelf:    'flex-start',
+    borderRadius: 20,
+    borderWidth:  1,
+    borderColor:  'rgba(180,80,255,0.35)',
+    overflow:     'hidden',
+  },
+  vocabPillInner: {
+    flexDirection:     'row',
+    alignItems:        'center',
     paddingHorizontal: 12,
     paddingVertical:   5,
-    borderRadius:      20,
-    borderWidth:       1,
-    borderColor:       'rgba(180,80,255,0.35)',
+    gap:               6,
+  },
+  vocabPillEmoji: {
+    fontSize: 12,
   },
   vocabPillText: {
     fontSize:   12,
@@ -326,16 +348,24 @@ const styles = StyleSheet.create({
   playBtnWrap: {
     borderRadius:  13,
     overflow:      'hidden',
+    zIndex:        10,                        // ← sit above any decorative glow behind it
+    elevation:     8,                         // ← Android stacking above siblings
     shadowColor:   '#00A845',
     shadowOffset:  { width: 0, height: 4 },
     shadowOpacity: 0.45,
     shadowRadius:  10,
-    elevation:     5,
   },
-  playBtn: {
+  playBtnGradientFill: {
+    ...StyleSheet.absoluteFillObject,          // ← gradient just paints the full button
+  },
+  playBtnOverlay: {
+    ...StyleSheet.absoluteFillObject,          // ← uniform dark layer for text contrast
+    backgroundColor: 'rgba(0,0,0,0.28)',
+  },
+  playBtnContent: {
     paddingVertical: 12,
-    borderRadius:    13,
     alignItems:      'center',
+    justifyContent:  'center',
   },
   playBtnText: {
     fontSize:      14,

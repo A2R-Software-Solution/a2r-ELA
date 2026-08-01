@@ -36,7 +36,7 @@ const DailyVocab: React.FC = () => {
       if (response.data?.data) {
         setVocab(response.data.data);
       }
-    } catch (e) {
+    } catch {
       setError(true);
     } finally {
       setIsLoading(false);
