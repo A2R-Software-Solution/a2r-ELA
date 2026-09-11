@@ -6,15 +6,15 @@ class Settings:
     
     # Groq Configuration
     GROQ_API_KEY: str = os.getenv("NB_GROQ_API_KEY", "")
-    GROQ_BASE_URL: str = "https://api.groq.com/openai/v1"
-    GROQ_MODEL: str = "llama-3.1-8b-instant"
+    GROQ_BASE_URL: str = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1").rstrip("/")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
     
     # PSSA Groq Configuration (3 separate API keys/accounts for PSSA practice,
     # round-robined to avoid hitting any single org's TPM rate limit)
     PSSA_GROQ_API_KEY_1: str = os.getenv("PSSA_GROQ_API_KEY_1", "")
     PSSA_GROQ_API_KEY_2: str = os.getenv("PSSA_GROQ_API_KEY_2", "")
     PSSA_GROQ_API_KEY: str = os.getenv("PSSA_GROQ_API_KEY", "")    
-    PSSA_GROQ_MODEL: str = "llama-3.1-8b-instant"
+    PSSA_GROQ_MODEL: str = os.getenv("PSSA_GROQ_MODEL") or GROQ_MODEL
     
     # Essay Validation
     MIN_WORDS: int = 50
@@ -167,7 +167,7 @@ class Settings:
     def validate_config(cls) -> bool:
         """Validate that required configuration is present"""
         if not cls.GROQ_API_KEY:
-            raise ValueError("GROQ_API_KEY environment variable is required")
+            raise ValueError("NB_GROQ_API_KEY environment variable is required")
         for i, key in enumerate([cls.PSSA_GROQ_API_KEY_1, cls.PSSA_GROQ_API_KEY_2, cls.PSSA_GROQ_API_KEY], start=1):
             if not key:
                 print(f"Warning: PSSA_GROQ_API_KEY_{i} not set — PSSA round-robin will have fewer keys to rotate")
