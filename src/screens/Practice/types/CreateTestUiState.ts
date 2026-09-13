@@ -1,3 +1,4 @@
+import { colors } from '../../../theme/colors';
 /**
  * CreateTest UI State
  * State for the Create Custom Test screen
@@ -59,7 +60,7 @@ export const DIFFICULTY_CONFIG: Record<Difficulty, {
     subtitle:    'Beginner',
     emoji:       '😊',
     color:       '#22C55E',
-    bgColor:     '#F0FDF4',
+    bgColor:     colors.successSurface,
     description: 'Recommended for building confidence.',
   },
   medium: {
@@ -67,7 +68,7 @@ export const DIFFICULTY_CONFIG: Record<Difficulty, {
     subtitle:    'Balanced',
     emoji:       '😐',
     color:       '#F59E0B',
-    bgColor:     '#FFFBEB',
+    bgColor:     colors.warningSurface,
     description: 'Balanced difficulty suitable for steady progress and skill improvement.',
   },
   hard: {
@@ -75,7 +76,7 @@ export const DIFFICULTY_CONFIG: Record<Difficulty, {
     subtitle:    'Challenge',
     emoji:       '😤',
     color:       '#EF4444',
-    bgColor:     '#FEF2F2',
+    bgColor:     colors.errorSurface,
     description: 'Challenge yourself with advanced questions.',
   },
 };

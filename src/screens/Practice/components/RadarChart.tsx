@@ -1,3 +1,4 @@
+import { colors } from '../../../theme/colors';
 /**
  * RadarChart Component
  * Custom triangle radar chart using react-native-svg
@@ -97,7 +98,7 @@ const RadarChart: React.FC<RadarChartProps> = ({
             key={`grid-${i}`}
             points={points}
             fill="none"
-            stroke="#E2E8F0"
+            stroke={colors.border}
             strokeWidth={1}
           />
         ))}
@@ -110,7 +111,7 @@ const RadarChart: React.FC<RadarChartProps> = ({
             y1={cy}
             x2={point.x}
             y2={point.y}
-            stroke="#E2E8F0"
+            stroke={colors.border}
             strokeWidth={1}
           />
         ))}
@@ -119,7 +120,7 @@ const RadarChart: React.FC<RadarChartProps> = ({
         <Polygon
           points={dataPolygon}
           fill="rgba(108, 77, 255, 0.15)"
-          stroke="#6C4DFF"
+          stroke={colors.primary}
           strokeWidth={2}
         />
 
@@ -130,7 +131,7 @@ const RadarChart: React.FC<RadarChartProps> = ({
             cx={point.x}
             cy={point.y}
             r={4}
-            fill="#6C4DFF"
+            fill={colors.primary}
           />
         ))}
 
@@ -144,7 +145,7 @@ const RadarChart: React.FC<RadarChartProps> = ({
             alignmentBaseline="middle"
             fontSize={11}
             fontWeight="600"
-            fill="#475569"
+            fill={colors.muted}
           >
             {AXES[i].label}
           </SvgText>
@@ -177,13 +178,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize:     14,
     fontWeight:   '700',
-    color:        '#0F172A',
+    color:        colors.text,
     marginBottom: 8,
   },
   tipRow: {
     flexDirection:     'row',
     alignItems:        'flex-start',
-    backgroundColor:   '#F8FAFC',
+    backgroundColor:   colors.surface,
     borderRadius:      10,
     padding:           10,
     marginTop:         8,
@@ -196,7 +197,7 @@ const styles = StyleSheet.create({
   tipText: {
     flex:       1,
     fontSize:   12,
-    color:      '#475569',
+    color:      colors.muted,
     lineHeight: 18,
   },
 });

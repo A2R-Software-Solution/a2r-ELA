@@ -1,3 +1,5 @@
+import ScreenBackground from '../../components/ScreenBackground';
+import { colors } from '../../theme/colors';
 /**
  * PracticeSessionScreen
  * The actual exam-taking experience — MCQ, short answer, and writing questions
@@ -38,13 +40,13 @@ interface PracticeSessionScreenProps {
 // CONSTANTS
 // ============================================================================
 
-const PRIMARY    = '#6C4DFF';
+const PRIMARY    = colors.primary;
 const WHITE      = '#FFFFFF';
-const BG         = '#F8FAFC';
-const TEXT_DARK  = '#0F172A';
-const TEXT_MID   = '#475569';
-const TEXT_GRAY  = '#94A3B8';
-const BORDER     = '#E2E8F0';
+const BG = colors.background;
+const TEXT_DARK  = colors.text;
+const TEXT_MID   = colors.muted;
+const TEXT_GRAY  = colors.subtle;
+const BORDER     = colors.border;
 const GREEN      = '#22C55E';
 const RED        = '#EF4444';
 const BLUE       = '#3B82F6';
@@ -91,6 +93,7 @@ const PracticeSessionScreen: React.FC<PracticeSessionScreenProps> = ({
   if (state.phase === 'loading') {
     return (
       <View style={styles.centered}>
+        <ScreenBackground />
         <ActivityIndicator size="large" color={PRIMARY} />
         <Text style={styles.loadingTitle}>Preparing your practice test...</Text>
         <Text style={styles.loadingSub}>Generating fresh questions just for you</Text>
@@ -102,6 +105,7 @@ const PracticeSessionScreen: React.FC<PracticeSessionScreenProps> = ({
   if (state.phase === 'error') {
     return (
       <View style={styles.centered}>
+        <ScreenBackground />
         <Text style={styles.errorEmoji}>😕</Text>
         <Text style={styles.errorText}>{state.errorMessage}</Text>
         <TouchableOpacity style={styles.retryBtn} onPress={retryFetch} activeOpacity={0.85}>
@@ -147,6 +151,7 @@ const PracticeSessionScreen: React.FC<PracticeSessionScreenProps> = ({
       style={styles.wrapper}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <ScreenBackground />
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity style={styles.backBtn} onPress={onBackClick} activeOpacity={0.7}>
@@ -293,7 +298,7 @@ const MCQQuestionView: React.FC<MCQQuestionViewProps> = ({ question, answer, onS
       {answer.isAnswered && (
         <View style={[
           styles.explanationBox,
-          { backgroundColor: answer.isCorrect ? '#F0FDF4' : '#FEF2F2' },
+          { backgroundColor: answer.isCorrect ? colors.successSurface : colors.errorSurface },
         ]}>
           <Text style={[
             styles.explanationLabel,
@@ -383,7 +388,7 @@ const ShortAnswerQuestionView: React.FC<ShortAnswerQuestionViewProps> = ({
       )}
 
       {answer.isAnswered && answer.evaluationFailed && (
-        <View style={[styles.feedbackCard, { backgroundColor: '#FEF2F2' }]}>
+        <View style={[styles.feedbackCard, { backgroundColor: colors.errorSurface }]}>
           <Text style={[styles.feedbackText, { color: RED }]}>
             We couldn't evaluate this answer right now, but it's been saved. Keep going!
           </Text>
@@ -418,6 +423,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({
 
   return (
     <View style={styles.resultsWrapper}>
+      <ScreenBackground />
       <ScrollView contentContainerStyle={styles.resultsScroll}>
         <Text style={styles.resultsEmoji}>🎉</Text>
         <Text style={styles.resultsTitle}>Practice Complete!</Text>
@@ -479,20 +485,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 12,
-    backgroundColor: WHITE,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: BORDER,
     gap: 10,
   },
   backBtn: {
     width: 36, height: 36, borderRadius: 10,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: colors.surfaceRaised,
     justifyContent: 'center', alignItems: 'center',
   },
   backBtnText: { fontSize: 18, color: TEXT_DARK, fontWeight: '600' },
   headerCenter: { flex: 1 },
   headerTitle: { fontSize: 13, fontWeight: '700', color: TEXT_DARK, marginBottom: 6 },
-  progressBarTrack: { height: 6, backgroundColor: '#F1F5F9', borderRadius: 3, overflow: 'hidden' },
+  progressBarTrack: { height: 6, backgroundColor: colors.surfaceRaised, borderRadius: 3, overflow: 'hidden' },
   progressBarFill: { height: 6, backgroundColor: PRIMARY, borderRadius: 3 },
   categoryPill: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10 },
   categoryPillText: { fontSize: 11, fontWeight: '700' },
@@ -503,7 +509,7 @@ const styles = StyleSheet.create({
 
   // Passage card
   passageCard: {
-    backgroundColor: WHITE,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 14,
@@ -515,7 +521,7 @@ const styles = StyleSheet.create({
 
   // Question card
   questionCard: {
-    backgroundColor: WHITE,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
@@ -534,12 +540,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     gap: 12,
   },
-  optionRowSelected: { borderColor: PRIMARY, backgroundColor: '#EDE9FF' },
-  optionRowCorrect: { borderColor: GREEN, backgroundColor: '#F0FDF4' },
-  optionRowWrong: { borderColor: RED, backgroundColor: '#FEF2F2' },
+  optionRowSelected: { borderColor: PRIMARY, backgroundColor: colors.surfaceRaised },
+  optionRowCorrect: { borderColor: GREEN, backgroundColor: colors.successSurface },
+  optionRowWrong: { borderColor: RED, backgroundColor: colors.errorSurface },
   optionBadge: {
     width: 28, height: 28, borderRadius: 8,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: colors.surfaceRaised,
     justifyContent: 'center', alignItems: 'center',
   },
   optionBadgeSelected: { backgroundColor: PRIMARY },
@@ -565,7 +571,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     marginBottom: 12,
   },
-  answerInputDisabled: { backgroundColor: '#F8FAFC', color: TEXT_MID },
+  answerInputDisabled: { backgroundColor: colors.surface, color: TEXT_MID },
   submitAnswerBtn: {
     borderRadius: 12,
     paddingVertical: 14,
@@ -575,7 +581,7 @@ const styles = StyleSheet.create({
   navBtnDisabled: { opacity: 0.4 },
 
   // Feedback card
-  feedbackCard: { backgroundColor: '#F8FAFC', borderRadius: 12, padding: 14, marginTop: 4 },
+  feedbackCard: { backgroundColor: colors.surface, borderRadius: 12, padding: 14, marginTop: 4 },
   feedbackScoreRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
   feedbackScoreLabel: { fontSize: 13, color: TEXT_MID, fontWeight: '600' },
   feedbackScoreValue: { fontSize: 16, fontWeight: '800' },
@@ -585,7 +591,7 @@ const styles = StyleSheet.create({
   feedbackSubText: { fontSize: 13, color: TEXT_MID, lineHeight: 18 },
   xpEarnedPill: {
     alignSelf: 'flex-start',
-    backgroundColor: '#EDE9FF',
+    backgroundColor: colors.surfaceRaised,
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 5,
@@ -597,7 +603,7 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     gap: 12,
-    backgroundColor: WHITE,
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: BORDER,
     paddingHorizontal: 16,
@@ -606,7 +612,7 @@ const styles = StyleSheet.create({
   navBtn: { flex: 1, borderRadius: 14, paddingVertical: 15, alignItems: 'center' },
   navBtnPrimary: { backgroundColor: PRIMARY },
   navBtnPrimaryText: { color: WHITE, fontSize: 15, fontWeight: '800' },
-  navBtnSecondary: { backgroundColor: '#F1F5F9' },
+  navBtnSecondary: { backgroundColor: colors.surfaceRaised },
   navBtnSecondaryText: { color: TEXT_DARK, fontSize: 15, fontWeight: '700' },
 
   // Results
@@ -616,7 +622,7 @@ const styles = StyleSheet.create({
   resultsTitle: { fontSize: 22, fontWeight: '800', color: TEXT_DARK, marginBottom: 6 },
   resultsSub: { fontSize: 14, color: TEXT_GRAY, marginBottom: 28 },
   resultsScoreCard: {
-    backgroundColor: WHITE,
+    backgroundColor: colors.surface,
     borderRadius: 20,
     paddingVertical: 28,
     paddingHorizontal: 40,
@@ -630,7 +636,7 @@ const styles = StyleSheet.create({
   resultsStatsRow: { flexDirection: 'row', gap: 12, width: '100%' },
   resultsStatBox: {
     flex: 1,
-    backgroundColor: WHITE,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 18,
     alignItems: 'center',

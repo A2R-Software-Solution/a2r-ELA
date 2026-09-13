@@ -1,3 +1,4 @@
+import { colors } from '../../../theme/colors';
 /**
  * StickyBottomCard Component
  * Fixed bottom card showing test summary + Start Test button
@@ -95,9 +96,9 @@ const StickyBottomCard: React.FC<StickyBottomCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderTopWidth:  1,
-    borderTopColor:  '#E2E8F0',
+    borderTopColor:  colors.border,
     paddingTop:      14,
     paddingHorizontal: 16,
     shadowColor:     '#000',
@@ -121,36 +122,36 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize:   16,
     fontWeight: '800',
-    color:      '#0F172A',
+    color:      colors.text,
   },
   xpValue: {
-    color: '#6C4DFF',
+    color: colors.primary,
   },
   statLabel: {
     fontSize:  11,
-    color:     '#94A3B8',
+    color:     colors.subtle,
     marginTop: 2,
   },
   statDivider: {
     width:           1,
     height:          32,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: colors.border,
   },
 
   // Start button
   startBtn: {
-    backgroundColor: '#6C4DFF',
+    backgroundColor: colors.primary,
     borderRadius:    16,
     paddingVertical: 16,
     alignItems:      'center',
-    shadowColor:     '#6C4DFF',
+    shadowColor:     colors.primary,
     shadowOffset:    { width: 0, height: 4 },
     shadowOpacity:   0.3,
     shadowRadius:    8,
     elevation:       4,
   },
   startBtnDisabled: {
-    backgroundColor: '#C4B5FD',
+    backgroundColor: colors.surfaceRaised,
     shadowOpacity:   0,
     elevation:       0,
   },

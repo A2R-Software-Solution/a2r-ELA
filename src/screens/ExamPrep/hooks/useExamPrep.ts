@@ -22,12 +22,12 @@ import {
 
 const TABS: ExamTab[] = [
   { id: 'pssa_ela',         label: 'PSSA ELA' },
-  { id: 'placeholder_exam', label: 'Placeholder Exam!' },
+  { id: 'placeholder_exam', label: 'Coming Soon' },
 ];
 
 const EXAM_TITLES: Record<string, string> = {
   pssa_ela:         'PSSA ELA Writing Exam Prep',
-  placeholder_exam: 'Placeholder Exam Prep',
+  placeholder_exam: 'More exams coming soon',
 };
 
 // Grade 3 and 4 only — Grade 5+ content not seeded in Firestore yet (out of scope this sprint)
@@ -121,6 +121,9 @@ export default function useExamPrep(): UseExamPrepReturn {
   }, []);
 
   const onContinue = useCallback(async (): Promise<Result<PssaQuestionsResponse>> => {
+    if (activeTabId !== 'pssa_ela') {
+      return Result.error(new Error('This exam is coming soon.'));
+    }
     setIsGenerating(true);
     setErrorMessage(null);
 
@@ -139,7 +142,7 @@ export default function useExamPrep(): UseExamPrepReturn {
 
     setIsGenerating(false);
     return result;
-  }, [selectedGrade, selectedDomain]);
+  }, [activeTabId, selectedGrade, selectedDomain]);
 
   // --------------------------------------------------------------------------
   // STATE ASSEMBLY

@@ -48,7 +48,7 @@ export const ApiConfig = {
     GET_STATE_LEADERBOARD: 'get_state_leaderboard',
 
     // Vocabulary
-    GET_DAILY_VOCAB: '/get_daily_vocab',
+    GET_DAILY_VOCAB: 'get_daily_vocab',
 
     // PSSA Practice
     GENERATE_PSSA_QUESTIONS: 'generate_pssa_questions',   // ← NEW

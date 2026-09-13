@@ -89,7 +89,7 @@ const AppNavigator = () => {
                 }}
                 onEssayWritingClick={()        => navigation.navigate(Routes.ESSAY)}
                 onSeeAllEssaysClick={()        => navigation.navigate(Routes.LEADERBOARD)}
-                onCreateCustomTestClick={()    => navigation.navigate(Routes.CREATE_CUSTOM_TEST)}
+                onStartPssaPractice={(data) => navigation.navigate(Routes.PRACTICE_SESSION, { mode: 'preloaded', data })}
               />
             )}
           </Stack.Screen>

@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import axios from 'axios';
 import { apiService } from '../../../api/apiService';
 
 interface VocabWord {
@@ -34,6 +35,7 @@ const TodaysPlan: React.FC<TodaysPlanProps> = ({
   const [vocab, setVocab]       = useState<VocabWord | null>(null);
   const [isLoading, setLoading] = useState(true);
   const [hasError, setError]    = useState(false);
+  const [errorMessage, setErrorMessage] = useState('Could not load word. Tap to retry.');
 
   useEffect(() => { fetchVocab(); }, []);
 
@@ -44,7 +46,15 @@ const TodaysPlan: React.FC<TodaysPlanProps> = ({
       const response = await apiService.getDailyVocab();
       if (response.data?.data) setVocab(response.data.data);
       else setError(true);
-    } catch {
+    } catch (error) {
+      const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+      setErrorMessage(status === 401
+        ? 'Please sign in again to load your word.'
+        : status === 429
+          ? 'Word service is busy. Please retry shortly.'
+          : status === undefined
+            ? 'Could not connect. Check your connection and tap to retry.'
+            : 'Word is temporarily unavailable. Tap to retry.');
       setError(true);
     } finally {
       setLoading(false);
@@ -82,7 +92,7 @@ const TodaysPlan: React.FC<TodaysPlanProps> = ({
           </View>
         ) : hasError ? (
           <TouchableOpacity onPress={fetchVocab} activeOpacity={0.7}>
-            <Text style={styles.errorText}>Could not load word. Tap to retry.</Text>
+            <Text style={styles.errorText}>{errorMessage}</Text>
           </TouchableOpacity>
         ) : vocab ? (
           <View style={styles.vocabContent}>

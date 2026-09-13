@@ -1,3 +1,4 @@
+import { colors } from '../../../theme/colors';
 /**
  * StateSelectorSheet.tsx
  * Bottom sheet component for selecting state and grade
@@ -242,7 +243,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: '75%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     shadowColor: '#000',
@@ -260,7 +261,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#D1D5DB',
+    backgroundColor: colors.border,
   },
   container: {
     flex: 1,
@@ -274,12 +275,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#111827',
+    color: colors.text,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: '#6B7280',
+    color: colors.muted,
     lineHeight: 20,
   },
   loadingContainer: {
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 14,
-    color: '#6B7280',
+    color: colors.muted,
   },
   scrollView: {
     flex: 1,
@@ -302,7 +303,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: colors.text,
     marginBottom: 12,
   },
   optionsGrid: {
@@ -315,20 +316,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
   optionButtonSelected: {
-    borderColor: '#4F46E5',
-    backgroundColor: '#EEF2FF',
+    borderColor: colors.primary,
+    backgroundColor: colors.surfaceRaised,
   },
   optionText: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#6B7280',
+    color: colors.muted,
   },
   optionTextSelected: {
-    color: '#4F46E5',
+    color: colors.primary,
     fontWeight: '600',
   },
   gradeButton: {
@@ -336,25 +337,25 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
     alignItems: 'center',
   },
   gradeButtonSelected: {
-    borderColor: '#4F46E5',
-    backgroundColor: '#EEF2FF',
+    borderColor: colors.primary,
+    backgroundColor: colors.surfaceRaised,
   },
   gradeText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6B7280',
+    color: colors.muted,
   },
   gradeTextSelected: {
-    color: '#4F46E5',
+    color: colors.primary,
     fontWeight: '600',
   },
   infoBox: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.surfaceRaised,
     padding: 16,
     borderRadius: 12,
     marginTop: 8,
@@ -362,43 +363,43 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#4B5563',
+    color: colors.muted,
     lineHeight: 20,
   },
   infoBold: {
     fontWeight: '600',
-    color: '#111827',
+    color: colors.text,
   },
   footer: {
     flexDirection: 'row',
     gap: 12,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
+    borderTopColor: colors.surfaceRaised,
   },
   cancelButton: {
     flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    backgroundColor: '#FFFFFF',
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
     alignItems: 'center',
   },
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B7280',
+    color: colors.muted,
   },
   saveButton: {
     flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#4F46E5',
+    backgroundColor: colors.primary,
     alignItems: 'center',
   },
   saveButtonDisabled: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: colors.border,
   },
   saveButtonText: {
     fontSize: 16,

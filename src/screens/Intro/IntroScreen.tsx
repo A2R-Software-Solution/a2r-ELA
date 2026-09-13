@@ -1,3 +1,5 @@
+import ScreenBackground from '../../components/ScreenBackground';
+import { colors } from '../../theme/colors';
 /**
  * Intro Screen
  * Onboarding screens with swipe navigation
@@ -114,6 +116,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onGetStarted }) => {
 
   return (
     <View style={styles.container}>
+      <ScreenBackground />
       <FlatList
         ref={flatListRef}
         data={INTRO_PAGES}
@@ -171,7 +174,7 @@ const DotsIndicator: React.FC<DotsIndicatorProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#7D55FF',
+    backgroundColor: colors.primary,
   },
   page: {
     width,

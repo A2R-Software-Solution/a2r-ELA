@@ -1,3 +1,5 @@
+import ScreenBackground from '../../components/ScreenBackground';
+import { colors } from '../../theme/colors';
 /**
  * TestInstructionsScreen
  * Shows test rules and configuration before starting
@@ -38,13 +40,13 @@ interface TestInstructionsScreenProps {
 // CONSTANTS
 // ============================================================================
 
-const PRIMARY   = '#6C4DFF';
+const PRIMARY   = colors.primary;
 const WHITE     = '#FFFFFF';
-const BG        = '#F8FAFC';
-const TEXT_DARK = '#0F172A';
-const TEXT_MID  = '#475569';
-const TEXT_GRAY = '#94A3B8';
-const BORDER    = '#E2E8F0';
+const BG = colors.background;
+const TEXT_DARK = colors.text;
+const TEXT_MID  = colors.muted;
+const TEXT_GRAY = colors.subtle;
+const BORDER    = colors.border;
 const GREEN     = '#22C55E';
 
 const RULES = [
@@ -70,6 +72,7 @@ const TestInstructionsScreen: React.FC<TestInstructionsScreenProps> = ({
 
   return (
     <View style={styles.wrapper}>
+      <ScreenBackground />
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
@@ -96,7 +99,7 @@ const TestInstructionsScreen: React.FC<TestInstructionsScreenProps> = ({
           <Text style={styles.heroTitle}>Custom Practice Test</Text>
           <View style={[
             styles.difficultyBadge,
-            { backgroundColor: diffConfig?.bgColor ?? '#F8FAFC' },
+            { backgroundColor: diffConfig?.bgColor ?? colors.surface },
           ]}>
             <Text style={[
               styles.difficultyText,
@@ -135,7 +138,7 @@ const TestInstructionsScreen: React.FC<TestInstructionsScreenProps> = ({
               icon="🔢"
               value={config.total.toString()}
               label="Total"
-              color="#0F172A"
+              color={colors.text}
             />
           </View>
 
@@ -255,7 +258,7 @@ const statStyles = StyleSheet.create({
     flex:           1,
     alignItems:     'center',
     padding:        12,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.surface,
     borderRadius:   12,
     marginHorizontal: 3,
   },
@@ -270,7 +273,7 @@ const statStyles = StyleSheet.create({
   },
   label: {
     fontSize: 11,
-    color:    '#94A3B8',
+    color:    colors.subtle,
   },
 });
 
@@ -316,7 +319,7 @@ const sectionStyles = StyleSheet.create({
     paddingVertical: 10,
     gap:           12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: colors.surfaceRaised,
   },
   iconBubble: {
     width:          44,
@@ -336,7 +339,7 @@ const sectionStyles = StyleSheet.create({
   title: {
     fontSize:   14,
     fontWeight: '700',
-    color:      '#0F172A',
+    color:      colors.text,
   },
   countBadge: {
     paddingHorizontal: 8,
@@ -349,7 +352,7 @@ const sectionStyles = StyleSheet.create({
   },
   description: {
     fontSize: 12,
-    color:    '#94A3B8',
+    color:    colors.subtle,
   },
 });
 
@@ -369,7 +372,7 @@ const styles = StyleSheet.create({
     alignItems:        'center',
     paddingHorizontal: 16,
     paddingBottom:     12,
-    backgroundColor:   WHITE,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: BORDER,
   },
@@ -377,7 +380,7 @@ const styles = StyleSheet.create({
     width:           36,
     height:          36,
     borderRadius:    10,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: colors.surfaceRaised,
     justifyContent:  'center',
     alignItems:      'center',
   },
@@ -404,7 +407,7 @@ const styles = StyleSheet.create({
 
   // Hero card
   heroCard: {
-    backgroundColor:   WHITE,
+    backgroundColor: colors.surface,
     borderRadius:      20,
     padding:           24,
     alignItems:        'center',
@@ -439,7 +442,7 @@ const styles = StyleSheet.create({
 
   // Card
   card: {
-    backgroundColor: WHITE,
+    backgroundColor: colors.surface,
     borderRadius:    16,
     padding:         16,
     marginBottom:    14,
@@ -508,7 +511,7 @@ const styles = StyleSheet.create({
     gap:           10,
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: colors.surfaceRaised,
   },
   ruleIcon: { fontSize: 16, marginTop: 1 },
   ruleText: {
@@ -520,7 +523,7 @@ const styles = StyleSheet.create({
 
   // Footer
   footer: {
-    backgroundColor:   WHITE,
+    backgroundColor: colors.surface,
     borderTopWidth:    1,
     borderTopColor:    BORDER,
     paddingHorizontal: 16,

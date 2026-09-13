@@ -1,0 +1,140 @@
+INFO         | Android emulator version 36.3.10.0 (build_id 14472402) (CL:N/A)
+INFO         | Graphics backend: gfxstream
+INFO         | Found systemPath C:\Users\nitin\AppData\Local\Android\Sdk\system-images\android-36\google_apis_playstore_ps16k\x86_64\
+WARNING      | Please update the emulator to one that supports the feature(s): VulkanVirtualQueue
+INFO         | Increasing RAM size to 3072MB
+INFO         | IPv4 server found: 192.168.31.1
+INFO         | Ignore IPv6 address: b8:a401:8901:0:90a7:a401:8901:0
+INFO         | Ignore IPv6 address: b8:a401:8901:0:90a7:a401:8901:0
+INFO         | Ignore IPv6 address: b8:a401:8901:0:90a7:a401:8901:0
+INFO         | Guest GLES Driver: Auto (ext controls)
+library_mode swiftshader_indirect gpu mode swiftshader_indirect
+INFO         | Checking system compatibility:
+INFO         |   Checking: hasCompatibleHypervisor
+INFO         |      Ok: Hypervisor compatibility to run avd: `Pixel_9_Pro` are met
+INFO         |   Checking: hasSufficientSystem
+INFO         |      Ok: System requirements to run avd: `Pixel_9_Pro` are met
+INFO         |   Checking: hasSufficientHwGpu
+INFO         |      Ok: Hardware GPU compatibility checks are not required
+INFO         |   Checking: hasSufficientDiskSpace
+INFO         |      Ok: Disk space requirements to run avd: `Pixel_9_Pro` are met
+INFO         | Warning: SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) failed: COM error 0x5: Access is denied.
+Qt's default DPI awareness context is DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2. If you know what you are doing you can overwrite this default using qt.conf (https://doc.qt.io/qt-6/highdpi.html#configuring-windows) (:0, )
+INFO         | Warning: SetProcessDpiAwareness(2) failed: COM error 0x80070005: Access is denied., using 0
+Qt's fallback DPI awareness is PROCESS_DPI_AWARENESS. If you know what you are doing consider an override in qt.conf (:0, )
+INFO         | Critical: Failed to load opengl32sw (The specified module could not be found.) (:0, )
+INFO         | Warning: Software OpenGL failed. Falling back to system OpenGL. (:0, )
+INFO         | Storing crashdata in: C:\Users\nitin\AppData\Local\Temp\\AndroidEmulator\emu-crash-36.3.10.db, detection is enabled for process: 4904
+INFO         | Initializing gfxstream backend
+INFO         | android_startOpenglesRenderer: gpu info
+INFO         | GPU #1
+  Make: 8086
+  Model: Intel(R) Iris(R) Xe Graphics
+  Device ID: 9a49
+
+INFO         | initIcdPaths: ICD set to 'swiftshader', using Swiftshader ICD
+INFO         | Setting ICD filenames for the loader = C:\Users\nitin\AppData\Local\Android\Sdk\emulator\lib64\vulkan\vk_swiftshader_icd.json
+INFO         | SharedLibrary::open for [vulkan-1.dll]
+INFO         | SharedLibrary::open for [vulkan-1.dll]: not found in map, open for the first time
+INFO         | SharedLibrary::open for [vulkan-1.dll] (win32): call LoadLibrary
+INFO         | SharedLibrary::open succeeded for [vulkan-1.dll]. File name: [C:\WINDOWS\SYSTEM32\vulkan-1.dll]
+INFO         | Added library: vulkan-1.dll
+INFO         | Selecting Vulkan device: SwiftShader Device (LLVM 10.0.0), Version: 1.2.0
+INFO         | Disabling sparse binding feature support
+INFO         | SharedLibrary::open for [libGLESv2.dll]: not found in map, open for the first time
+INFO         | SharedLibrary::open for [libGLESv2.dll] (win32): call LoadLibrary
+INFO         | SharedLibrary::open succeeded for [libGLESv2.dll]. File name: [C:\Users\nitin\AppData\Local\Android\Sdk\emulator\lib64\gles_swiftshader\libGLESv2.dll]
+INFO         | SharedLibrary::open for [libEGL.dll]: not found in map, open for the first time
+INFO         | SharedLibrary::open for [libEGL.dll] (win32): call LoadLibrary
+INFO         | SharedLibrary::open succeeded for [libEGL.dll]. File name: [C:\Users\nitin\AppData\Local\Android\Sdk\emulator\lib64\gles_swiftshader\libEGL.dll]
+INFO         | Initializing VkEmulation features:
+INFO         |     glInteropSupported: false
+INFO         |     useDeferredCommands: true
+INFO         |     createResourceWithRequirements: true
+INFO         |     useVulkanComposition: false
+INFO         |     useVulkanNativeSwapchain: false
+INFO         |     enable guestRenderDoc: false
+INFO         |     ASTC LDR emulation mode: Gpu
+INFO         |     enable ETC2 emulation: true
+INFO         |     enable Ycbcr emulation: false
+INFO         |     guestVulkanOnly: false
+INFO         |     useDedicatedAllocations: false
+INFO         | Graphics Adapter Vendor Google (Google Inc.)
+INFO         | Graphics Adapter Android Emulator OpenGL ES Translator (Google SwiftShader)
+INFO         | Graphics API Version OpenGL ES 3.0 (OpenGL ES 3.0 SwiftShader 4.0.0.1)
+INFO         | Graphics API Extensions GL_OES_EGL_sync GL_OES_EGL_image GL_OES_EGL_image_external GL_OES_depth24 GL_OES_depth32 GL_OES_element_index_uint GL_OES_texture_float GL_OES_texture_float_linear GL_OES_compressed_paletted_texture GL_OES_compressed_ETC1_RGB8_texture GL_OES_depth_texture GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_packed_depth_stencil GL_OES_vertex_half_float GL_OES_standard_derivatives GL_OES_texture_npot GL_OES_rgb8_rgba8 GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_texture_format_BGRA8888 GL_APPLE_texture_format_BGRA8888 
+INFO         | Graphics Device Extensions N/A
+INFO         | Sending adb public key [QAAAALslSDeNKDoBSnpucjWCIwLmGwBcLzVbkftCE6ftjovwWwnDmkDrrTRQ9EgakN2QR2onzqdYOtvAWRX81Ovm+tZpljQM4R+LZqNTgCigQ17j7NfYKvwjXwXVb7lY2jQKvXMwIpL+unQFwePaL2wEh64Hd4Yjy+n/LKO0LGJG98swrg4Rked5JMnT7xLHrxH9pFWMw3SyiTKOFLnyWpw+A9014uYMIYHtgIVhE8AKsOxUvkv0qihhMCicM+SNm2Y2RNtfi3Uf5eGxn3++bXn9/+hsLpP34Ty5CPJhKNDLNI4KpgOvbKPOWDGBqhpI4TI/RbM7q8dP5Liml+kR4IwaiSGTCm+7u+f1BSi5+pAkYCW2DKg5vZoy643DtVHhJcO5MGrmzwiXXQL6xlSBtUzppUnii6pBAfEC4mfK3PBvhqkWJJ2hyRlp65AAeyDp7lLaF5QRfEoKBVXQgpJlewsAQgPHHNMv1oTrnkFjxQcFsKRiHunCmKZggB9U7P0bKFfWRlZirPtHaShTXCeFqgckNsJiGYnRWxzAhiT8r5tCJCqTR88vHc5ohAegaqjFM3nSu2vfbb68w3yKrtjOr1jpg9ukV6xmltPrmciREP0N3s5ap57jMS8X0e+mTh0xwqAIBjz08JIUHac2n3MbhpPqYsD27B8K5ZDwpSSj4iEslZuCx/huuAEAAQA= @unknown]
+INFO         | Userspace boot properties:
+INFO         |   androidboot.boot_devices=pci0000:00/0000:00:03.0 pci0000:00/0000:00:06.0
+INFO         |   androidboot.dalvik.vm.heapsize=576m
+INFO         |   androidboot.debug.hwui.renderer=skiagl
+INFO         |   androidboot.hardware=ranchu
+INFO         |   androidboot.hardware.gltransport=pipe
+INFO         |   androidboot.hardware.vulkan=ranchu
+INFO         |   androidboot.logcat=*:V
+INFO         |   androidboot.opengles.version=196608
+INFO         |   androidboot.qemu=1
+INFO         |   androidboot.qemu.adb.pubkey=QAAAALslSDeNKDoBSnpucjWCIwLmGwBcLzVbkftCE6ftjovwWwnDmkDrrTRQ9EgakN2QR2onzqdYOtvAWRX81Ovm+tZpljQM4R+LZqNTgCigQ17j7NfYKvwjXwXVb7lY2jQKvXMwIpL+unQFwePaL2wEh64Hd4Yjy+n/LKO0LGJG98swrg4Rked5JMnT7xLHrxH9pFWMw3SyiTKOFLnyWpw+A9014uYMIYHtgIVhE8AKsOxUvkv0qihhMCicM+SNm2Y2RNtfi3Uf5eGxn3++bXn9/+hsLpP34Ty5CPJhKNDLNI4KpgOvbKPOWDGBqhpI4TI/RbM7q8dP5Liml+kR4IwaiSGTCm+7u+f1BSi5+pAkYCW2DKg5vZoy643DtVHhJcO5MGrmzwiXXQL6xlSBtUzppUnii6pBAfEC4mfK3PBvhqkWJJ2hyRlp65AAeyDp7lLaF5QRfEoKBVXQgpJlewsAQgPHHNMv1oTrnkFjxQcFsKRiHunCmKZggB9U7P0bKFfWRlZirPtHaShTXCeFqgckNsJiGYnRWxzAhiT8r5tCJCqTR88vHc5ohAegaqjFM3nSu2vfbb68w3yKrtjOr1jpg9ukV6xmltPrmciREP0N3s5ap57jMS8X0e+mTh0xwqAIBjz08JIUHac2n3MbhpPqYsD27B8K5ZDwpSSj4iEslZuCx/huuAEAAQA= @unknown
+INFO         |   androidboot.qemu.avd_name=Pixel_9_Pro
+INFO         |   androidboot.qemu.camera_hq_edge_processing=0
+INFO         |   androidboot.qemu.camera_protocol_ver=1
+INFO         |   androidboot.qemu.cpuvulkan.version=4202496
+INFO         |   androidboot.qemu.gltransport.drawFlushInterval=800
+INFO         |   androidboot.qemu.gltransport.name=pipe
+INFO         |   androidboot.qemu.hwcodec.avcdec=2
+INFO         |   androidboot.qemu.hwcodec.hevcdec=2
+INFO         |   androidboot.qemu.hwcodec.vpxdec=2
+INFO         |   androidboot.qemu.settings.system.screen_off_timeout=2147483647
+INFO         |   androidboot.qemu.virtiowifi=1
+INFO         |   androidboot.qemu.vsync=60
+INFO         |   androidboot.serialno=EMULATOR36X3X10X0
+INFO         |   androidboot.vbmeta.digest=8c78037c5d25f5442c5f744c524cc74446947b4239645fe2184fe1a70fdcc0ff
+INFO         |   androidboot.vbmeta.hash_alg=sha256
+INFO         |   androidboot.vbmeta.size=6720
+INFO         |   androidboot.veritymode=enforcing
+WHPX on Windows 10.0.26100 detected.
+Windows Hypervisor Platform accelerator is operational
+INFO         | Monitoring duration of emulator setup.
+WARNING      | The emulator now requires a signed jwt token for gRPC access! Use the -grpc flag if you really want an open unprotected grpc port
+INFO         | Using security allow list from: C:\Users\nitin\AppData\Local\Android\Sdk\emulator\lib\emulator_access.json
+WARNING      | *** Basic token auth should only be used by android-studio ***
+INFO         | The active JSON Web Key Sets can be found here: C:\Users\nitin\AppData\Local\Temp\avd\running\4904\jwks\c58a7a5e-ebd5-4b34-b7f0-a4730657dbba\active.jwk
+INFO         | Scanning C:\Users\nitin\AppData\Local\Temp\avd\running\4904\jwks\c58a7a5e-ebd5-4b34-b7f0-a4730657dbba for jwk keys.
+INFO         | Started GRPC server at 127.0.0.1:8554, security: Local, auth: +token
+INFO         | Advertising in: C:\Users\nitin\AppData\Local\Temp\avd\running\pid_4904.ini
+INFO         | Setting display: 0 configuration to: 1280x2856, dpi: 480x480 
+INFO         | setDisplayActiveConfig 0
+INFO         | Checking system compatibility:
+INFO         |   Checking: hasCompatibleHypervisor
+INFO         |      Ok: Hypervisor compatibility to run avd: `Pixel_9_Pro` are met
+INFO         |   Checking: hasSufficientSystem
+INFO         |      Ok: System requirements to run avd: `Pixel_9_Pro` are met
+INFO         |   Checking: hasSufficientHwGpu
+INFO         |      Ok: Hardware GPU compatibility checks are not required
+INFO         |   Checking: hasSufficientDiskSpace
+INFO         |      Ok: Disk space requirements to run avd: `Pixel_9_Pro` are met
+USER_INFO    | Emulator is performing a full startup. This may take upto two minutes, or more.
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_rgbcSensorValueWidget_valueChanged() (:0, )
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_posture_valueChanged(int) (:0, )
+INFO         | AVD supportsNativeGLES=1, supportsGuestAngle=1
+INFO         | Guest Angle is still unstable for API > 35.
+INFO         | Activated packet streamer for bluetooth emulation
+INFO         | Activated packet streamer for uwb emulation
+INFO         | Created extended window in 1.81647s
+WARNING      | adb command 'C:\Users\nitin\AppData\Local\Android\Sdk\platform-tools\adb.exe -s emulator-5554 shell am start-foreground-service -e meter on com.android.emulator.radio.config/.MeterService ' failed: 'adb.exe: device offline'
+INFO         | Critical: UpdateLayeredWindowIndirect failed for ptDst=(130, 100), size=(267x21), dirty=(267x21 0, 0) (A device attached to the system is not functioning.) (:0, )
+INFO         | Boot completed in 130953 ms
+INFO         | Increasing screen off timeout, logcat buffer size to 2M.
+INFO         | IPv4 server found: 192.168.31.1
+INFO         | Ignore IPv6 address: 8000:a856:8901:0:10f0:a756:8901:0
+INFO         | Ignore IPv6 address: 8000:a856:8901:0:10f0:a756:8901:0
+INFO         | Ignore IPv6 address: 8000:a856:8901:0:10f0:a756:8901:0
+INFO         | IPv4 server found: 192.168.31.1
+INFO         | Ignore IPv6 address: 8000:a856:8901:0:10f0:a756:8901:0
+INFO         | Ignore IPv6 address: 8000:a856:8901:0:10f0:a756:8901:0
+INFO         | Ignore IPv6 address: 8000:a856:8901:0:10f0:a756:8901:0
+INFO         | IPv4 server found: 192.168.31.1
+INFO         | Ignore IPv6 address: 8040:5656:8901:0:1030:5656:8901:0
+INFO         | Ignore IPv6 address: 8040:5656:8901:0:1030:5656:8901:0
+INFO         | Ignore IPv6 address: 8040:5656:8901:0:1030:5656:8901:0

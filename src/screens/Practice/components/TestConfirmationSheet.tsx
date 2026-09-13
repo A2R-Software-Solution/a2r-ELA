@@ -1,3 +1,4 @@
+import { colors } from '../../../theme/colors';
 /**
  * TestConfirmationSheet Component
  * Bottom sheet modal shown before starting the test
@@ -101,7 +102,7 @@ const TestConfirmationSheet: React.FC<TestConfirmationSheetProps> = ({
           {/* MCQ row */}
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>MCQ Questions</Text>
-            <Text style={[styles.summaryValue, { color: '#6C4DFF' }]}>
+            <Text style={[styles.summaryValue, { color: colors.primary }]}>
               {mcq}
             </Text>
           </View>
@@ -147,7 +148,7 @@ const TestConfirmationSheet: React.FC<TestConfirmationSheetProps> = ({
           <View style={styles.metaItem}>
             <Text style={styles.metaIcon}>⭐</Text>
             <View>
-              <Text style={[styles.metaValue, { color: '#6C4DFF' }]}>
+              <Text style={[styles.metaValue, { color: colors.primary }]}>
                 +{xpReward} XP
               </Text>
               <Text style={styles.metaLabel}>Potential Reward</Text>
@@ -193,7 +194,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   sheet: {
-    backgroundColor:     '#FFFFFF',
+    backgroundColor: colors.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius:24,
     paddingHorizontal:   20,
@@ -205,7 +206,7 @@ const styles = StyleSheet.create({
     width:           40,
     height:          4,
     borderRadius:    2,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: colors.border,
     alignSelf:       'center',
     marginBottom:    16,
   },
@@ -214,25 +215,25 @@ const styles = StyleSheet.create({
   title: {
     fontSize:     22,
     fontWeight:   '800',
-    color:        '#0F172A',
+    color:        colors.text,
     textAlign:    'center',
     marginBottom: 4,
   },
   subtitle: {
     fontSize:     13,
-    color:        '#94A3B8',
+    color:        colors.subtle,
     textAlign:    'center',
     marginBottom: 20,
   },
 
   // Summary card
   summaryCard: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.surface,
     borderRadius:    16,
     padding:         16,
     marginBottom:    14,
     borderWidth:     1,
-    borderColor:     '#E2E8F0',
+    borderColor:     colors.border,
   },
   summaryRow: {
     flexDirection:  'row',
@@ -242,7 +243,7 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 14,
-    color:    '#475569',
+    color:    colors.muted,
   },
   summaryValue: {
     fontSize:   15,
@@ -251,16 +252,16 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize:   15,
     fontWeight: '700',
-    color:      '#0F172A',
+    color:      colors.text,
   },
   totalValue: {
     fontSize:   18,
     fontWeight: '800',
-    color:      '#0F172A',
+    color:      colors.text,
   },
   divider: {
     height:          1,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: colors.border,
     marginVertical:  4,
   },
 
@@ -269,12 +270,12 @@ const styles = StyleSheet.create({
     flexDirection:     'row',
     alignItems:        'center',
     gap:               6,
-    backgroundColor:   '#FFFFFF',
+    backgroundColor: colors.surface,
     paddingHorizontal: 10,
     paddingVertical:   4,
     borderRadius:      20,
     borderWidth:       1,
-    borderColor:       '#E2E8F0',
+    borderColor:       colors.border,
   },
   difficultyDot: {
     width:        8,
@@ -290,12 +291,12 @@ const styles = StyleSheet.create({
   metaRow: {
     flexDirection:   'row',
     alignItems:      'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.surface,
     borderRadius:    14,
     padding:         14,
     marginBottom:    16,
     borderWidth:     1,
-    borderColor:     '#E2E8F0',
+    borderColor:     colors.border,
   },
   metaItem: {
     flex:          1,
@@ -309,17 +310,17 @@ const styles = StyleSheet.create({
   metaValue: {
     fontSize:   15,
     fontWeight: '800',
-    color:      '#0F172A',
+    color:      colors.text,
   },
   metaLabel: {
     fontSize:  11,
-    color:     '#94A3B8',
+    color:     colors.subtle,
     marginTop: 2,
   },
   metaDivider: {
     width:           1,
     height:          40,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: colors.border,
     marginHorizontal: 8,
   },
 
@@ -334,20 +335,20 @@ const styles = StyleSheet.create({
     borderRadius:    14,
     alignItems:      'center',
     borderWidth:     1.5,
-    borderColor:     '#6C4DFF',
+    borderColor:     colors.primary,
   },
   editBtnText: {
     fontSize:   15,
     fontWeight: '700',
-    color:      '#6C4DFF',
+    color:      colors.primary,
   },
   startBtn: {
     flex:            2,
     paddingVertical: 14,
     borderRadius:    14,
     alignItems:      'center',
-    backgroundColor: '#6C4DFF',
-    shadowColor:     '#6C4DFF',
+    backgroundColor: colors.primary,
+    shadowColor:     colors.primary,
     shadowOffset:    { width: 0, height: 4 },
     shadowOpacity:   0.3,
     shadowRadius:    8,

@@ -38,6 +38,7 @@ import { CourseUiModel } from '../../models/ui/CourseUiModel';
 import PlaygroundScreen from '../Playground/PlaygroundScreen';
 import { RecentEssayUiItem } from '../../models/ui/ProfileUiModel';
 import ExamPrepScreen from '../ExamPrep/ExamPrepScreen';
+import { PreloadedSessionData } from '../Practice/types/PracticeSessionUiState';
 
 // ============================================================================
 // PROPS
@@ -52,7 +53,7 @@ interface HomeScreenProps {
   onSeeAllCategories?:        () => void;
   onEssayWritingClick?:       () => void;
   onSeeAllEssaysClick?:       () => void;
-  onCreateCustomTestClick?:   () => void;
+  onStartPssaPractice?:   (data: PreloadedSessionData) => void;
 }
 
 // ============================================================================
@@ -68,7 +69,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onSeeAllCategories       = () => {},
   onEssayWritingClick      = () => {},
   onSeeAllEssaysClick      = () => {},
-  onCreateCustomTestClick  = () => {},
+  onStartPssaPractice  = () => {},
 }) => {
   const { uiState, onTabSelected, onCategorySelected, onFeaturePress } = useHome();
 
@@ -145,7 +146,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
         {uiState.selectedTab === HomeTab.EXAM_PREP && (
           <ExamPrepContent
-            onNavigateToCreateTest={onCreateCustomTestClick}
+            onStartPractice={onStartPssaPractice}
             onBackClick={() => onTabSelected(HomeTab.HOME)}
           />
         )}
@@ -221,16 +222,16 @@ const HomeContent: React.FC<HomeContentProps> = ({
 // ============================================================================
 
 interface ExamPrepContentProps {
-  onNavigateToCreateTest: () => void;
+  onStartPractice: (data: PreloadedSessionData) => void;
   onBackClick:            () => void;
 }
 
 const ExamPrepContent: React.FC<ExamPrepContentProps> = ({
-  onNavigateToCreateTest,
+  onStartPractice,
   onBackClick,
 }) => (
   <ExamPrepScreen
-    onStartPractice={onNavigateToCreateTest}
+    onStartPractice={onStartPractice}
     onBackClick={onBackClick}
   />
 );

@@ -372,9 +372,20 @@ pip install -r requirements.txt
 ```
 
 5. **Create `.env` file** in `backend/functions/`:
+```dotenv
 NB_GROQ_API_KEY=your_groq_api_key
-OPENROUTER_API_KEY=your_openrouter_api_key
+GROQ_BASE_URL=https://api.groq.com/openai/v1
+GROQ_MODEL=openai/gpt-oss-20b
+PSSA_GROQ_API_KEY=your_pssa_groq_api_key
+# Optional: defaults to GROQ_MODEL when blank or omitted.
+PSSA_GROQ_MODEL=
 ENVIRONMENT=development
+```
+
+See `backend/functions/.env.example` for optional PSSA round-robin keys. Firebase loads
+`functions/.env` during deployment; use `functions/.env.<project-id>` for project-specific
+overrides. Change `GROQ_MODEL` to switch the essay/game and default PSSA model without
+editing Python code, then redeploy functions.
 > ⚠️ Never commit `.env` to Git — add it to `.gitignore`
 
 6. **Firebase Setup**

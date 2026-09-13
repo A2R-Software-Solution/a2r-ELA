@@ -1,3 +1,4 @@
+import { colors } from '../../../theme/colors';
 /**
  * QuickPresetCard Component
  * Preset test configuration card
@@ -53,7 +54,7 @@ const QuickPresetCard: React.FC<QuickPresetCardProps> = ({
 
     {/* Question counts row */}
     <View style={styles.countsRow}>
-      <CountChip value={preset.mcq}           label="MCQ"           color="#6C4DFF" />
+      <CountChip value={preset.mcq}           label="MCQ"           color={colors.primary} />
       <Text style={styles.plus}>+</Text>
       <CountChip value={preset.comprehension} label="Comprehension" color="#3B82F6" />
       <Text style={styles.plus}>+</Text>
@@ -86,10 +87,10 @@ const CountChip: React.FC<CountChipProps> = ({ value, label, color }) => (
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius:    14,
     borderWidth:     1,
-    borderColor:     '#E2E8F0',
+    borderColor:     colors.border,
     padding:         14,
     shadowColor:     '#000',
     shadowOffset:    { width: 0, height: 2 },
@@ -122,16 +123,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize:   14,
     fontWeight: '700',
-    color:      '#0F172A',
+    color:      colors.text,
   },
   description: {
     fontSize: 12,
-    color:    '#94A3B8',
+    color:    colors.subtle,
   },
 
   // Recommended badge
   recommendedBadge: {
-    backgroundColor:   '#EDE9FF',
+    backgroundColor:   colors.surfaceRaised,
     paddingHorizontal: 8,
     paddingVertical:   2,
     borderRadius:      20,
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
   recommendedText: {
     fontSize:   10,
     fontWeight: '700',
-    color:      '#6C4DFF',
+    color:      colors.primary,
   },
 
   // Counts row
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
   },
   plus: {
     fontSize:   13,
-    color:      '#CBD5E1',
+    color:      colors.border,
     fontWeight: '600',
   },
 
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
   },
   chipLabel: {
     fontSize:  10,
-    color:     '#94A3B8',
+    color:     colors.subtle,
     marginTop: 2,
   },
 });

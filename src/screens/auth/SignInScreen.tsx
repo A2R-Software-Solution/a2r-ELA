@@ -1,3 +1,5 @@
+import ScreenBackground from '../../components/ScreenBackground';
+import { colors } from '../../theme/colors';
 /**
  * Sign In Screen
  * User authentication screen with email/password
@@ -61,6 +63,7 @@ const SignInScreen: React.FC<SignInScreenProps> = ({
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      <ScreenBackground />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
@@ -172,7 +175,7 @@ export default SignInScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
   },
   scrollContent: {
     flexGrow: 1,
@@ -184,7 +187,7 @@ const styles = StyleSheet.create({
   },
   backArrow: {
     fontSize: 35,
-    color: '#000000',
+    color: colors.text,
   },
   // ✅ Real image styles
   illustrationContainer: {
@@ -204,43 +207,43 @@ const styles = StyleSheet.create({
   welcomeTitle: {
     fontSize: 30,
     fontWeight: 'bold',
-    color: '#000000',
+    color: colors.text,
   },
   welcomeSubtitle: {
     fontSize: 25,
     fontWeight: 'bold',
-    color: '#999999',
+    color: colors.muted,
   },
   inputContainer: {
     marginBottom: 12,
   },
 input: {
   borderWidth: 1,
-  borderColor: '#CCCCCC',
+  borderColor: colors.border,
   borderRadius: 12,
   paddingHorizontal: 16,
   paddingVertical: 14,
   fontSize: 16,
-  backgroundColor: '#FFFFFF',
-  color: '#000000',   // ADD THIS
+  backgroundColor: colors.surface,
+  color: colors.text,   // ADD THIS
 
   },
   inputError: {
-    borderColor: '#FF0000',
+    borderColor: '#FF8A9A',
   },
   errorText: {
-    color: '#FF0000',
+    color: '#FF8A9A',
     fontSize: 12,
     marginTop: 4,
     marginLeft: 4,
   },
   globalError: {
-    color: '#FF0000',
+    color: '#FF8A9A',
     fontSize: 12,
     marginBottom: 8,
   },
   signInButton: {
-    backgroundColor: '#7D55FF',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
@@ -257,7 +260,7 @@ input: {
   },
   orText: {
     textAlign: 'center',
-    color: '#999999',
+    color: colors.muted,
     fontSize: 12,
     marginVertical: 20,
   },
@@ -270,7 +273,7 @@ input: {
     fontSize: 14,
   },
   signUpLink: {
-    color: '#7D55FF',
+    color: colors.primary,
     fontSize: 14,
     fontWeight: '500',
   },

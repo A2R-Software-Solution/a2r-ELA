@@ -1,3 +1,5 @@
+import ScreenBackground from '../../components/ScreenBackground';
+import { colors } from '../../theme/colors';
 /**
  * CreateCustomTestScreen
  * Allows students to configure a custom practice test
@@ -46,13 +48,12 @@ interface CreateCustomTestScreenProps {
 // CONSTANTS
 // ============================================================================
 
-const PRIMARY    = '#6C4DFF';
-const WHITE      = '#FFFFFF';
-const BG         = '#F8FAFC';
-const TEXT_DARK  = '#0F172A';
-const TEXT_MID   = '#475569';
-const TEXT_GRAY  = '#94A3B8';
-const BORDER     = '#E2E8F0';
+const PRIMARY    = colors.primary;
+const BG = colors.background;
+const TEXT_DARK  = colors.text;
+const TEXT_MID   = colors.muted;
+const TEXT_GRAY  = colors.subtle;
+const BORDER     = colors.border;
 
 // ============================================================================
 // SCREEN
@@ -81,6 +82,7 @@ const CreateCustomTestScreen: React.FC<CreateCustomTestScreenProps> = ({
 
   return (
     <View style={styles.wrapper}>
+      <ScreenBackground />
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
@@ -244,7 +246,7 @@ const styles = StyleSheet.create({
     alignItems:        'center',
     paddingHorizontal: 16,
     paddingBottom:     12,
-    backgroundColor:   WHITE,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: BORDER,
     gap:               10,
@@ -253,7 +255,7 @@ const styles = StyleSheet.create({
     width:           36,
     height:          36,
     borderRadius:    10,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: colors.surfaceRaised,
     justifyContent:  'center',
     alignItems:      'center',
   },
@@ -278,7 +280,7 @@ const styles = StyleSheet.create({
   xpPill: {
     flexDirection:     'row',
     alignItems:        'center',
-    backgroundColor:   '#FFFBEB',
+    backgroundColor:   colors.warningSurface,
     borderRadius:      12,
     paddingHorizontal: 10,
     paddingVertical:   6,
@@ -291,12 +293,12 @@ const styles = StyleSheet.create({
   },
   xpPillLabel: {
     fontSize:  10,
-    color:     '#92400E',
+    color:     '#FCD34D',
   },
   xpPillValue: {
     fontSize:   13,
     fontWeight: '800',
-    color:      '#D97706',
+    color:      '#FBBF24',
   },
 
   // Scroll
@@ -324,7 +326,7 @@ const styles = StyleSheet.create({
     marginTop:      20,
   },
   totalPill: {
-    backgroundColor:   '#EDE9FF',
+    backgroundColor:   colors.surfaceRaised,
     paddingHorizontal: 10,
     paddingVertical:   4,
     borderRadius:      20,
@@ -344,7 +346,7 @@ const styles = StyleSheet.create({
   difficultyBanner: {
     flexDirection:     'row',
     alignItems:        'center',
-    backgroundColor:   '#EDE9FF',
+    backgroundColor:   colors.surfaceRaised,
     borderRadius:      12,
     paddingHorizontal: 14,
     paddingVertical:   10,
@@ -364,7 +366,7 @@ const styles = StyleSheet.create({
 
   // Sliders card
   slidersCard: {
-    backgroundColor: WHITE,
+    backgroundColor: colors.surface,
     borderRadius:    16,
     padding:         16,
     borderWidth:     1,
@@ -377,7 +379,7 @@ const styles = StyleSheet.create({
   },
   sliderDivider: {
     height:          1,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: colors.surfaceRaised,
     marginVertical:  8,
   },
 

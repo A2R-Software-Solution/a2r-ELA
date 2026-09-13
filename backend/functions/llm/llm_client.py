@@ -292,6 +292,10 @@ class GroqLLMClient:
             "max_tokens": max_tokens or 500  # Detail Detective needs short responses
         }
 
+        if self._model in ("openai/gpt-oss-20b", "openai/gpt-oss-120b"):
+            payload["reasoning_effort"] = "low"
+            payload["max_tokens"] = max(payload["max_tokens"], 2048)
+
         try:
             response = requests.post(
                 url,

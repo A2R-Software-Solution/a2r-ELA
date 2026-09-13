@@ -1,3 +1,4 @@
+import { colors } from '../../../theme/colors';
 /**
  * DifficultyCard Component
  * Single difficulty option card (Easy / Medium / Hard)
@@ -37,8 +38,8 @@ const DifficultyCard: React.FC<DifficultyCardProps> = ({
     <TouchableOpacity
       style={[
         styles.card,
-        { backgroundColor: isSelected ? config.bgColor : '#FFFFFF' },
-        isSelected && { borderColor: '#6C4DFF', borderWidth: 2 },
+        { backgroundColor: isSelected ? config.bgColor : colors.surface },
+        isSelected && { borderColor: colors.primary, borderWidth: 2 },
         !isSelected && styles.cardUnselected,
       ]}
       onPress={() => onPress(difficulty)}
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
   },
   cardUnselected: {
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: colors.border,
   },
 
   // Checkmark
@@ -105,7 +106,7 @@ const styles = StyleSheet.create({
     width:           22,
     height:          22,
     borderRadius:    11,
-    backgroundColor: '#6C4DFF',
+    backgroundColor: colors.primary,
     justifyContent:  'center',
     alignItems:      'center',
   },
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
     height:       22,
     borderRadius: 11,
     borderWidth:  2,
-    borderColor:  '#E2E8F0',
+    borderColor:  colors.border,
   },
 
   // Content
@@ -135,15 +136,15 @@ const styles = StyleSheet.create({
   label: {
     fontSize:     15,
     fontWeight:   '700',
-    color:        '#475569',
+    color:        colors.muted,
     marginBottom: 4,
   },
   labelSelected: {
-    color: '#0F172A',
+    color: colors.text,
   },
   subtitle: {
     fontSize: 12,
-    color:    '#94A3B8',
+    color:    colors.subtle,
   },
 });
 

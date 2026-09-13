@@ -40,13 +40,18 @@ Return ONLY a JSON object with no extra text:
         response = groq_client.create_chat_completion(
             messages=messages,
             temperature=0.9,
-            max_tokens=150
+            max_tokens=2048
         )
 
+        choice = (response.get("choices") or [{}])[0]
+        if choice.get("finish_reason") == "length":
+            print("get_daily_vocab: model output reached token limit")
+            return error_response("Vocabulary generation was incomplete. Please retry.", 503)
+
         content = (
-            response.get("choices", [{}])[0]
+            choice
                     .get("message", {})
-                    .get("content", "")
+                    .get("content", "") or ""
         )
 
         # Parse JSON
@@ -74,8 +79,13 @@ Return ONLY a JSON object with no extra text:
             except Exception:
                 pass
 
-        if not vocab:
-            return error_response("Failed to generate vocab word", 500)
+        required_fields = ("word", "part_of_speech", "meaning", "example")
+        if not isinstance(vocab, dict) or not all(
+            isinstance(vocab.get(field), str) and vocab[field].strip()
+            for field in required_fields
+        ):
+            print("get_daily_vocab: model returned invalid vocabulary JSON")
+            return error_response("Vocabulary is temporarily unavailable. Please retry.", 503)
 
         return success_response(vocab)
 

@@ -1,3 +1,5 @@
+import ScreenBackground from '../../components/ScreenBackground';
+import { colors } from '../../theme/colors';
 /**
  * Splash Screen
  * Initial loading screen that determines navigation route
@@ -51,6 +53,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({
 
   return (
     <View style={styles.container}>
+      <ScreenBackground />
       <Text style={styles.title}>A2R Presents</Text>
     </View>
   );
@@ -59,7 +62,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#7D55FF',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },

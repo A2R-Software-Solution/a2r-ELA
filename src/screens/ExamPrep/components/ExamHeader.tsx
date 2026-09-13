@@ -1,7 +1,7 @@
 /**
  * ExamHeader Component
  * Top bar for the Exam Prep screen.
- * Contains back button, title, and tab switcher (PSSA ELA | Placeholder Exam!).
+ * Contains back button, title, and tab switcher (PSSA ELA | Coming Soon).
  */
 
 import React from 'react';

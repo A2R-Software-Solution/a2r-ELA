@@ -51,7 +51,7 @@ const App = () => {
     <>
       <StatusBar
         barStyle="light-content"
-        backgroundColor="#7D55FF"
+        backgroundColor="#07050E"
       />
       <AppNavigator />
     </>
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#07050E',
   },
 });
 

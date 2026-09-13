@@ -1,3 +1,4 @@
+import { colors } from '../../../theme/colors';
 /**
  * QuestionSlider Component
  * Slider with +/- stepper buttons for question count selection
@@ -94,7 +95,7 @@ const QuestionSlider: React.FC<QuestionSliderProps> = ({
         value={value}
         onValueChange={onChange}
         minimumTrackTintColor={color}
-        maximumTrackTintColor="#E2E8F0"
+        maximumTrackTintColor={colors.border}
         thumbTintColor={color}
       />
 
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize:   15,
     fontWeight: '700',
-    color:      '#0F172A',
+    color:      colors.text,
   },
 
   // Stepper
@@ -151,21 +152,21 @@ const styles = StyleSheet.create({
     width:           28,
     height:          28,
     borderRadius:    8,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: colors.surfaceRaised,
     justifyContent:  'center',
     alignItems:      'center',
   },
   stepBtnDisabled: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.surface,
   },
   stepBtnText: {
     fontSize:   18,
     fontWeight: '600',
-    color:      '#475569',
+    color:      colors.muted,
     lineHeight: 22,
   },
   stepBtnTextDisabled: {
-    color: '#CBD5E1',
+    color: colors.border,
   },
   countBox: {
     width:          44,
@@ -174,7 +175,7 @@ const styles = StyleSheet.create({
     borderWidth:    1.5,
     justifyContent: 'center',
     alignItems:     'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
   },
   countText: {
     fontSize:   15,
@@ -196,11 +197,11 @@ const styles = StyleSheet.create({
   },
   rangeText: {
     fontSize: 11,
-    color:    '#94A3B8',
+    color:    colors.subtle,
   },
   rangeTextMid: {
     fontSize:   11,
-    color:      '#94A3B8',
+    color:      colors.subtle,
     fontWeight: '500',
   },
 });

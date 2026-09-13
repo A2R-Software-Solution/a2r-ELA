@@ -190,6 +190,14 @@ const ExamPrepScreen: React.FC<ExamPrepScreenProps> = ({
         }
       >
 
+        {activeTabId !== 'pssa_ela' ? (
+          <View style={styles.selectorCard}>
+            <Text style={styles.screenIntro}>Coming Soon</Text>
+            <Text style={styles.loadingText}>More exams are on the way. Start with PSSA ELA practice today.</Text>
+            <ExamActionButton label="Practice PSSA ELA" onPress={() => onTabChange('pssa_ela')} />
+          </View>
+        ) : (
+          <>
         <Text style={styles.screenIntro}>{examTitle}</Text>
 
         {/* ── Grade selector ── */}
@@ -244,6 +252,8 @@ const ExamPrepScreen: React.FC<ExamPrepScreenProps> = ({
           />
         </View>
 
+        </>
+        )}
         <View style={{ height: Math.max(insets.bottom + 16, 32) }} />
       </ScrollView>
 
