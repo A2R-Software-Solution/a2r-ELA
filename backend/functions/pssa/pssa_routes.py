@@ -45,7 +45,7 @@ def _parse_json_response(content: str) -> dict:
 
 
 @https_fn.on_request(
-    cors=options.CorsOptions(cors_origins="*", cors_methods=["POST"])
+    cors=options.CorsOptions(cors_origins=settings.CORS_ORIGINS, cors_methods=["POST"])
 )
 @require_auth
 def generate_pssa_questions(
@@ -70,10 +70,10 @@ def generate_pssa_questions(
         body = req.get_json(silent=True) or {}
 
         # ── Parse inputs ──────────────────────────────────────────────────────
-        domain     = body.get("domain",     "reading_fiction")
-        difficulty = body.get("difficulty", "medium")
-        count      = int(body.get("count",  10))
-        grade      = str(body.get("grade",  "4")).strip()   # ← NEW (default "4")
+        domain     = body.get("domain", settings.PSSA_DEFAULT_DOMAIN)
+        difficulty = body.get("difficulty", settings.PSSA_DEFAULT_DIFFICULTY)
+        count      = int(body.get("count", settings.PSSA_DEFAULT_QUESTION_COUNT))
+        grade      = str(body.get("grade", settings.PSSA_DEFAULT_GRADE)).strip()   # ← NEW (default "4")
 
         # ── Validate domain ───────────────────────────────────────────────────
         valid_domains = [
@@ -96,8 +96,8 @@ def generate_pssa_questions(
             )
 
         # ── Validate count ────────────────────────────────────────────────────
-        if not (1 <= count <= 20):
-            return error_response("Count must be between 1 and 20", 400)
+        if not (settings.PSSA_MIN_QUESTIONS <= count <= settings.PSSA_MAX_QUESTIONS):
+            return error_response(f"Count must be between {settings.PSSA_MIN_QUESTIONS} and {settings.PSSA_MAX_QUESTIONS}", 400)
 
         # ── Validate grade ────────────────────────────────────────────────────
         if not settings.is_valid_grade(grade):
@@ -130,9 +130,9 @@ def generate_pssa_questions(
             grade=grade,                    # ← NEW
             grade_content=grade_content,    # ← NEW
         )
-        max_tokens  = 4000 if count > 8 else 2500
+        max_tokens  = settings.PSSA_LARGE_MAX_TOKENS if count > settings.PSSA_LARGE_QUESTION_THRESHOLD else settings.PSSA_SMALL_MAX_TOKENS
         raw_content = pssa_groq_client.call(
-            prompt, temperature=0.7, max_tokens=max_tokens
+            prompt, temperature=settings.LLM_CREATIVE_TEMPERATURE, max_tokens=max_tokens
         )
 
         # ── Parse response ────────────────────────────────────────────────────
@@ -156,7 +156,7 @@ def generate_pssa_questions(
 
 
 @https_fn.on_request(
-    cors=options.CorsOptions(cors_origins="*", cors_methods=["POST"])
+    cors=options.CorsOptions(cors_origins=settings.CORS_ORIGINS, cors_methods=["POST"])
 )
 @require_auth
 def evaluate_pssa_writing(
@@ -213,7 +213,7 @@ def evaluate_pssa_writing(
             grade=grade,    # ← NEW
         )
         raw_content = pssa_groq_client.call(
-            prompt, temperature=0.3, max_tokens=500
+            prompt, temperature=settings.LLM_TEMPERATURE, max_tokens=settings.GAME_MAX_TOKENS
         )
 
         # ── Parse response ────────────────────────────────────────────────────

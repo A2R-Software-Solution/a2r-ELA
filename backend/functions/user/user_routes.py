@@ -1,3 +1,4 @@
+from config.settings import settings
 """
 User Routes
 API endpoints for user profile management.
@@ -19,7 +20,7 @@ from utils.responses import response_builder
 
 # Configure CORS — same pattern as essay_routes.py
 cors_options = options.CorsOptions(
-    cors_origins="*",
+    cors_origins=settings.CORS_ORIGINS,
     cors_methods=["GET", "POST", "DELETE", "OPTIONS"]
 )
 
@@ -30,7 +31,7 @@ _BIRTHDATE_PATTERN = re.compile(
 
 # Max photo size — 2MB base64 string
 # A compressed 200x200 avatar is ~15-30KB so this is very generous
-_MAX_PHOTO_SIZE = 2 * 1024 * 1024  # 2MB in characters
+_MAX_PHOTO_SIZE = settings.MAX_PHOTO_SIZE  # 2MB in characters
 
 
 # ------------------------------------------------------------------------------
@@ -171,9 +172,9 @@ def update_user_profile(req: https_fn.Request, user_id: str) -> https_fn.Respons
                         "photo_url must be a base64 string or null"
                     )
 
-                if len(photo_url) > _MAX_PHOTO_SIZE:
+                if len(photo_url.encode("utf-8")) > _MAX_PHOTO_SIZE:
                     return response_builder.validation_error(
-                        "photo_url exceeds maximum size of 2MB"
+                        f"photo_url exceeds maximum size of {_MAX_PHOTO_SIZE} bytes"
                     )
 
                 # Must be a valid base64 data URI

@@ -154,15 +154,19 @@ class RewardEngine:
         initial = {
             "user_id":                    user_id,
             "xp":                         0,
-            "level":                      1,
-            "level_name":                 "Beginner Writer",
+            "level":                      self.get_level_from_xp(0)[0],
+            "level_name":                 self.get_level_from_xp(0)[1],
             "badges_earned":              [],
             "total_essays_submitted":     0,
             "boss_battle_personal_best":  0,
             "created_at":                 datetime.utcnow(),
             "updated_at":                 datetime.utcnow(),
         }
-        ref.set(initial)
+        from google.api_core.exceptions import AlreadyExists
+        try:
+            ref.create(initial)
+        except AlreadyExists:
+            return ref.get().to_dict()
         print(f"Created gamification doc for user {user_id}")
         return initial
 
@@ -287,60 +291,60 @@ class RewardEngine:
 
         Bug Catcher (bug_catcher):
             Base: 20 XP
-            +10  if score >= 80
-            +10  if score == 100
-            +10  if lives_remaining == 3 (no lives lost)
+            +10  if score >= settings.GAME_XP_RULES["high_score"]
+            +10  if score == settings.GAME_XP_RULES["perfect_score"]
+            +10  if lives_remaining == settings.GAME_XP_RULES["perfect_lives"] (no lives lost)
 
         Jumbled Story (jumbled_story):
             Base: 20 XP
-            +10  if score >= 80
-            +10  if score == 100
-            +10  speed bonus if time_taken <= 30 seconds
+            +10  if score >= settings.GAME_XP_RULES["high_score"]
+            +10  if score == settings.GAME_XP_RULES["perfect_score"]
+            +10  speed bonus if time_taken <= settings.GAME_XP_RULES["jumbled_speed_seconds"] seconds
 
         Stay on Topic (stay_on_topic):
             Base: 20 XP
-            +10  if score >= 80
-            +10  if score == 100
-            +10  speed bonus if time_taken <= 45 seconds
+            +10  if score >= settings.GAME_XP_RULES["high_score"]
+            +10  if score == settings.GAME_XP_RULES["perfect_score"]
+            +10  speed bonus if time_taken <= settings.GAME_XP_RULES["topic_speed_seconds"] seconds
 
         Word Swap (word_swap):
             Base: 20 XP
-            +10  if score >= 80
-            +10  if score == 100
+            +10  if score >= settings.GAME_XP_RULES["high_score"]
+            +10  if score == settings.GAME_XP_RULES["perfect_score"]
 
         Max possible: 50 XP (matches XP range 20-50 in spec)
         """
-        xp = 20  # base for any game attempt
+        xp = settings.GAME_XP_RULES["base"]
 
         if game_id == "bug_catcher":
-            if score >= 80:
-                xp += 10
-            if score == 100:
-                xp += 10
-            if lives_remaining is not None and lives_remaining == 3:
-                xp += 10
+            if score >= settings.GAME_XP_RULES["high_score"]:
+                xp += settings.GAME_XP_RULES["bonus"]
+            if score == settings.GAME_XP_RULES["perfect_score"]:
+                xp += settings.GAME_XP_RULES["bonus"]
+            if lives_remaining is not None and lives_remaining == settings.GAME_XP_RULES["perfect_lives"]:
+                xp += settings.GAME_XP_RULES["bonus"]
 
         elif game_id == "jumbled_story":
-            if score >= 80:
-                xp += 10
-            if score == 100:
-                xp += 10
-            if time_taken is not None and time_taken <= 30:
-                xp += 10
+            if score >= settings.GAME_XP_RULES["high_score"]:
+                xp += settings.GAME_XP_RULES["bonus"]
+            if score == settings.GAME_XP_RULES["perfect_score"]:
+                xp += settings.GAME_XP_RULES["bonus"]
+            if time_taken is not None and time_taken <= settings.GAME_XP_RULES["jumbled_speed_seconds"]:
+                xp += settings.GAME_XP_RULES["bonus"]
 
         elif game_id == "stay_on_topic":
-            if score >= 80:
-                xp += 10
-            if score == 100:
-                xp += 10
-            if time_taken is not None and time_taken <= 45:
-                xp += 10
+            if score >= settings.GAME_XP_RULES["high_score"]:
+                xp += settings.GAME_XP_RULES["bonus"]
+            if score == settings.GAME_XP_RULES["perfect_score"]:
+                xp += settings.GAME_XP_RULES["bonus"]
+            if time_taken is not None and time_taken <= settings.GAME_XP_RULES["topic_speed_seconds"]:
+                xp += settings.GAME_XP_RULES["bonus"]
 
         elif game_id == "word_swap":
-            if score >= 80:
-                xp += 10
-            if score == 100:
-                xp += 10
+            if score >= settings.GAME_XP_RULES["high_score"]:
+                xp += settings.GAME_XP_RULES["bonus"]
+            if score == settings.GAME_XP_RULES["perfect_score"]:
+                xp += settings.GAME_XP_RULES["bonus"]
 
         print(f"Game XP earned — game: {game_id}, score: {score}, xp: {xp}")
         return xp
@@ -430,22 +434,19 @@ class RewardEngine:
 
     def get_level_from_xp(self, total_xp: int) -> Tuple[int, str]:
         """Determine level and level name from total XP."""
-        current_level = 1
-        current_name  = "Beginner Writer"
-
-        for level_num, (min_xp, max_xp, name) in settings.LEVEL_THRESHOLDS.items():
-            if min_xp <= total_xp <= max_xp:
-                current_level = level_num
-                current_name  = name
-                break
-
-        return current_level, current_name
+        levels = sorted(settings.LEVEL_THRESHOLDS.items(), key=lambda item: item[1][0])
+        selected = levels[0]
+        for level in levels:
+            if total_xp >= level[1][0]:
+                selected = level
+        return selected[0], selected[1][2]
 
     def get_next_level_threshold(self, level: int) -> int:
         """Get the XP needed to reach the next level."""
-        next_level = level + 1
-        if next_level in settings.LEVEL_THRESHOLDS:
-            return settings.LEVEL_THRESHOLDS[next_level][0]
+        levels = sorted(settings.LEVEL_THRESHOLDS, key=lambda key: settings.LEVEL_THRESHOLDS[key][0])
+        index = levels.index(level)
+        if index + 1 < len(levels):
+            return settings.LEVEL_THRESHOLDS[levels[index + 1]][0]
         return settings.LEVEL_THRESHOLDS[level][1]
 
     # ─── Main Entry Point ─────────────────────────────────────────────────────
@@ -455,6 +456,7 @@ class RewardEngine:
         user_id: str,
         raw_scores: Dict[str, int],
         streak_bonus_xp: int = 0,
+        event_id: str = None,
     ) -> Dict[str, Any]:
         """
         Main function called after every essay submission.
@@ -467,82 +469,18 @@ class RewardEngine:
         6. Save to Firestore
         7. Return rewards dict
         """
-        try:
-            print(f"Processing gamification for user {user_id}")
-
-            current       = self.get_or_create_gamification(user_id)
-            current_xp    = current.get("xp", 0)
-            current_level = current.get("level", 1)
-            badges_earned = list(current.get("badges_earned", []))
-            total_essays  = current.get("total_essays_submitted", 0)
-
-            xp_earned = self.calculate_xp(raw_scores)
-            if streak_bonus_xp > 0:
-                print(f"  Streak bonus XP: +{streak_bonus_xp}")
-
-            new_total_xp              = current_xp + xp_earned + streak_bonus_xp
-            new_level, new_level_name = self.get_level_from_xp(new_total_xp)
-            level_up                  = new_level > current_level
-            new_total_essays          = total_essays + 1
-
-            if level_up:
-                print(f"LEVEL UP! {current_level} -> {new_level} ({new_level_name})")
-
-            newly_unlocked = self.check_badges(
-                already_earned=badges_earned,
-                raw_scores=raw_scores,
-                new_total_xp=new_total_xp,
-                new_level=new_level,
-                total_essays=new_total_essays,
-                game_scores={},
-            )
-
-            badges_earned += [b["id"] for b in newly_unlocked]
-
-            self.save_gamification(
-                user_id=user_id,
-                xp=new_total_xp,
-                level=new_level,
-                level_name=new_level_name,
-                badges_earned=badges_earned,
-                total_essays_submitted=new_total_essays,
-            )
-
-            next_threshold = self.get_next_level_threshold(new_level)
-
-            rewards = {
-                "xp_earned":             xp_earned,
-                "streak_bonus_xp":       streak_bonus_xp,
-                "total_xp":              new_total_xp,
-                "level":                 new_level,
-                "level_name":            new_level_name,
-                "level_up":              level_up,
-                "next_threshold":        next_threshold,
-                "newly_unlocked_badges": newly_unlocked,
-            }
-
-            print(f"Rewards: {rewards}")
-            return rewards
-
-        except Exception as e:
-            print(f"WARNING: Gamification processing failed: {str(e)}")
-            return {
-                "xp_earned":             0,
-                "streak_bonus_xp":       0,
-                "total_xp":              0,
-                "level":                 1,
-                "level_name":            "Beginner Writer",
-                "level_up":              False,
-                "next_threshold":        1000,
-                "newly_unlocked_badges": [],
-            }
-
-    # ─── Streak Bonus Application ─────────────────────────────────────────────
+        from gamification.atomic_rewards import award
+        result = award(self, user_id, self.calculate_xp(raw_scores) + streak_bonus_xp,
+                       raw_scores=raw_scores, essay_count=1, event_id=event_id)
+        result['xp_earned'] -= streak_bonus_xp
+        result['streak_bonus_xp'] = streak_bonus_xp
+        return result
 
     def apply_streak_bonus(
         self,
         user_id: str,
         streak_bonus_xp: int,
+        event_id: str = None,
     ) -> Dict[str, Any]:
         """
         Apply streak milestone bonus XP after process_essay_submission().
@@ -554,53 +492,10 @@ class RewardEngine:
         """
         if streak_bonus_xp <= 0:
             return {}
-
-        try:
-            print(f"Applying streak bonus +{streak_bonus_xp} XP for user {user_id}")
-
-            current       = self.get_or_create_gamification(user_id)
-            current_xp    = current.get("xp", 0)
-            current_level = current.get("level", 1)
-            badges_earned = list(current.get("badges_earned", []))
-            total_essays  = current.get("total_essays_submitted", 0)
-
-            new_total_xp              = current_xp + streak_bonus_xp
-            new_level, new_level_name = self.get_level_from_xp(new_total_xp)
-            level_up                  = new_level > current_level
-
-            newly_unlocked = self.check_badges(
-                already_earned=badges_earned,
-                raw_scores={},
-                new_total_xp=new_total_xp,
-                new_level=new_level,
-                total_essays=total_essays,
-                game_scores={},
-            )
-
-            badges_earned += [b["id"] for b in newly_unlocked]
-
-            self.save_gamification(
-                user_id=user_id,
-                xp=new_total_xp,
-                level=new_level,
-                level_name=new_level_name,
-                badges_earned=badges_earned,
-                total_essays_submitted=total_essays,
-            )
-
-            return {
-                "streak_bonus_xp":       streak_bonus_xp,
-                "total_xp":              new_total_xp,
-                "level":                 new_level,
-                "level_name":            new_level_name,
-                "level_up":              level_up,
-                "next_threshold":        self.get_next_level_threshold(new_level),
-                "newly_unlocked_badges": newly_unlocked,
-            }
-
-        except Exception as e:
-            print(f"WARNING: apply_streak_bonus failed: {str(e)}")
-            return {}
+        from gamification.atomic_rewards import award
+        result = award(self, user_id, streak_bonus_xp, event_id=event_id)
+        result['streak_bonus_xp'] = streak_bonus_xp
+        return result
 
 
 reward_engine = RewardEngine()

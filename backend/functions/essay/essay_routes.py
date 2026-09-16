@@ -1,3 +1,4 @@
+from auth.auth_service import development_only
 """
 Essay Routes
 API endpoints for essay operations including PSSA-aligned evaluation
@@ -14,7 +15,7 @@ from utils.responses import response_builder
 
 # Configure CORS
 cors_options = options.CorsOptions(
-    cors_origins="*",
+    cors_origins=settings.CORS_ORIGINS,
     cors_methods=["GET", "POST", "OPTIONS"]
 )
 
@@ -99,7 +100,7 @@ def submit_essay(req: https_fn.Request, user_id: str) -> https_fn.Response:
             print(f"Streak milestone! Applying +{streak_bonus_xp} bonus XP")
             from gamification.reward_engine import reward_engine
 
-            streak_rewards = reward_engine.apply_streak_bonus(user_id, streak_bonus_xp)
+            streak_rewards = reward_engine.apply_streak_bonus(user_id, streak_bonus_xp, event_id="streak:" + result["submission_id"])
 
             if streak_rewards:
                 # Merge streak rewards on top of essay rewards
@@ -398,6 +399,7 @@ def get_category_stats(req: https_fn.Request, user_id: str) -> https_fn.Response
 
 
 @https_fn.on_request(cors=cors_options)
+@development_only
 def submit_essay_no_auth(req: https_fn.Request) -> https_fn.Response:
     """
     Test endpoint — no auth. Remove in production.
@@ -424,7 +426,7 @@ def submit_essay_no_auth(req: https_fn.Request) -> https_fn.Response:
                 status=400
             )
 
-        test_user_id = "debug_test_user_123"
+        test_user_id = settings.TEST_USER_ID
         result       = essay_service.submit_essay(test_user_id, request_data)
 
         return https_fn.Response(
@@ -517,6 +519,7 @@ def get_gamification(req: https_fn.Request, user_id: str) -> https_fn.Response:
 
 
 @https_fn.on_request(cors=cors_options)
+@development_only
 def test_essay_evaluator(req: https_fn.Request) -> https_fn.Response:
     """Test the essay evaluator directly"""
     print("=== TEST ESSAY EVALUATOR ===")

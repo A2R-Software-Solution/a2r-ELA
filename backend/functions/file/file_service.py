@@ -3,6 +3,7 @@ File Service
 Handles PDF text extraction and file processing
 """
 
+from config.settings import settings
 import base64
 import logging
 from typing import Dict, Any
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 class FileService:
     """Service for file operations including PDF text extraction"""
 
-    MAX_FILE_SIZE = 100 * 1024  # 100KB in bytes
+    MAX_FILE_SIZE = settings.MAX_FILE_SIZE  # 100KB in bytes
     ALLOWED_MIME_TYPES = ['application/pdf']
 
     @staticmethod

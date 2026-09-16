@@ -100,7 +100,7 @@ class EssayEvaluator:
             messages = [{"role": "user", "content": feedback_prompt}]
             feedback_response = self.llm_client.create_chat_completion(
                 messages,
-                temperature=0.7
+                temperature=settings.LLM_CREATIVE_TEMPERATURE
             )
 
             personalized_feedback = (

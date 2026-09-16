@@ -10,8 +10,8 @@ class EssayPrompts:
     def get_evaluation_prompt(
         essay_text: str,
         category: str = "essay_writing",
-        state: str = "PA",
-        grade: str = "6",
+        state: str = settings.DEFAULT_STATE,
+        grade: str = settings.DEFAULT_GRADE,
     ) -> str:
         """
         Generate evaluation prompt for the LLM with state-specific rubric.
@@ -112,8 +112,8 @@ Use exactly this structure (raw scores must be integers 1-4):
         converted_score: int,
         strengths: List[str],
         areas_for_improvement: List[str],
-        grade: str = "6",
-        state: str = "PA",
+        grade: str = settings.DEFAULT_GRADE,
+        state: str = settings.DEFAULT_STATE,
     ) -> str:
         """
         Generate personalized feedback prompt.
@@ -531,7 +531,7 @@ Return ONLY valid JSON, no markdown, no extra text:
         question: str,
         student_answer: str,
         difficulty: str,
-        grade: str = "4",
+        grade: str = settings.PSSA_DEFAULT_GRADE,
     ) -> str:
         """
         Evaluate a student's short answer or writing response.

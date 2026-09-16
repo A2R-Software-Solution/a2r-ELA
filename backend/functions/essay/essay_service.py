@@ -48,7 +48,7 @@ DOMAIN_GAME_MAP = {
 }
 
 # Score threshold — suggest a game if any domain is at or below this value
-SUGGESTION_THRESHOLD = 2
+SUGGESTION_THRESHOLD = settings.SUGGESTION_THRESHOLD
 
 
 class EssayService:
@@ -199,6 +199,7 @@ class EssayService:
             rewards = reward_engine.process_essay_submission(
                 user_id,
                 raw_scores,
+                event_id="essay:" + submission_id,
             )
             print(f"Rewards processed: {rewards}")
 

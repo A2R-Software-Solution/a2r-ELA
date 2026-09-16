@@ -1,3 +1,5 @@
+from config.settings import settings
+from firebase_functions import options
 """
 File Routes
 API endpoints for file operations
@@ -14,7 +16,7 @@ from utils.validator import validate_request_data
 logger = logging.getLogger(__name__)
 
 
-@https_fn.on_request()
+@https_fn.on_request(cors=options.CorsOptions(cors_origins=settings.CORS_ORIGINS, cors_methods=["POST", "OPTIONS"]))
 def extract_pdf_text(req: https_fn.Request) -> https_fn.Response:
     """
     Extract text from a PDF file
@@ -38,16 +40,14 @@ def extract_pdf_text(req: https_fn.Request) -> https_fn.Response:
     # Handle CORS preflight
     if req.method == 'OPTIONS':
         headers = {
-            'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, Idempotency-Key',
             'Access-Control-Max-Age': '3600'
         }
         return ('', 204, headers)
     
     # Set CORS headers for actual request
     headers = {
-        'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization'
     }
@@ -127,7 +127,7 @@ def extract_pdf_text(req: https_fn.Request) -> https_fn.Response:
         )
 
 
-@https_fn.on_request()
+@https_fn.on_request(cors=options.CorsOptions(cors_origins=settings.CORS_ORIGINS, cors_methods=["POST", "OPTIONS"]))
 def extract_pdf_text_authenticated(req: https_fn.Request) -> https_fn.Response:
     """
     Extract text from a PDF file (authenticated version)
@@ -138,7 +138,6 @@ def extract_pdf_text_authenticated(req: https_fn.Request) -> https_fn.Response:
     # Handle CORS preflight
     if req.method == 'OPTIONS':
         headers = {
-            'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             'Access-Control-Max-Age': '3600'
@@ -147,7 +146,6 @@ def extract_pdf_text_authenticated(req: https_fn.Request) -> https_fn.Response:
     
     # Set CORS headers
     headers = {
-        'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization'
     }

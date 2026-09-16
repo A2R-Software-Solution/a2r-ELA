@@ -2,6 +2,8 @@ from firebase_admin import auth
 from typing import Optional, Dict, Any
 from functools import wraps
 from firebase_functions import https_fn
+from utils.responses import response_builder
+from config.settings import settings
 
 class AuthService:
     """Firebase Authentication Service"""
@@ -78,39 +80,30 @@ def require_auth(func):
     """
     @wraps(func)
     def wrapper(req: https_fn.Request):
-        # Extract token from Authorization header
         auth_header = req.headers.get("Authorization", "")
-        
-        if not auth_header.startswith("Bearer "):
-            return https_fn.Response(
-                response={"error": "Missing or invalid Authorization header"},
-                status=401,
-                headers={"Content-Type": "application/json"}
-            )
-        
-        id_token = auth_header.split("Bearer ")[1]
-        
+        if not auth_header.startswith("Bearer ") or not auth_header[7:].strip():
+            return response_builder.unauthorized("Missing or invalid Authorization header")
         try:
-            # Verify token and extract user ID
-            user_id = AuthService.get_user_id_from_token(id_token)
-            
-            # Call the original function with user_id
-            return func(req, user_id)
-            
-        except ValueError as e:
-            return https_fn.Response(
-                response={"error": str(e)},
-                status=401,
-                headers={"Content-Type": "application/json"}
-            )
-        except Exception as e:
-            return https_fn.Response(
-                response={"error": "Authentication failed"},
-                status=500,
-                headers={"Content-Type": "application/json"}
-            )
-    
+            user_id = AuthService.get_user_id_from_token(auth_header[7:].strip())
+            if not user_id:
+                return response_builder.unauthorized("Invalid authentication token")
+        except ValueError as error:
+            return response_builder.unauthorized(str(error))
+        except Exception:
+            return response_builder.internal_error("Authentication failed")
+        return func(req, user_id)
     return wrapper
+
+
+def development_only(func):
+    """Retain development tools without exposing them in production."""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if settings.ENVIRONMENT.lower() == "production" or not settings.DEBUG:
+            return response_builder.not_found("Endpoint unavailable")
+        return func(*args, **kwargs)
+    return wrapper
+
 
 # Initialize auth service
 auth_service = AuthService()

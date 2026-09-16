@@ -21,8 +21,7 @@ class ResponseBuilder:
             response=json.dumps(response_body),
             status=status,
             headers={
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*"
+                "Content-Type": "application/json"
             }
         )
 
@@ -42,8 +41,7 @@ class ResponseBuilder:
             response=json.dumps(response_body),
             status=status,
             headers={
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*"
+                "Content-Type": "application/json"
             }
         )
 
@@ -84,8 +82,7 @@ def success_response(
         "data": data
     }
     merged_headers = {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
+        "Content-Type": "application/json"
     }
     if headers:
         merged_headers.update(headers)
@@ -110,8 +107,7 @@ def error_response(
     if details:
         response_body["details"] = details
     merged_headers = {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
+        "Content-Type": "application/json"
     }
     if headers:
         merged_headers.update(headers)

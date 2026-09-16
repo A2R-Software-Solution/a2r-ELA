@@ -1,3 +1,4 @@
+from auth.auth_service import development_only
 # functions/test_llm.py
 # This will test if the LLM API is working and show the actual response
 
@@ -9,8 +10,9 @@ from llm.llm_client import llm_client
 from llm.prompts import essay_prompts
 
 @https_fn.on_request(
-    cors=options.CorsOptions(cors_origins="*", cors_methods=["GET", "POST"])
+    cors=options.CorsOptions(cors_origins=settings.CORS_ORIGINS, cors_methods=["GET", "POST"])
 )
+@development_only
 def test_llm_connection(req: https_fn.Request) -> https_fn.Response:
     """
     Test endpoint to verify LLM API connection
@@ -51,7 +53,7 @@ def test_llm_connection(req: https_fn.Request) -> https_fn.Response:
             {"role": "user", "content": eval_prompt}
         ]
         
-        eval_response = llm_client.create_chat_completion(messages, max_tokens=1500)
+        eval_response = llm_client.create_chat_completion(messages, max_tokens=settings.LLM_MAX_TOKENS)
         raw_eval = eval_response.get("choices", [{}])[0].get("message", {}).get("content", "")
         
         results["eval_test"] = "SUCCESS"

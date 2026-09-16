@@ -1,5 +1,6 @@
 from typing import Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from dateutil.tz import gettz
 from firebase_admin import firestore
 from config.settings import settings
 
@@ -8,10 +9,7 @@ from config.settings import settings
 # Checked in update_progress_after_submission() and returned in the result
 # so reward_engine can fold it into the XP total.
 
-STREAK_BONUS_XP = {
-    7:  100,   # 7-day streak  → +100 XP
-    30: 500,   # 30-day streak → +500 XP
-}
+STREAK_BONUS_XP = settings.STREAK_BONUS_XP
 
 
 class ProgressService:
@@ -63,7 +61,11 @@ class ProgressService:
             "updated_at": datetime.utcnow(),
         }
 
-        progress_ref.set(initial_progress)
+        from google.api_core.exceptions import AlreadyExists
+        try:
+            progress_ref.create(initial_progress)
+        except AlreadyExists:
+            return progress_ref.get().to_dict()
         return initial_progress
 
     def update_progress_after_submission(
@@ -92,88 +94,93 @@ class ProgressService:
             settings.COLLECTION_USER_PROGRESS
         ).document(user_id)
 
-        # Get current progress
-        progress = self.get_or_create_progress(user_id)
+        @firestore.transactional
+        def commit(transaction):
+            # Get current progress
+            snapshot = progress_ref.get(transaction=transaction)
+            progress = snapshot.to_dict() if snapshot.exists else {}
 
-        # ── Streak calculation ────────────────────────────────────────────────
-        current_date    = datetime.utcnow().date()
-        last_submission = progress.get("last_submission_date")
+            # ── Streak calculation ────────────────────────────────────────────────
+            current_date    = datetime.now(gettz(settings.STREAK_TIMEZONE)).date()
+            last_submission = progress.get("last_submission_date")
 
-        if last_submission:
-            if hasattr(last_submission, 'date'):
-                last_submission = last_submission.date()
-            elif isinstance(last_submission, datetime):
-                last_submission = last_submission.date()
+            if last_submission:
+                if hasattr(last_submission, 'date'):
+                    last_submission = (last_submission.replace(tzinfo=timezone.utc) if last_submission.tzinfo is None else last_submission).astimezone(gettz(settings.STREAK_TIMEZONE)).date()
+                elif isinstance(last_submission, datetime):
+                    last_submission = (last_submission.replace(tzinfo=timezone.utc) if last_submission.tzinfo is None else last_submission).astimezone(gettz(settings.STREAK_TIMEZONE)).date()
 
-        current_streak = progress.get("current_streak", 0)
-        max_streak     = progress.get("max_streak", 0)
+            current_streak = progress.get("current_streak", 0)
+            max_streak     = progress.get("max_streak", 0)
 
-        if last_submission is None:
-            new_streak = 1
-        elif last_submission == current_date:
-            # Same day — keep streak, no bonus (already awarded today)
-            new_streak = current_streak
-        elif last_submission == current_date - timedelta(days=1):
-            # Consecutive day
-            new_streak = current_streak + 1
-        else:
-            # Streak broken
-            new_streak = 1
+            if last_submission is None:
+                new_streak = 1
+            elif last_submission == current_date:
+                # Same day — keep streak, no bonus (already awarded today)
+                new_streak = current_streak
+            elif last_submission == current_date - timedelta(days=1):
+                # Consecutive day
+                new_streak = min(current_streak + 1, settings.MAX_STREAK_DAYS)
+            else:
+                # Streak broken
+                new_streak = 1
 
-        new_max_streak = max(max_streak, new_streak)
+            new_max_streak = max(max_streak, new_streak)
 
-        # ── Streak bonus XP ───────────────────────────────────────────────────
-        # Award bonus only when the streak *reaches* a threshold exactly —
-        # not on same-day submissions (streak didn't change) and not
-        # retroactively if the streak was already past the threshold.
-        streak_bonus_xp = 0
-        streak_changed  = new_streak != current_streak
+            # ── Streak bonus XP ───────────────────────────────────────────────────
+            # Award bonus only when the streak *reaches* a threshold exactly —
+            # not on same-day submissions (streak didn't change) and not
+            # retroactively if the streak was already past the threshold.
+            streak_bonus_xp = 0
+            streak_changed  = new_streak != current_streak
 
-        if streak_changed:
-            # Check thresholds from highest to lowest so 30-day wins over 7-day
-            for threshold in sorted(STREAK_BONUS_XP.keys(), reverse=True):
-                if new_streak == threshold:
-                    streak_bonus_xp = STREAK_BONUS_XP[threshold]
-                    print(
-                        f"Streak milestone reached: {threshold} days "
-                        f"→ +{streak_bonus_xp} bonus XP for user {user_id}"
-                    )
-                    break
+            if streak_changed:
+                # Check thresholds from highest to lowest so 30-day wins over 7-day
+                for threshold in sorted(STREAK_BONUS_XP.keys(), reverse=True):
+                    if new_streak == threshold:
+                        streak_bonus_xp = STREAK_BONUS_XP[threshold]
+                        print(
+                            f"Streak milestone reached: {threshold} days "
+                            f"→ +{streak_bonus_xp} bonus XP for user {user_id}"
+                        )
+                        break
 
-        # ── Category scores ───────────────────────────────────────────────────
-        category_scores = progress.get("category_scores", {})
-        if category not in category_scores:
-            category_scores[category] = {"count": 0, "avg_score": 0, "total_score": 0}
+            # ── Category scores ───────────────────────────────────────────────────
+            category_scores = progress.get("category_scores", {})
+            if category not in category_scores:
+                category_scores[category] = {"count": 0, "avg_score": 0, "total_score": 0}
 
-        cat_data = category_scores[category]
-        cat_data["count"]       += 1
-        cat_data["total_score"] += score
-        cat_data["avg_score"]    = cat_data["total_score"] / cat_data["count"]
+            cat_data = category_scores[category]
+            cat_data["count"]       += 1
+            cat_data["total_score"] += score
+            cat_data["avg_score"]    = cat_data["total_score"] / cat_data["count"]
 
-        # ── Total essays ──────────────────────────────────────────────────────
-        total_essays = progress.get("total_essays_submitted", 0) + 1
+            # ── Total essays ──────────────────────────────────────────────────────
+            total_essays = progress.get("total_essays_submitted", 0) + 1
 
-        # ── Firestore update ──────────────────────────────────────────────────
-        update_data = {
-            "current_streak":         new_streak,
-            "max_streak":             new_max_streak,
-            "total_essays_submitted": total_essays,
-            "last_submission_date":   datetime.utcnow(),
-            "category_scores":        category_scores,
-            "updated_at":             datetime.utcnow(),
-        }
+            # ── Firestore update ──────────────────────────────────────────────────
+            update_data = {
+                "current_streak":         new_streak,
+                "max_streak":             new_max_streak,
+                "total_essays_submitted": total_essays,
+                "last_submission_date":   datetime.utcnow(),
+                "category_scores":        category_scores,
+                "updated_at":             datetime.utcnow(),
+            }
 
-        progress_ref.update(update_data)
+            transaction.set(progress_ref, {"user_id": user_id, **update_data}, merge=True)
 
-        # ── Return ────────────────────────────────────────────────────────────
-        return {
-            "current_streak":         new_streak,
-            "max_streak":             new_max_streak,
-            "total_essays_submitted": total_essays,
-            "category_scores":        category_scores,
-            "streak_updated":         streak_changed,
-            "streak_bonus_xp":        streak_bonus_xp,   # ← new
-        }
+            # ── Return ────────────────────────────────────────────────────────────
+            return {
+                "current_streak":         new_streak,
+                "max_streak":             new_max_streak,
+                "total_essays_submitted": total_essays,
+                "category_scores":        category_scores,
+                "streak_updated":         streak_changed,
+                "streak_bonus_xp":        streak_bonus_xp,   # ← new
+            }
+
+        return commit(self.db.transaction())
 
     def get_streak_info(self, user_id: str) -> Dict[str, Any]:
         """
@@ -193,13 +200,13 @@ class ProgressService:
 
         if last_submission:
             if hasattr(last_submission, 'date'):
-                last_submission_date = last_submission.date()
+                last_submission_date = (last_submission.replace(tzinfo=timezone.utc) if last_submission.tzinfo is None else last_submission).astimezone(gettz(settings.STREAK_TIMEZONE)).date()
             elif isinstance(last_submission, datetime):
-                last_submission_date = last_submission.date()
+                last_submission_date = (last_submission.replace(tzinfo=timezone.utc) if last_submission.tzinfo is None else last_submission).astimezone(gettz(settings.STREAK_TIMEZONE)).date()
             else:
                 last_submission_date = last_submission
 
-            current_date     = datetime.utcnow().date()
+            current_date     = datetime.now(gettz(settings.STREAK_TIMEZONE)).date()
             days_since_last  = (current_date - last_submission_date).days
 
             if days_since_last > 1:
@@ -208,7 +215,7 @@ class ProgressService:
         return {
             "current_streak":      current_streak,
             "max_streak":          max_streak,
-            "days_until_year":     max(0, 365 - current_streak),
+            "days_until_year":     max(0, settings.MAX_STREAK_DAYS - current_streak),
             "streak_active":       current_streak > 0,
             "last_submission_date": last_submission.isoformat() if last_submission else None,
         }

@@ -25,7 +25,7 @@ class UserService:
     """Service for managing user profile data in Firestore"""
 
     # Firestore collection name
-    COLLECTION = "users"
+    COLLECTION = settings.COLLECTION_USERS
 
     def __init__(self):
         self._db = None
@@ -214,9 +214,10 @@ class UserService:
         # Removing this also removes the user from all leaderboards
         # since leaderboard_service.py queries gamification collection
         # ------------------------------------------------------------------
-        self.db.collection(
-            settings.COLLECTION_GAMIFICATION
-        ).document(user_id).delete()
+        rewards_ref = self.db.collection(settings.COLLECTION_GAMIFICATION).document(user_id)
+        for event in rewards_ref.collection('reward_events').stream():
+            event.reference.delete()
+        rewards_ref.delete()
 
         print(f"Deleted gamification data for user: {user_id}")
 

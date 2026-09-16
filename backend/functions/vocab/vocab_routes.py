@@ -1,3 +1,4 @@
+from config.settings import settings
 """
 Vocab Routes
 GET /get_daily_vocab — returns a random vocab word + meaning using Groq
@@ -11,7 +12,7 @@ from utils.responses import success_response, error_response
 
 
 @https_fn.on_request(
-    cors=options.CorsOptions(cors_origins="*", cors_methods=["GET"])
+    cors=options.CorsOptions(cors_origins=settings.CORS_ORIGINS, cors_methods=["GET"])
 )
 @require_auth
 def get_daily_vocab(
@@ -39,8 +40,8 @@ Return ONLY a JSON object with no extra text:
         messages = [{"role": "user", "content": prompt}]
         response = groq_client.create_chat_completion(
             messages=messages,
-            temperature=0.9,
-            max_tokens=2048
+            temperature=settings.VOCAB_TEMPERATURE,
+            max_tokens=settings.VOCAB_MAX_TOKENS
         )
 
         choice = (response.get("choices") or [{}])[0]

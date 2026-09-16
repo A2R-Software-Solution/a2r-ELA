@@ -1,3 +1,5 @@
+from gamification.atomic_rewards import award
+from config.settings import settings
 """
 Game Routes
 API endpoints for submitting mini-game results and awarding XP.
@@ -9,7 +11,7 @@ from gamification.reward_engine import reward_engine
 from utils.responses import response_builder
 
 cors_options = options.CorsOptions(
-    cors_origins="*",
+    cors_origins=settings.CORS_ORIGINS,
     cors_methods=["GET", "POST", "OPTIONS"]
 )
 
@@ -68,12 +70,16 @@ def submit_game_result(req: https_fn.Request, user_id: str) -> https_fn.Response
                 f"Invalid game_id '{game_id}'. Must be one of: {', '.join(valid_game_ids)}"
             )
 
-        if not isinstance(score, (int, float)) or not (0 <= score <= 100):
+        if type(score) not in (int, float) or not (0 <= score <= settings.MAX_SCORE):
             return response_builder.validation_error("score must be a number between 0 and 100")
 
         score           = int(score)
         time_taken      = data.get("time_taken")
         lives_remaining = data.get("lives_remaining")
+        if time_taken is not None and (type(time_taken) not in (int, float) or not 0 <= time_taken < float('inf')):
+            return response_builder.validation_error("time_taken must be a finite non-negative number")
+        if lives_remaining is not None and (type(lives_remaining) is not int or not 0 <= lives_remaining <= settings.GAME_XP_RULES['perfect_lives']):
+            return response_builder.validation_error("lives_remaining is outside the configured range")
 
         # ── Calculate XP ──────────────────────────────────────────────────────
         xp_earned = reward_engine.calculate_game_xp(
@@ -84,39 +90,13 @@ def submit_game_result(req: https_fn.Request, user_id: str) -> https_fn.Response
         )
 
         # ── Get current gamification state ────────────────────────────────────
-        current       = reward_engine.get_or_create_gamification(user_id)
-        current_xp    = current.get("xp", 0)
-        current_level = current.get("level", 1)
-        badges_earned = list(current.get("badges_earned", []))
-        total_essays  = current.get("total_essays_submitted", 0)
-
-        # ── Update XP and level ───────────────────────────────────────────────
-        new_total_xp              = current_xp + xp_earned
-        new_level, new_level_name = reward_engine.get_level_from_xp(new_total_xp)
-        level_up                  = new_level > current_level
-
-        # ── Check badges ──────────────────────────────────────────────────────
-        game_scores    = {game_id: score}
-        newly_unlocked = reward_engine.check_badges(
-            already_earned=badges_earned,
-            raw_scores={},
-            new_total_xp=new_total_xp,
-            new_level=new_level,
-            total_essays=total_essays,
-            game_scores=game_scores,
-        )
-
-        badges_earned += [b["id"] for b in newly_unlocked]
-
-        # ── Save to Firestore ─────────────────────────────────────────────────
-        reward_engine.save_gamification(
-            user_id=user_id,
-            xp=new_total_xp,
-            level=new_level,
-            level_name=new_level_name,
-            badges_earned=badges_earned,
-            total_essays_submitted=total_essays,
-        )
+        rewards = award(reward_engine, user_id, xp_earned, game_scores={game_id: score})
+        xp_earned = rewards['xp_earned']
+        new_total_xp = rewards['total_xp']
+        new_level = rewards['level']
+        new_level_name = rewards['level_name']
+        level_up = rewards['level_up']
+        newly_unlocked = rewards['newly_unlocked_badges']
 
         return response_builder.success(
             data={
@@ -214,42 +194,16 @@ def detail_detective_evaluate(req: https_fn.Request, user_id: str) -> https_fn.R
             improved_sentence=improved_sentence,
         )
 
-        xp_earned = evaluation.get("xp_earned", 20)
+        xp_earned = evaluation.get("xp_earned", settings.GAME_XP_RULES["base"])
 
         # ── Get current gamification state ────────────────────────────────────
-        current       = reward_engine.get_or_create_gamification(user_id)
-        current_xp    = current.get("xp", 0)
-        current_level = current.get("level", 1)
-        badges_earned = list(current.get("badges_earned", []))
-        total_essays  = current.get("total_essays_submitted", 0)
-
-        # ── Update XP and level ───────────────────────────────────────────────
-        new_total_xp              = current_xp + xp_earned
-        new_level, new_level_name = reward_engine.get_level_from_xp(new_total_xp)
-        level_up                  = new_level > current_level
-
-        # ── Check badges ──────────────────────────────────────────────────────
-        game_scores    = {"detail_detective": evaluation.get("score", 1) * 20}  # convert 1-5 → 20-100
-        newly_unlocked = reward_engine.check_badges(
-            already_earned=badges_earned,
-            raw_scores={},
-            new_total_xp=new_total_xp,
-            new_level=new_level,
-            total_essays=total_essays,
-            game_scores=game_scores,
-        )
-
-        badges_earned += [b["id"] for b in newly_unlocked]
-
-        # ── Save to Firestore ─────────────────────────────────────────────────
-        reward_engine.save_gamification(
-            user_id=user_id,
-            xp=new_total_xp,
-            level=new_level,
-            level_name=new_level_name,
-            badges_earned=badges_earned,
-            total_essays_submitted=total_essays,
-        )
+        rewards = award(reward_engine, user_id, xp_earned, game_scores={"detail_detective": evaluation.get("score", 1) * settings.MAX_SCORE / settings.DETAIL_MAX_SCORE})
+        xp_earned = rewards['xp_earned']
+        new_total_xp = rewards['total_xp']
+        new_level = rewards['level']
+        new_level_name = rewards['level_name']
+        level_up = rewards['level_up']
+        newly_unlocked = rewards['newly_unlocked_badges']
 
         return response_builder.success(
             data={
@@ -325,17 +279,17 @@ def boss_battle_submit(req: https_fn.Request, user_id: str) -> https_fn.Response
             return response_builder.validation_error("Request body is required")
 
         essay_text = data.get("essay_text", "").strip()
-        state      = data.get("state", "PA")
-        grade      = data.get("grade", "6")
+        state      = data.get("state", settings.DEFAULT_STATE)
+        grade      = data.get("grade", settings.DEFAULT_GRADE)
 
         # ── Validate ──────────────────────────────────────────────────────────
         if not essay_text:
             return response_builder.validation_error("essay_text is required")
 
         word_count = len(essay_text.split())
-        if word_count < 50:
+        if word_count < settings.MIN_WORDS:
             return response_builder.validation_error(
-                f"Essay must be at least 50 words (got {word_count})"
+                f"Essay must be at least {settings.MIN_WORDS} words (got {word_count})"
             )
 
         # ── Evaluate essay via existing OpenRouter evaluator ──────────────────
@@ -350,50 +304,16 @@ def boss_battle_submit(req: https_fn.Request, user_id: str) -> https_fn.Response
         converted_score = evaluation.get("converted_score", 0)
 
         # ── Get current gamification state + personal best ────────────────────
-        current        = reward_engine.get_or_create_gamification(user_id)
-        current_xp     = current.get("xp", 0)
-        current_level  = current.get("level", 1)
-        badges_earned  = list(current.get("badges_earned", []))
-        total_essays   = current.get("total_essays_submitted", 0)
-        personal_best  = current.get("boss_battle_personal_best", 0)
-
-        beat_personal_best = converted_score > personal_best
-        improvement        = converted_score - personal_best if beat_personal_best else 0
-
-        # ── XP: +250 for beating personal best, +50 base otherwise ───────────
-        xp_earned = 250 if beat_personal_best else 50
-
-        new_total_xp              = current_xp + xp_earned
-        new_level, new_level_name = reward_engine.get_level_from_xp(new_total_xp)
-        level_up                  = new_level > current_level
-
-        # ── Update personal best if beaten ────────────────────────────────────
-        new_personal_best = converted_score if beat_personal_best else personal_best
-
-        # ── Check badges ──────────────────────────────────────────────────────
-        game_scores    = {"boss_battle": converted_score}
-        newly_unlocked = reward_engine.check_badges(
-            already_earned=badges_earned,
-            raw_scores=evaluation.get("raw_scores", {}),
-            new_total_xp=new_total_xp,
-            new_level=new_level,
-            total_essays=total_essays + 1,
-            game_scores=game_scores,
-            beat_personal_best=beat_personal_best,
-        )
-
-        badges_earned += [b["id"] for b in newly_unlocked]
-
-        # ── Save to Firestore ─────────────────────────────────────────────────
-        reward_engine.save_gamification(
-            user_id=user_id,
-            xp=new_total_xp,
-            level=new_level,
-            level_name=new_level_name,
-            badges_earned=badges_earned,
-            total_essays_submitted=total_essays + 1,
-            boss_battle_personal_best=new_personal_best,
-        )
+        rewards = award(reward_engine, user_id, 0, raw_scores=evaluation.get("raw_scores", {}), game_scores={"boss_battle": converted_score}, essay_count=1, boss_score=converted_score)
+        xp_earned = rewards['xp_earned']
+        new_total_xp = rewards['total_xp']
+        new_level = rewards['level']
+        new_level_name = rewards['level_name']
+        level_up = rewards['level_up']
+        newly_unlocked = rewards['newly_unlocked_badges']
+        new_personal_best = rewards['boss_battle']['personal_best']
+        beat_personal_best = rewards['boss_battle']['beat_personal_best']
+        improvement = rewards['boss_battle']['improvement']
 
         return response_builder.success(
             data={

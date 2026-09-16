@@ -15,7 +15,7 @@ from firebase_admin import firestore
 from config.settings import settings
 
 # ── Firestore collection name (must match seed_content.py) ───────────────────
-_COLLECTION = "pssa_content"
+_COLLECTION = settings.COLLECTION_PSSA_CONTENT
 
 # ── In-memory cache  { "3": "...content...", "4": "...content..." } ──────────
 # Resets on every Firebase Function cold start — acceptable because content
@@ -28,7 +28,7 @@ _cache: dict[str, str] = {}
 # 413 "Request Entity Too Large" error from Groq → surfaced as a 500 to the app.
 # ~4 chars/token is a safe rule of thumb, so this keeps grade_content comfortably
 # within budget even after adding STATIC_FORMAT_RULES + instructions on top.
-_MAX_CONTENT_CHARS = 6000
+_MAX_CONTENT_CHARS = settings.PSSA_MAX_CONTENT_CHARS
 
 
 class PssaContentService:

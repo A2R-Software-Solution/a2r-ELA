@@ -15,6 +15,7 @@ For future grades: add a new GRADE_X_CONTENT string below and call
 _seed_grade("X", GRADE_X_CONTENT) at the bottom.
 """
 
+from config.settings import settings
 import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime, timezone
@@ -26,7 +27,7 @@ if not firebase_admin._apps:
     firebase_admin.initialize_app()
 
 db = firestore.client()
-COLLECTION = "pssa_content"
+COLLECTION = settings.COLLECTION_PSSA_CONTENT
 
 
 # =============================================================================

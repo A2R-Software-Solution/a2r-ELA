@@ -3,8 +3,15 @@ E-Learning App Backend - Essay Evaluation System
 Firebase Cloud Functions Entry Point
 """
 
-from dotenv import load_dotenv
-load_dotenv()
+from config.settings import settings
+from firebase_functions import options
+
+options.set_global_options(
+    region=settings.NB_FUNCTION_REGION,
+    timeout_sec=settings.NB_FUNCTION_TIMEOUT_SECONDS,
+    memory=options.MemoryOption(settings.NB_FUNCTION_MEMORY_MB),
+    max_instances=settings.NB_FUNCTION_MAX_INSTANCES,
+)
 
 import firebase_admin
 from firebase_admin import credentials
@@ -18,15 +25,9 @@ if not firebase_admin._apps:
     except Exception as e:
         print(f"Firebase initialization: {e}")
 
-# Import configuration and validate (but don't fail on errors)
-from config.settings import settings
-
-try:
-    settings.validate_config()
-    print("Configuration validated successfully")
-except ValueError as e:
-    print(f"Configuration warning: {str(e)}")
-    print("Set NB_GROQ_API_KEY in Firebase Functions config")
+# Fail discovery early with the setting name rather than deploying broken config.
+settings.validate_config()
+print("Configuration validated successfully")
 
 # Import all cloud functions
 from essay.essay_routes import (
@@ -82,7 +83,7 @@ from pssa.pssa_routes import (
 from firebase_functions import https_fn, options
 
 @https_fn.on_request(
-    cors=options.CorsOptions(cors_origins="*", cors_methods=["GET"])
+    cors=options.CorsOptions(cors_origins=settings.CORS_ORIGINS, cors_methods=["GET"])
 )
 def health_check(req: https_fn.Request) -> https_fn.Response:
     """
@@ -94,8 +95,8 @@ def health_check(req: https_fn.Request) -> https_fn.Response:
 
     health_data = {
         "status":      "healthy",
-        "service":     "elearning-essay-backend",
-        "version":     "1.0.0",
+        "service":     settings.SERVICE_NAME,
+        "version":     settings.SERVICE_VERSION,
         "environment": settings.ENVIRONMENT,
         "rubric":      "PSSA Writing Domain (PA)",
         "endpoints": {

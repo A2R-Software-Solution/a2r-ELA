@@ -17,7 +17,7 @@ from leaderboard.leaderboard_service import leaderboard_service
 from config.settings import settings
 
 # CORS options — same pattern as other routes
-_CORS = options.CorsOptions(cors_origins="*", cors_methods=["GET", "OPTIONS"])
+_CORS = options.CorsOptions(cors_origins=settings.CORS_ORIGINS, cors_methods=["GET", "OPTIONS"])
 
 
 # ------------------------------------------------------------------------------

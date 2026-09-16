@@ -73,7 +73,7 @@ class LLMClient:
         payload = {
             "model": self.model,
             "messages": messages,
-            "temperature": temperature or settings.LLM_TEMPERATURE,
+            "temperature": settings.LLM_TEMPERATURE if temperature is None else temperature,
             "max_tokens": max_tokens or settings.LLM_MAX_TOKENS
         }
 
@@ -236,7 +236,7 @@ Keep the tone supportive, constructive, and age-appropriate for students."""
 
         try:
             messages = [{"role": "user", "content": prompt}]
-            response = self.create_chat_completion(messages, temperature=0.7)
+            response = self.create_chat_completion(messages, temperature=settings.LLM_CREATIVE_TEMPERATURE)
             return (
                 response.get("choices", [{}])[0]
                         .get("message", {})
@@ -288,13 +288,13 @@ class GroqLLMClient:
         payload = {
             "model": self._model,
             "messages": messages,
-            "temperature": temperature or settings.LLM_TEMPERATURE,
-            "max_tokens": max_tokens or 500  # Detail Detective needs short responses
+            "temperature": settings.LLM_TEMPERATURE if temperature is None else temperature,
+            "max_tokens": max_tokens or settings.GAME_MAX_TOKENS  # Detail Detective needs short responses
         }
 
         if self._model in ("openai/gpt-oss-20b", "openai/gpt-oss-120b"):
             payload["reasoning_effort"] = "low"
-            payload["max_tokens"] = max(payload["max_tokens"], 2048)
+            payload["max_tokens"] = max(payload["max_tokens"], settings.LLM_REASONING_MIN_TOKENS)
 
         try:
             response = requests.post(
@@ -443,8 +443,8 @@ class PSSAGroqClient:
         payload = {
             "model": self._model,
             "messages": messages,
-            "temperature": temperature or settings.LLM_TEMPERATURE,
-            "max_tokens": max_tokens or 2000
+            "temperature": settings.LLM_TEMPERATURE if temperature is None else temperature,
+            "max_tokens": max_tokens or settings.PSSA_MAX_TOKENS
         }
 
         try:
@@ -476,8 +476,8 @@ class PSSAGroqClient:
     def call(
         self,
         prompt: str,
-        temperature: float = 0.7,
-        max_tokens: int = 2000
+        temperature: float = settings.LLM_CREATIVE_TEMPERATURE,
+        max_tokens: int = settings.PSSA_MAX_TOKENS
     ) -> str:
         """
         Simple wrapper — send a prompt, get raw text back.
@@ -512,10 +512,13 @@ class RoundRobinGroqClient:
     """
 
     def __init__(self):
-        self._clients = [pssa_groq_client_1, pssa_groq_client_2, pssa_groq_client_3]
+        self._clients = [client for client in (pssa_groq_client_1, pssa_groq_client_2, pssa_groq_client_3)
+                         if getattr(settings, client._api_key_attr)]
         self._counter = 0
 
-    def call(self, prompt: str, temperature: float = 0.7, max_tokens: int = 2000) -> str:
+    def call(self, prompt: str, temperature: float = settings.LLM_CREATIVE_TEMPERATURE, max_tokens: int = settings.PSSA_MAX_TOKENS) -> str:
+        if not self._clients:
+            raise ValueError("Configure at least one PSSA Groq API key")
         client = self._clients[self._counter % len(self._clients)]
         self._counter += 1
 
