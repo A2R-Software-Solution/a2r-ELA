@@ -1,3 +1,5 @@
+import ScreenBackground from '../../components/ScreenBackground';
+import { styles } from './DetailDetectiveGame.styles';
 /**
  * Detail Detective Game (Game 2)
  * Domain: Content
@@ -6,19 +8,8 @@
  * XP: 10-60 based on score
  */
 
-import React, { useState, useCallback, useRef } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  ScrollView,
-  StyleSheet,
-  Modal,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Modal, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { DetailDetectiveEvaluation, GameRewards } from '../../models/GameModels';
 
 // ─── Pre-seeded Sentences ─────────────────────────────────────────────────────
@@ -121,7 +112,7 @@ const FeedbackCard: React.FC<FeedbackCardProps> = ({
           {evaluation.what_they_did_well ? (
             <View style={styles.feedbackSection}>
               <Text style={styles.feedbackSectionIcon}>✅</Text>
-              <View style={{ flex: 1 }}>
+              <View style={styles.viewFlex}>
                 <Text style={styles.feedbackSectionLabel}>What you did well</Text>
                 <Text style={styles.feedbackSectionText}>{evaluation.what_they_did_well}</Text>
               </View>
@@ -132,7 +123,7 @@ const FeedbackCard: React.FC<FeedbackCardProps> = ({
           {evaluation.how_to_improve ? (
             <View style={styles.feedbackSection}>
               <Text style={styles.feedbackSectionIcon}>💡</Text>
-              <View style={{ flex: 1 }}>
+              <View style={styles.viewFlex2}>
                 <Text style={styles.feedbackSectionLabel}>Try next time</Text>
                 <Text style={styles.feedbackSectionText}>{evaluation.how_to_improve}</Text>
               </View>
@@ -209,7 +200,7 @@ const DetailDetectiveGame: React.FC<DetailDetectiveGameProps> = ({
 
   const current = SENTENCES[sentenceIndex];
   const wordCount = improvedText.trim().split(/\s+/).filter(Boolean).length;
-  const canSubmit = improvedText.trim().length > 0 && !isSubmitting;
+  const canSubmit = improvedText.trim().length > 0 && improvedText.trim().length <= 1000 && !isSubmitting;
 
   const handleSubmit = useCallback(async () => {
     if (!canSubmit) return;
@@ -240,6 +231,7 @@ const DetailDetectiveGame: React.FC<DetailDetectiveGameProps> = ({
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      <ScreenBackground />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
@@ -310,6 +302,11 @@ const DetailDetectiveGame: React.FC<DetailDetectiveGameProps> = ({
             textAlignVertical="top"
             editable={!isSubmitting}
           />
+          <Text style={styles.wordCountLow} accessibilityLiveRegion="polite">
+            {improvedText.trim().length > 1000
+              ? 'Improved sentence cannot exceed 1000 characters.'
+              : `${improvedText.trim().length}/1000 characters`}
+          </Text>
           <View style={styles.wordCountRow}>
             <Text style={[
               styles.wordCount,
@@ -337,7 +334,7 @@ const DetailDetectiveGame: React.FC<DetailDetectiveGameProps> = ({
           )}
         </TouchableOpacity>
 
-        <View style={{ height: 40 }} />
+        <View style={styles.viewHeight} />
 
       </ScrollView>
 
@@ -354,219 +351,5 @@ const DetailDetectiveGame: React.FC<DetailDetectiveGameProps> = ({
     </KeyboardAvoidingView>
   );
 };
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F0F8FF',
-  },
-  scrollContent: {
-    paddingTop: 52,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-
-  // Header
-  header: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  exitButton: {
-    width: 36, height: 36,
-    borderRadius: 18,
-    backgroundColor: '#DBEAFE',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  exitText:   { fontSize: 16, color: '#0EA5E9' },
-  title:      { fontSize: 20, fontWeight: '700', color: '#1A1A2E' },
-  roundBadge: {
-    backgroundColor: '#0EA5E9',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  roundText: { fontSize: 13, fontWeight: '700', color: '#FFF' },
-
-  // Topic
-  topicRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  topicChip: {
-    backgroundColor: '#DBEAFE',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  topicText:   { fontSize: 14, fontWeight: '600', color: '#1E40AF' },
-  domainLabel: { fontSize: 12, color: '#0EA5E9', fontWeight: '600' },
-
-  // Instruction card
-  instructionCard: {
-    backgroundColor: '#EFF6FF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: '#0EA5E9',
-  },
-  instructionLabel: { fontSize: 10, fontWeight: '800', color: '#0EA5E9', marginBottom: 6, letterSpacing: 1 },
-  instructionText:  { fontSize: 14, color: '#1E3A5F', lineHeight: 20 },
-  instructionBold:  { fontWeight: '700' },
-
-  // Weak sentence
-  weakSentenceCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1.5,
-    borderColor: '#FCA5A5',
-    borderStyle: 'dashed',
-  },
-  weakSentenceLabel: { fontSize: 10, fontWeight: '800', color: '#DC2626', marginBottom: 8, letterSpacing: 1 },
-  weakSentenceText:  { fontSize: 18, color: '#666', fontStyle: 'italic', lineHeight: 26 },
-
-  // Hint
-  hintToggle: {
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    backgroundColor: '#FEF9C3',
-    borderRadius: 20,
-  },
-  hintToggleText: { fontSize: 13, fontWeight: '600', color: '#854D0E' },
-  hintCard: {
-    backgroundColor: '#FEFCE8',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: '#EAB308',
-  },
-  hintText: { fontSize: 13, color: '#713F12', lineHeight: 19 },
-
-  // Input
-  inputCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1.5,
-    borderColor: '#BAE6FD',
-  },
-  inputLabel: { fontSize: 10, fontWeight: '800', color: '#0EA5E9', marginBottom: 10, letterSpacing: 1 },
-  textInput: {
-    fontSize: 15,
-    color: '#1A1A2E',
-    lineHeight: 22,
-    minHeight: 100,
-    textAlignVertical: 'top',
-  },
-  wordCountRow: { marginTop: 8, alignItems: 'flex-end' },
-  wordCount:    { fontSize: 12, fontWeight: '600' },
-  wordCountGood: { color: '#16A34A' },
-  wordCountLow:  { color: '#9CA3AF' },
-
-  // Submit
-  submitButton: {
-    backgroundColor: '#0EA5E9',
-    borderRadius: 14,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  submitButtonDisabled: { backgroundColor: '#BAE6FD' },
-  submitButtonText:     { color: '#FFF', fontSize: 16, fontWeight: '700' },
-  submittingRow:        { flexDirection: 'row', alignItems: 'center' },
-
-  // Feedback modal
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    justifyContent: 'flex-end',
-  },
-  feedbackCard: {
-    backgroundColor: '#FFF',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    padding: 28,
-    gap: 12,
-    maxHeight: '90%',
-  },
-  scoreBadge: {
-    alignSelf: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    borderRadius: 30,
-  },
-  scoreBadgeText: { fontSize: 24, fontWeight: '800', color: '#FFF' },
-  starsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 4,
-  },
-  star: { fontSize: 24 },
-  feedbackMain: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1A1A2E',
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  feedbackSection: {
-    flexDirection: 'row',
-    gap: 10,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    padding: 12,
-  },
-  feedbackSectionIcon:  { fontSize: 18 },
-  feedbackSectionLabel: { fontSize: 11, fontWeight: '700', color: '#888', marginBottom: 2 },
-  feedbackSectionText:  { fontSize: 13, color: '#444', lineHeight: 18 },
-  xpEarnedRow: {
-    backgroundColor: '#EFF6FF',
-    borderRadius: 12,
-    padding: 12,
-    alignItems: 'center',
-  },
-  xpEarnedText: { fontSize: 18, fontWeight: '800', color: '#0EA5E9' },
-  levelUpBanner: {
-    backgroundColor: '#FEF3C7',
-    borderRadius: 12,
-    padding: 12,
-    alignItems: 'center',
-  },
-  levelUpText: { fontSize: 14, fontWeight: '700', color: '#92400E' },
-  badgeBanner: {
-    backgroundColor: '#F0FDF4',
-    borderRadius: 12,
-    padding: 12,
-    alignItems: 'center',
-    gap: 4,
-  },
-  badgeBannerText: { fontSize: 14, fontWeight: '700', color: '#16A34A' },
-  feedbackActions: { gap: 10, marginTop: 4 },
-  nextButton: {
-    backgroundColor: '#0EA5E9',
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  nextButtonText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
-  exitFeedbackButton: {
-    borderRadius: 14,
-    paddingVertical: 12,
-    alignItems: 'center',
-    backgroundColor: '#F1F5F9',
-  },
-  exitFeedbackText: { color: '#64748B', fontSize: 14, fontWeight: '600' },
-});
 
 export default DetailDetectiveGame;

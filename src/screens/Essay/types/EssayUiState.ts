@@ -1,3 +1,5 @@
+import { appEnv } from '../../../config/env.generated';
+import { getStateDisplayLabel, getGradeDisplayLabel } from '../../../models/EssayModels';
 /**
  * Essay UI State
  * State interface for Essay Editor screen
@@ -109,10 +111,10 @@ export const initialEssayUiState: EssayUiState = {
   wordCount: 0,
 
   // State & grade defaults — overwritten on mount from Firestore
-  selectedState: 'PA',
-  selectedGrade: '6',
-  stateDisplay: 'Pennsylvania',
-  gradeDisplay: 'Grade 6',
+  selectedState: appEnv.DEFAULT_STATE,
+  selectedGrade: appEnv.DEFAULT_GRADE,
+  stateDisplay: getStateDisplayLabel(appEnv.DEFAULT_STATE),
+  gradeDisplay: getGradeDisplayLabel(appEnv.DEFAULT_GRADE),
   isLoadingPreferences: true,
   showPreferencesSheet: false,
 
@@ -137,8 +139,8 @@ export const initialEssayUiState: EssayUiState = {
   maxStreak: 0,
   isLoadingStreak: false,
 
-  minWords: 50,
-  maxWords: 500,
+  minWords: appEnv.ESSAY_CATEGORIES.essay_writing.min,
+  maxWords: appEnv.ESSAY_CATEGORIES.essay_writing.max,
 
   showFeedbackDialog: false,
   showErrorDialog: false,
@@ -147,8 +149,8 @@ export const initialEssayUiState: EssayUiState = {
   isWordCountValid: false,
   canSubmit: false,
   wordCountProgress: 0,
-  wordCountText: '0/500',
-  streakText: '0/365',
+  wordCountText: `0/${appEnv.ESSAY_CATEGORIES.essay_writing.max}`,
+  streakText: `0/${appEnv.MAX_STREAK_DAYS}`,
 
   inputMode: EssayInputMode.TYPING,
   uploadedFiles: [],

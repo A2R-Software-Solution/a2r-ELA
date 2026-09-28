@@ -1,3 +1,5 @@
+import { styles } from './App.styles';
+import { colors } from './src/theme/colors';
 /**
  * App.tsx
  * Root component of the application
@@ -6,7 +8,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { StatusBar, View, ActivityIndicator, StyleSheet } from 'react-native';
+import { StatusBar, View, ActivityIndicator } from 'react-native';
 import firebaseApp from '@react-native-firebase/app';
 import AppNavigator from './src/navigation/AppNavigator';
 
@@ -42,7 +44,7 @@ const App = () => {
   if (!isFirebaseReady) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#7D55FF" />
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }
@@ -51,20 +53,11 @@ const App = () => {
     <>
       <StatusBar
         barStyle="light-content"
-        backgroundColor="#07050E"
+        backgroundColor={colors.background}
       />
       <AppNavigator />
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#07050E',
-  },
-});
 
 export default App;

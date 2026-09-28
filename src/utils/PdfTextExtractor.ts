@@ -1,3 +1,4 @@
+import { appEnv } from '../config/env.generated';
 /**
  * PdfTextExtractor Utility
  * Extracts text content from PDF files
@@ -60,7 +61,7 @@ export class PdfTextExtractor {
    */
   static async validatePdf(
     fileUri: string,
-    maxSizeBytes: number = 100 * 1024,
+    maxSizeBytes: number = appEnv.MAX_FILE_SIZE,
   ): Promise<{ isValid: boolean; error?: string }> {
     try {
       // Check if file exists

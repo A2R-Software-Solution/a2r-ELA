@@ -1,3 +1,4 @@
+import { validateText } from '../utils/validation';
 /**
  * useGame Hook
  * Handles submitting game results to the backend and tracking rewards.
@@ -107,6 +108,11 @@ export const useGame = () => {
       originalSentence: string,
       improvedSentence: string,
     ): Promise<DetailDetectiveResponse | null> => {
+      const error = validateText(improvedSentence, 'Improved sentence', 1000);
+      if (error) {
+        setState(prev => ({ ...prev, error }));
+        return null;
+      }
       setState(prev => ({
         ...prev,
         isSubmitting:       true,
@@ -164,6 +170,10 @@ export const useGame = () => {
       state_code: string = 'PA',
       grade: string = '6',
     ): Promise<BossBattleResponse | null> => {
+      if (essayText.trim().split(/\s+/).filter(Boolean).length < 50) {
+        setState(prev => ({ ...prev, error: 'Please write at least 50 words.' }));
+        return null;
+      }
       setState(prev => ({
         ...prev,
         isSubmitting:     true,

@@ -1,3 +1,5 @@
+import ScreenBackground from '../../components/ScreenBackground';
+import { styles } from './JumbledStoryGame.styles';
 /**
  * Jumbled Story Game (Game 3)
  * Domain: Organization
@@ -7,15 +9,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Animated,
-  PanResponder,
-} from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { JumbledStoryLevel, GameResult } from '../../models/GameModels';
 
 // ─── Pre-seeded Levels ────────────────────────────────────────────────────────
@@ -154,6 +148,7 @@ const JumbledStoryGame: React.FC<JumbledStoryGameProps> = ({ onGameComplete, onE
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <View style={styles.container}>
+      <ScreenBackground />
 
       {/* Header */}
       <View style={styles.header}>
@@ -244,111 +239,5 @@ const JumbledStoryGame: React.FC<JumbledStoryGameProps> = ({ onGameComplete, onE
     </View>
   );
 };
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F0F4FF',
-    paddingTop: 48,
-  },
-  header: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginBottom: 8,
-  },
-  exitButton: {
-    width: 36, height: 36,
-    borderRadius: 18,
-    backgroundColor: '#E0E7FF',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  exitText:    { fontSize: 16, color: '#4F46E5' },
-  title:       { fontSize: 20, fontWeight: '700', color: '#1A1A2E' },
-  timerBadge: {
-    borderWidth: 2,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  timerText:   { fontSize: 14, fontWeight: '700' },
-  storyTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#4F46E5',
-    paddingHorizontal: 20,
-    marginBottom: 4,
-  },
-  instruction: {
-    fontSize: 12,
-    color: '#666',
-    paddingHorizontal: 20,
-    marginBottom: 12,
-    lineHeight: 17,
-  },
-  sentencesContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 100,
-    gap: 10,
-  },
-  sentenceCard: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 12,
-    borderWidth: 1.5,
-    borderColor: '#E0E7FF',
-    gap: 10,
-  },
-  sentenceSelected: { borderColor: '#4F46E5', backgroundColor: '#EEF2FF' },
-  sentenceCorrect:  { borderColor: '#22C55E', backgroundColor: '#DCFCE7' },
-  sentenceWrong:    { borderColor: '#EF4444', backgroundColor: '#FEE2E2' },
-  indexBadge: {
-    width: 28, height: 28,
-    borderRadius: 14,
-    backgroundColor: '#E0E7FF',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  indexBadgeSelected: { backgroundColor: '#4F46E5' },
-  indexBadgeCorrect:  { backgroundColor: '#22C55E' },
-  indexBadgeWrong:    { backgroundColor: '#EF4444' },
-  indexText:    { fontSize: 13, fontWeight: '700', color: '#FFF' },
-  sentenceText: { flex: 1, fontSize: 14, color: '#1A1A2E', lineHeight: 20 },
-  sentenceTextSelected: { color: '#4F46E5', fontWeight: '600' },
-  selectedIcon: { fontSize: 16 },
-  resultIcon:   { fontSize: 16 },
-  footer: {
-    position:   'absolute',
-    bottom:     24,
-    left:       20,
-    right:      20,
-  },
-  submitButton: {
-    backgroundColor: '#4F46E5',
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: 'center',
-  },
-  submitButtonText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
-  resultBanner: {
-    position: 'absolute',
-    bottom: 24,
-    left: 20,
-    right: 20,
-    borderRadius: 14,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  resultBannerWin:      { backgroundColor: '#DCFCE7' },
-  resultBannerLose:     { backgroundColor: '#FEE2E2' },
-  resultBannerText:     { fontSize: 15, fontWeight: '700', color: '#1A1A2E' },
-  resultBannerScore:    { fontSize: 20, fontWeight: '800', color: '#1A1A2E' },
-});
 
 export default JumbledStoryGame;

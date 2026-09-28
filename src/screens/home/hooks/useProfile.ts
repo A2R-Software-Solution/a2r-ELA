@@ -1,3 +1,5 @@
+import { validateName, validateBirthdate } from '../../../utils/validation';
+import { appEnv } from '../../../config/env.generated';
 /**
  * useProfile Hook
  * Profile screen logic (ViewModel equivalent).
@@ -45,8 +47,8 @@ import firebaseAuthRepository from '../../../auth/FirebaseAuthRepository';
 // CONSTANTS
 // ============================================================================
 
-const BIRTHDATE_REGEX = /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/(\d{4})$/;
-const MAX_PHOTO_BYTES = 800 * 1024;
+
+const MAX_PHOTO_BYTES = appEnv.MAX_PHOTO_SIZE;
 
 // ============================================================================
 // OPTIONS
@@ -309,12 +311,9 @@ export const useProfile = ({
   const onNameSave = useCallback(async (newName: string) => {
     const trimmed = newName.trim();
 
-    if (!trimmed) {
-      Alert.alert('Invalid Name', 'Name cannot be empty.');
-      return;
-    }
-    if (trimmed.length > 50) {
-      Alert.alert('Invalid Name', 'Name cannot exceed 50 characters.');
+    const nameError = validateName(newName);
+    if (nameError) {
+      Alert.alert('Invalid Name', nameError);
       return;
     }
 
@@ -362,11 +361,9 @@ export const useProfile = ({
   }, []);
 
   const onBirthdateSave = useCallback(async (birthdate: string) => {
-    if (!BIRTHDATE_REGEX.test(birthdate)) {
-      Alert.alert(
-        'Invalid Format',
-        'Please enter date as MM/DD/YYYY (e.g. 08/22/1998).',
-      );
+    const birthdateError = validateBirthdate(birthdate);
+    if (birthdateError) {
+      Alert.alert('Invalid Birthdate', birthdateError);
       return;
     }
 

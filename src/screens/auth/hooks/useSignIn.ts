@@ -1,3 +1,4 @@
+import { validateEmail as validateUsername, validatePassword } from '../../../utils/validation';
 /**
  * useSignIn Hook
  * Sign In logic (ViewModel equivalent)
@@ -49,7 +50,7 @@ export const useSignIn = () => {
 
     try {
       const result = await firebaseAuthRepository.signIn(
-        uiState.username,
+        uiState.username.trim(),
         uiState.password
       );
 
@@ -83,23 +84,3 @@ export const useSignIn = () => {
   };
 };
 
-// Validation functions
-const validateUsername = (value: string): string | null => {
-  if (!value.trim()) return 'Email is required';
-  if (!value.includes('@')) return 'Please enter your email address';
-  
-  // Simple email regex validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(value)) {
-    return 'Invalid email format';
-  }
-  
-  return null;
-};
-
-const validatePassword = (value: string): string | null => {
-  if (!value.trim()) return 'Password is required';
-  // Commented out for now (as in Kotlin code)
-  // if (value.length < 8) return 'Password must be at least 8 characters';
-  return null;
-};

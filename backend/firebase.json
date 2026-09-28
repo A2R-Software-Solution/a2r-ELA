@@ -1,4 +1,9 @@
 {
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json",
+    "predeploy": ["node \"$PROJECT_DIR/../scripts/firebase-config.cjs\""]
+  },
   "functions": [
     {
       "source": "functions",

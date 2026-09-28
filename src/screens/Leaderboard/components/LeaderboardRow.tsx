@@ -1,3 +1,4 @@
+import { styles } from './LeaderboardRow.styles';
 /**
  * LeaderboardRow Component
  * Displays a single leaderboard entry for ranks 4 and beyond.
@@ -5,12 +6,7 @@
  */
 
 import React from 'react';
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, Image } from 'react-native';
 import { LeaderboardEntry } from '../../../models/LeaderboardModels';
 
 // --------------------------------------------------------------------------
@@ -24,8 +20,6 @@ interface LeaderboardRowProps {
 // --------------------------------------------------------------------------
 // CONSTANTS
 // --------------------------------------------------------------------------
-
-const PURPLE = '#6C63FF';
 
 // --------------------------------------------------------------------------
 // COMPONENT
@@ -116,124 +110,5 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ entry }) => {
     </View>
   );
 };
-
-// --------------------------------------------------------------------------
-// STYLES
-// --------------------------------------------------------------------------
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection:     'row',
-    alignItems:        'center',
-    paddingVertical:   14,
-    paddingHorizontal: 16,
-    marginHorizontal:  16,
-    marginVertical:    4,
-    backgroundColor:   '#FFFFFF',
-    borderRadius:      12,
-    shadowColor:       '#000',
-    shadowOffset:      { width: 0, height: 1 },
-    shadowOpacity:     0.06,
-    shadowRadius:      3,
-    elevation:         1,
-  },
-  containerHighlighted: {
-    backgroundColor: '#F4F2FF',
-    borderWidth:     1.5,
-    borderColor:     PURPLE,
-    shadowColor:     PURPLE,
-    shadowOpacity:   0.15,
-    elevation:       3,
-  },
-
-  // Rank
-  rankContainer: {
-    width:       32,
-    alignItems:  'center',
-    marginRight: 8,
-  },
-  rank: {
-    fontSize:   16,
-    fontWeight: '700',
-    color:      '#BDBDBD',
-  },
-  rankHighlighted: {
-    color: PURPLE,
-  },
-
-  // Avatar
-  avatar: {
-    width:           48,
-    height:          48,
-    borderRadius:    24,
-    backgroundColor: '#F4F3FF',
-    justifyContent:  'center',
-    alignItems:      'center',
-    marginRight:     12,
-  },
-  avatarHighlighted: {
-    backgroundColor: PURPLE,
-  },
-  avatarImage: {
-    width:        '100%',
-    height:       '100%',
-    borderRadius: 24,
-  },
-  avatarText: {
-    fontSize:   16,
-    fontWeight: '700',
-    color:      PURPLE,
-  },
-  avatarTextHighlighted: {
-    color: '#FFFFFF',
-  },
-
-  // Name + level
-  nameContainer: {
-    flex: 1,
-  },
-  name: {
-    fontSize:   14,
-    fontWeight: '600',
-    color:      '#212121',
-  },
-  nameHighlighted: {
-    color: PURPLE,
-  },
-  levelName: {
-    fontSize:  12,
-    color:     '#9E9E9E',
-    marginTop: 2,
-  },
-
-  // Right side
-  rightContainer: {
-    alignItems: 'flex-end',
-  },
-  xpBadge: {
-    backgroundColor:   '#F4F3FF',
-    paddingHorizontal: 8,
-    paddingVertical:   4,
-    borderRadius:      999,
-  },
-  xp: {
-    fontSize:   13,
-    fontWeight: '700',
-    color:      '#424242',
-  },
-  xpHighlighted: {
-    color: PURPLE,
-  },
-  essays: {
-    fontSize:  11,
-    color:     '#9E9E9E',
-    marginTop: 2,
-  },
-  scoreText: {
-    fontSize:  11,
-    color:     '#9E9E9E',
-    marginTop: 2,
-  },
-});
 
 export default LeaderboardRow;

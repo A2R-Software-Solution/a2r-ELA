@@ -576,3 +576,6 @@ For issues and questions:
 ---
 
 **Built by A2RSoftwareSolutions using React Native & TypeScript**
+# Environment configuration
+
+See [ENVIRONMENT.md](ENVIRONMENT.md) for mobile/backend `.env` setup, Firebase deployment and emulator instructions.

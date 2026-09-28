@@ -1,3 +1,4 @@
+import { appEnv } from '../../../config/env.generated';
 /**
  * useExamPrep Hook
  * Manages all state and logic for the Exam Prep screen.
@@ -31,10 +32,7 @@ const EXAM_TITLES: Record<string, string> = {
 };
 
 // Grade 3 and 4 only — Grade 5+ content not seeded in Firestore yet (out of scope this sprint)
-const GRADE_OPTIONS: GradeOption[] = [
-  { code: '3', label: 'Grade 3' },
-  { code: '4', label: 'Grade 4' },
-];
+const GRADE_OPTIONS: GradeOption[] = appEnv.PSSA_AVAILABLE_GRADES.map(code => ({ code, label: `Grade ${code}` }));
 
 const DOMAIN_OPTIONS: DomainOption[] = [
   { code: 'reading_fiction',        label: 'Reading Fiction' },
@@ -44,14 +42,14 @@ const DOMAIN_OPTIONS: DomainOption[] = [
   { code: 'craft_and_structure',    label: 'Craft & Structure' },
 ];
 
-const DEFAULT_GRADE  = '4';
-const DEFAULT_DOMAIN = 'reading_fiction' as const;
+const DEFAULT_GRADE = appEnv.PSSA_DEFAULT_GRADE;
+const DEFAULT_DOMAIN = appEnv.PSSA_DEFAULT_DOMAIN;
 
 // Fixed session parameters — used both when calling the backend and when
 // exposed via state so the navigator can build PreloadedSessionData with
 // the exact same difficulty that was actually used to generate questions.
-const DEFAULT_DIFFICULTY: PssaDifficulty = 'medium';
-const DEFAULT_QUESTION_COUNT = 10;
+const DEFAULT_DIFFICULTY: PssaDifficulty = appEnv.PSSA_DEFAULT_DIFFICULTY;
+const DEFAULT_QUESTION_COUNT = appEnv.PSSA_DEFAULT_QUESTION_COUNT;
 
 // --------------------------------------------------------------------------
 // HOOK RETURN TYPE

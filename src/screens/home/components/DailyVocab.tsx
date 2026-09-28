@@ -1,15 +1,11 @@
+import { styles } from './DailyVocab.styles';
 /**
  * DailyVocab Component
  * Fetches a new vocab word from Groq via backend every time app opens
  */
 
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { apiService } from '../../../api/apiService';
 
 interface VocabWord {
@@ -36,7 +32,7 @@ const DailyVocab: React.FC = () => {
       if (response.data?.data) {
         setVocab(response.data.data);
       }
-    } catch (e) {
+    } catch {
       setError(true);
     } finally {
       setIsLoading(false);
@@ -87,101 +83,5 @@ const DailyVocab: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    marginHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 4,
-    backgroundColor: '#F5F3FF',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#EDE9FF',
-    padding: 16,
-    shadowColor: '#6C4DFF',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  header: {
-    marginBottom: 12,
-  },
-  labelPill: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#EDE9FF',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  labelText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6C4DFF',
-  },
-  loadingWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 8,
-  },
-  loadingText: {
-    fontSize: 13,
-    color: '#94A3B8',
-  },
-  errorText: {
-    fontSize: 13,
-    color: '#EF4444',
-    paddingVertical: 8,
-  },
-  vocabContent: {
-    gap: 8,
-  },
-  wordRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  word: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0F172A',
-  },
-  posPill: {
-    backgroundColor: '#DBEAFE',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-  },
-  posText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#3B82F6',
-  },
-  meaning: {
-    fontSize: 14,
-    color: '#475569',
-    lineHeight: 20,
-  },
-  exampleWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 4,
-    backgroundColor: '#EDE9FF',
-    borderRadius: 10,
-    padding: 10,
-  },
-  exampleLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#6C4DFF',
-  },
-  exampleText: {
-    fontSize: 13,
-    color: '#475569',
-    fontStyle: 'italic',
-    flex: 1,
-  },
-});
 
 export default DailyVocab;

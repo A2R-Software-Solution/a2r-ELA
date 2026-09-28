@@ -1,15 +1,11 @@
+import { styles } from './FileUploadButton.styles';
 /**
  * FileUploadButton Component
  * Button to trigger file picker for PDF uploads
  */
 
 import React from 'react';
-import {
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  Text,
-} from 'react-native';
+import { TouchableOpacity, ActivityIndicator, Text } from 'react-native';
 import { pick, isErrorWithCode, errorCodes, types } from '@react-native-documents/picker';
 
 // Infer the picked file type from the pick function's return type
@@ -73,20 +69,3 @@ export const FileUploadButton: React.FC<FileUploadButtonProps> = ({
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  icon: {
-    fontWeight: '400',
-  },
-});

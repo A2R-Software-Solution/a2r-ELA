@@ -1,14 +1,7 @@
+import ScreenBackground from '../../components/ScreenBackground';
+import { styles } from './WordSwapGame.styles';
 import React, { useState, useRef, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Animated,
-  ScrollView,
-  SafeAreaView,
-  StatusBar,
-} from 'react-native';
+import { View, Text, TouchableOpacity, Animated, ScrollView, SafeAreaView, StatusBar } from 'react-native';
 import { GameResult } from '../../models/GameModels';
 
 // ─────────────────────────────────────────
@@ -156,7 +149,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ result, onReplay, onExit })
       friction: 7,
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [scaleAnim]);
 
   const accuracy = result.accuracy ?? 0;
   const xpEarned = result.xpEarned ?? result.score;
@@ -186,7 +179,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ result, onReplay, onExit })
           </View>
           <View style={styles.statRow}>
             <Text style={styles.statLabel}>Best Word Picks</Text>
-            <Text style={[styles.statValue, { color: '#a855f7' }]}>
+            <Text style={[styles.statValue, styles.textColor]}>
               ⭐ {result.correctRemovals ?? 0}
             </Text>
           </View>
@@ -412,6 +405,7 @@ const WordSwapGame: React.FC<WordSwapGameProps> = ({ onGameComplete, onExit }) =
   if (gameState === 'intro') {
     return (
       <SafeAreaView style={styles.safeArea}>
+      <ScreenBackground />
         <StatusBar barStyle="light-content" backgroundColor="#0d0d1a" />
         <View style={styles.introContainer}>
           <View style={styles.introIconWrap}>
@@ -456,6 +450,7 @@ const WordSwapGame: React.FC<WordSwapGameProps> = ({ onGameComplete, onExit }) =
   if (gameState === 'result' && result) {
     return (
       <SafeAreaView style={styles.safeArea}>
+      <ScreenBackground />
         <StatusBar barStyle="light-content" backgroundColor="#0d0d1a" />
         <ResultScreen
           result={result}
@@ -471,6 +466,7 @@ const WordSwapGame: React.FC<WordSwapGameProps> = ({ onGameComplete, onExit }) =
   // ─────────────────────────────────────────
   return (
     <SafeAreaView style={styles.safeArea}>
+      <ScreenBackground />
       <StatusBar barStyle="light-content" backgroundColor="#0d0d1a" />
 
       {/* ── Header ── */}
@@ -506,7 +502,7 @@ const WordSwapGame: React.FC<WordSwapGameProps> = ({ onGameComplete, onExit }) =
         />
       ) : (
         <ScrollView
-          style={{ flex: 1 }}
+          style={styles.scrollViewFlex}
           contentContainerStyle={styles.gameContent}
           showsVerticalScrollIndicator={false}
         >
@@ -608,403 +604,5 @@ const WordSwapGame: React.FC<WordSwapGameProps> = ({ onGameComplete, onExit }) =
     </SafeAreaView>
   );
 };
-
-// ─────────────────────────────────────────
-// STYLES
-// ─────────────────────────────────────────
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#0d0d1a' },
-
-  // ── Intro ──
-  introContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 28,
-    paddingVertical: 20,
-  },
-  introIconWrap: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: '#1a1a2e',
-    borderWidth: 2,
-    borderColor: '#a855f7',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 18,
-  },
-  introIcon: { fontSize: 44 },
-  introTitle: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#f1f5f9',
-    letterSpacing: -0.5,
-  },
-  introSubtitle: {
-    fontSize: 14,
-    color: '#64748b',
-    marginTop: 4,
-    fontWeight: '600',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  introDivider: {
-    width: 48,
-    height: 3,
-    backgroundColor: '#a855f7',
-    borderRadius: 2,
-    marginVertical: 20,
-  },
-  introDescription: {
-    fontSize: 16,
-    color: '#94a3b8',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 24,
-  },
-  introHighlight: { color: '#a855f7', fontWeight: '700' },
-  introRules: {
-    width: '100%',
-    backgroundColor: '#1a1a2e',
-    borderRadius: 16,
-    padding: 18,
-    gap: 14,
-    marginBottom: 28,
-  },
-  ruleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  ruleEmoji: { fontSize: 20, width: 28 },
-  ruleText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#cbd5e1',
-    lineHeight: 20,
-    fontWeight: '500',
-  },
-  startButton: {
-    width: '100%',
-    backgroundColor: '#a855f7',
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: 'center',
-    shadowColor: '#a855f7',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.45,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  startButtonText: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  backLink: { marginTop: 16, padding: 8 },
-  backLinkText: { color: '#64748b', fontSize: 14, fontWeight: '600' },
-
-  // ── Game Header ──
-  gameHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingTop: 12,
-    paddingBottom: 10,
-  },
-  topicLabel: {
-    fontSize: 11,
-    color: '#64748b',
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  topicName: {
-    fontSize: 17,
-    color: '#f1f5f9',
-    fontWeight: '800',
-    marginTop: 2,
-  },
-  counterBadge: {
-    backgroundColor: '#1a1a2e',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: '#2d2d4e',
-  },
-  counterText: { fontSize: 15, fontWeight: '800', color: '#a855f7' },
-
-  // ── Progress bar ──
-  progressBarBg: {
-    height: 4,
-    backgroundColor: '#1a1a2e',
-    marginHorizontal: 18,
-    borderRadius: 2,
-    marginBottom: 14,
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: '#a855f7',
-    borderRadius: 2,
-  },
-
-  // ── Game content ──
-  gameContent: {
-    paddingHorizontal: 18,
-    paddingBottom: 20,
-    gap: 16,
-  },
-
-  // ── Instruction ──
-  instructionBanner: {
-    backgroundColor: '#1a1a2e',
-    borderRadius: 10,
-    paddingVertical: 9,
-    paddingHorizontal: 14,
-    borderLeftWidth: 3,
-    borderLeftColor: '#a855f7',
-  },
-  instructionText: { color: '#94a3b8', fontSize: 13, fontWeight: '600' },
-  underlineDemo: {
-    color: '#a855f7',
-    textDecorationLine: 'underline',
-    fontWeight: '700',
-  },
-
-  // ── Sentence card ──
-  sentenceCard: {
-    backgroundColor: '#1a1a2e',
-    borderRadius: 18,
-    padding: 22,
-    borderWidth: 1,
-    borderColor: '#2d2d4e',
-    shadowColor: '#a855f7',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 6,
-    gap: 14,
-  },
-  sentenceLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#a855f7',
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-  },
-  sentenceText: {
-    fontSize: 19,
-    lineHeight: 32,
-    color: '#e2e8f0',
-    fontWeight: '500',
-    flexWrap: 'wrap',
-  },
-  sentenceTextPart: {
-    color: '#e2e8f0',
-    fontSize: 19,
-    fontWeight: '500',
-  },
-  swapWord: {
-    fontSize: 19,
-    fontWeight: '800',
-    textDecorationLine: 'underline',
-  },
-  swapWordEmpty:  { color: '#a855f7', textDecorationColor: '#a855f7' },
-  swapWordFilled: { color: '#22c55e', textDecorationColor: '#22c55e' },
-
-  // ── Swap chips ──
-  swapStatusRow: { gap: 10 },
-  swapChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1a1a2e',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: '#2d2d4e',
-    gap: 10,
-  },
-  swapChipFilled: { borderColor: '#22c55e44', backgroundColor: '#14532d22' },
-  swapChipOld: {
-    fontSize: 14,
-    color: '#64748b',
-    fontWeight: '600',
-    textDecorationLine: 'line-through',
-  },
-  swapChipOldDone: { color: '#475569' },
-  swapChipArrow: { fontSize: 14, color: '#475569', fontWeight: '700' },
-  swapChipNew: { flex: 1, fontSize: 14, fontWeight: '700', color: '#22c55e' },
-  swapChipNewEmpty: { color: '#a855f7', fontStyle: 'italic', fontWeight: '500' },
-
-  hintText: { fontSize: 12, color: '#475569', textAlign: 'center', fontWeight: '600' },
-
-  // ── Bottom row ──
-  bottomRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 18,
-    paddingBottom: 24,
-    paddingTop: 8,
-    gap: 10,
-  },
-  skipBtn: {
-    backgroundColor: '#1a1a2e',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 14,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#2d2d4e',
-  },
-  skipBtnText: { color: '#64748b', fontSize: 14, fontWeight: '700' },
-  nextBtn: {
-    flex: 1,
-    backgroundColor: '#a855f7',
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: 'center',
-    shadowColor: '#a855f7',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  nextBtnDisabled: { backgroundColor: '#1a1a2e', shadowOpacity: 0, elevation: 0 },
-  nextBtnText: { color: '#fff', fontSize: 16, fontWeight: '800', letterSpacing: 0.3 },
-
-  // ── Word Bank Panel (inline, replaces Modal) ──
-  wordBankPanel: {
-    flex: 1,
-    backgroundColor: '#13131f',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    padding: 28,
-    paddingBottom: 40,
-    gap: 16,
-    borderTopWidth: 1,
-    borderColor: '#2d2d4e',
-    marginTop: 8,
-  },
-  wordBankHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: '#2d2d4e',
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: 4,
-  },
-  modalTitle: { fontSize: 20, fontWeight: '800', color: '#f1f5f9', textAlign: 'center' },
-  modalSubtitle: { fontSize: 14, color: '#94a3b8', textAlign: 'center', fontWeight: '500' },
-  modalBoring: {
-    color: '#64748b',
-    fontStyle: 'italic',
-    textDecorationLine: 'line-through',
-  },
-  wordBankGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    justifyContent: 'center',
-  },
-  wordChip: {
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    backgroundColor: '#1a1a2e',
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#2d2d4e',
-    minWidth: 100,
-    alignItems: 'center',
-  },
-  wordChipSelected: { backgroundColor: '#3b0764', borderColor: '#a855f7' },
-  wordChipText: { fontSize: 15, color: '#94a3b8', fontWeight: '600' },
-  wordChipTextSelected: { color: '#e9d5ff', fontWeight: '800' },
-  confirmBtn: {
-    backgroundColor: '#a855f7',
-    paddingVertical: 15,
-    borderRadius: 14,
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  confirmBtnDisabled: { backgroundColor: '#1a1a2e' },
-  confirmBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
-  cancelLink: { alignItems: 'center', padding: 6 },
-  cancelLinkText: { color: '#475569', fontSize: 14, fontWeight: '600' },
-
-  // ── Result ──
-  resultOverlay: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 30,
-    backgroundColor: '#0d0d1a',
-  },
-  resultCard: {
-    backgroundColor: '#1a1a2e',
-    borderRadius: 24,
-    padding: 28,
-    width: '100%',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#2d2d4e',
-    shadowColor: '#a855f7',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 12,
-  },
-  resultEmoji: { fontSize: 56, marginBottom: 8 },
-  resultGrade: { fontSize: 26, fontWeight: '900', letterSpacing: -0.5, marginBottom: 20 },
-  resultStats: { width: '100%', gap: 10, marginBottom: 20 },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    backgroundColor: '#0d0d1a',
-    borderRadius: 10,
-  },
-  statLabel: { fontSize: 13, color: '#64748b', fontWeight: '600' },
-  statValue: { fontSize: 15, color: '#f1f5f9', fontWeight: '800' },
-  statValueXP: { fontSize: 17, color: '#a855f7', fontWeight: '900' },
-  badgeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#a855f722',
-    borderWidth: 1,
-    borderColor: '#a855f766',
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    marginBottom: 20,
-    width: '100%',
-    justifyContent: 'center',
-  },
-  badgeEmoji: { fontSize: 22 },
-  badgeText: { fontSize: 14, color: '#a855f7', fontWeight: '800' },
-  resultButtons: { flexDirection: 'row', gap: 12, width: '100%' },
-  replayBtn: {
-    flex: 1,
-    backgroundColor: '#a855f7',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  replayBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
-  exitBtn: {
-    flex: 1,
-    backgroundColor: '#1a1a2e',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#2d2d4e',
-  },
-  exitBtnText: { color: '#94a3b8', fontSize: 15, fontWeight: '700' },
-});
 
 export default WordSwapGame;

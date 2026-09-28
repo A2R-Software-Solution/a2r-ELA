@@ -1,3 +1,5 @@
+import ScreenBackground from '../../components/ScreenBackground';
+import { styles } from './HomeScreen.styles';
 /**
  * Home Screen
  * ✅ Updated with new UI components
@@ -8,14 +10,7 @@
  */
 
 import React, { useEffect } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useHome } from './hooks/useHome';
 import { useProfile } from './hooks/useProfile';
 import { HomeTab } from './types/HomeUiState';
@@ -63,15 +58,12 @@ interface HomeScreenProps {
 const HomeScreen: React.FC<HomeScreenProps> = ({
   onLogoutClick            = () => {},
   onDeleteAccountClick     = () => {},
-  onCourseClick            = () => {},
   onFeatureClick           = () => {},
-  onCategoryClick          = () => {},
-  onSeeAllCategories       = () => {},
   onEssayWritingClick      = () => {},
   onSeeAllEssaysClick      = () => {},
   onStartPssaPractice  = () => {},
 }) => {
-  const { uiState, onTabSelected, onCategorySelected, onFeaturePress } = useHome();
+  const { uiState, onTabSelected, onFeaturePress } = useHome();
 
   const profile = useProfile({
     onLogoutSuccess:        onLogoutClick,
@@ -106,19 +98,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
     });
   };
 
-  const handleCategoryClick = (category: CategoryUiModel) => {
-    onCategorySelected(category);
-    onCategoryClick(category);
-  };
 
   return (
     <View style={styles.container}>
 
       {/* ── Background color layers (C palette) ── */}
-      <View style={styles.bgBase} />
-      <View style={styles.bgOrangeRed} />
-      <View style={styles.bgEmerald} />
-      <View style={styles.bgPurple} />
+      <ScreenBackground />
 
       <View style={styles.content}>
 
@@ -352,133 +337,5 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
     </>
   );
 };
-
-// ============================================================================
-// STYLES
-// ============================================================================
-
-const styles = StyleSheet.create({
-
-  // ── Root container ──────────────────────────────────────────────────────
-  container: {
-    flex:            1,
-    backgroundColor: '#07050E', // deepest base — near black with purple tint
-  },
-
-  // ── Background layers (C palette: red-orange + emerald + deep purple) ───
-  //
-  //  We stack 3 absolute Views on top of the base black,
-  //  each simulating one radial color zone:
-  //
-  //   bgOrangeRed  → bottom-left  (red-orange)
-  //   bgEmerald    → bottom-right (emerald green)
-  //   bgPurple     → top-center  (deep purple)
-  //
-  //  Opacity kept at 0.55–0.65 so they feel atmospheric, not neon.
-
-  bgBase: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#07050E',
-  },
-
-  // Red-orange bloom — bottom-left corner
-  bgOrangeRed: {
-    position:        'absolute',
-    bottom:          -120,
-    left:            -80,
-    width:           320,
-    height:          320,
-    borderRadius:    160,
-    backgroundColor: '#D93A00',
-    opacity:         0.38,
-  },
-
-  // Emerald bloom — bottom-right corner
-  bgEmerald: {
-    position:        'absolute',
-    bottom:          -100,
-    right:           -60,
-    width:           280,
-    height:          280,
-    borderRadius:    140,
-    backgroundColor: '#005C25',
-    opacity:         0.42,
-  },
-
-  // Deep purple bloom — top center
-  bgPurple: {
-    position:        'absolute',
-    top:             -100,
-    left:            '25%',
-    width:           300,
-    height:          300,
-    borderRadius:    150,
-    backgroundColor: '#4A007A',
-    opacity:         0.45,
-  },
-
-  // ── Layout ──────────────────────────────────────────────────────────────
-  content: {
-    flex: 1,
-  },
-
-  scrollView: {
-    flex: 1,
-  },
-
-  scrollContent: {
-    backgroundColor:   'transparent', // ← was '#12102A', now transparent so bg layers show through
-    paddingBottom:     100,
-    flexGrow:          1,
-  },
-
-  profileScrollContent: {
-    backgroundColor: 'transparent', // ← was '#12102A'
-    paddingBottom:   100,
-    flexGrow:        1,
-  },
-
-  // ── Placeholder / error states ───────────────────────────────────────────
-  placeholderContainer: {
-    flex:            1,
-    justifyContent:  'center',
-    alignItems:      'center',
-    backgroundColor: 'transparent', // ← was '#12102A'
-  },
-
-  placeholderText: {
-    fontSize: 18,
-    color:    '#A78BFA',
-  },
-
-  centeredContainer: {
-    flex:            1,
-    justifyContent:  'center',
-    alignItems:      'center',
-    padding:         24,
-    backgroundColor: 'transparent', // ← was '#12102A'
-  },
-
-  errorText: {
-    fontSize:     15,
-    color:        'rgba(255,255,255,0.55)',
-    textAlign:    'center',
-    marginBottom: 20,
-    lineHeight:   22,
-  },
-
-  retryButton: {
-    backgroundColor:   '#7C5CFC',
-    paddingHorizontal: 32,
-    paddingVertical:   12,
-    borderRadius:      12,
-  },
-
-  retryText: {
-    color:      '#FFFFFF',
-    fontSize:   15,
-    fontWeight: '600',
-  },
-});
 
 export default HomeScreen;

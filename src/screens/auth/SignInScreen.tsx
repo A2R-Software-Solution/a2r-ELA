@@ -1,5 +1,6 @@
+import { styles } from './SignInScreen.styles';
 import ScreenBackground from '../../components/ScreenBackground';
-import { colors } from '../../theme/colors';
+
 /**
  * Sign In Screen
  * User authentication screen with email/password
@@ -9,18 +10,7 @@ import { colors } from '../../theme/colors';
  */
 
 import React, { useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Image,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSignIn } from './hooks/useSignIn';
 
@@ -31,11 +21,6 @@ interface SignInScreenProps {
 }
 
 /* -------------------------------- Social Button -------------------------------- */
-
-interface SocialButtonProps {
-  text: string;
-  onPress?: () => void;
-}
 
 
 /* -------------------------------- Sign In Screen -------------------------------- */
@@ -83,12 +68,13 @@ const SignInScreen: React.FC<SignInScreenProps> = ({
         {/* ✅ FIX: Real image instead of placeholder text */}
         <View style={styles.illustrationContainer}>
           <Image
-            source={require('../../assets/images/signin.png')}
+            source={require('../../assets/images/signin-transparent.png')}
             style={styles.illustrationImage}
             resizeMode="contain"
           />
         </View>
 
+        <View style={styles.formCard}>
         {/* Welcome Text */}
         <View style={styles.welcomeContainer}>
           <Text style={styles.welcomeTitle}>Welcome,</Text>
@@ -163,118 +149,10 @@ const SignInScreen: React.FC<SignInScreenProps> = ({
             <Text style={styles.signUpLink}>Create an account</Text>
           </TouchableOpacity>
         </View>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 };
 
 export default SignInScreen;
-
-/* -------------------------------- Styles -------------------------------- */
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.surface,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    padding: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    // ✅ paddingTop set dynamically via insets in JSX
-  },
-  backArrow: {
-    fontSize: 35,
-    color: colors.text,
-  },
-  // ✅ Real image styles
-  illustrationContainer: {
-    height: 160,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  illustrationImage: {
-    width: '100%',
-    height: 160,
-  },
-  welcomeContainer: {
-    marginTop: 24,
-    marginBottom: 24,
-  },
-  welcomeTitle: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    color: colors.text,
-  },
-  welcomeSubtitle: {
-    fontSize: 25,
-    fontWeight: 'bold',
-    color: colors.muted,
-  },
-  inputContainer: {
-    marginBottom: 12,
-  },
-input: {
-  borderWidth: 1,
-  borderColor: colors.border,
-  borderRadius: 12,
-  paddingHorizontal: 16,
-  paddingVertical: 14,
-  fontSize: 16,
-  backgroundColor: colors.surface,
-  color: colors.text,   // ADD THIS
-
-  },
-  inputError: {
-    borderColor: '#FF8A9A',
-  },
-  errorText: {
-    color: '#FF8A9A',
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 4,
-  },
-  globalError: {
-    color: '#FF8A9A',
-    fontSize: 12,
-    marginBottom: 8,
-  },
-  signInButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    height: 48,
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  signInButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  orText: {
-    textAlign: 'center',
-    color: colors.muted,
-    fontSize: 12,
-    marginVertical: 20,
-  },
-  signUpContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  signUpText: {
-    fontSize: 14,
-  },
-  signUpLink: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-});

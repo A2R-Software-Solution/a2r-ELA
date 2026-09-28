@@ -1,3 +1,4 @@
+import { appEnv } from '../config/env.generated';
 /**
  * File Models
  * Type definitions for file upload and management
@@ -58,8 +59,8 @@ export interface FileValidationResult {
  * File upload configuration
  */
 export const FILE_UPLOAD_CONFIG = {
-  MAX_FILE_SIZE: 100 * 1024, // 100KB in bytes
-  MAX_FILES_COUNT: 2,
+  MAX_FILE_SIZE: appEnv.MAX_FILE_SIZE, // 100KB in bytes
+  MAX_FILES_COUNT: appEnv.MAX_FILES_COUNT,
   ALLOWED_TYPES: [FileType.PDF],
   ALLOWED_EXTENSIONS: ['.pdf'],
 } as const;

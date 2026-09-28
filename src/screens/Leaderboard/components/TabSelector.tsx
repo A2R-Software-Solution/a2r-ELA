@@ -1,3 +1,4 @@
+import { styles } from './TabSelector.styles';
 /**
  * TabSelector Component
  * Grade / State toggle tab for the Leaderboard screen.
@@ -5,12 +6,7 @@
  */
 
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { LeaderboardTab } from '../../../models/LeaderboardModels';
 
 // --------------------------------------------------------------------------
@@ -78,55 +74,5 @@ const TabSelector: React.FC<TabSelectorProps> = ({
     </View>
   );
 };
-
-// --------------------------------------------------------------------------
-// STYLES
-// --------------------------------------------------------------------------
-
-const PURPLE = '#6C63FF';
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection:    'row',
-    backgroundColor:  '#F8F8FC',
-    borderRadius:     16,
-    marginHorizontal: 16,
-    marginTop:        16,
-    marginBottom:     8,
-    padding:          6,
-  },
-  tab: {
-    flex:            1,
-    paddingVertical: 10,
-    alignItems:      'center',
-    borderRadius:    10,
-    position:        'relative',
-  },
-  activeTab: {
-    backgroundColor: '#FFFFFF',
-    shadowColor:     PURPLE,
-    shadowOffset:    { width: 0, height: 4 },
-    shadowOpacity:   0.15,
-    shadowRadius:    8,
-    elevation:       4,
-  },
-  tabText: {
-    fontSize:   15,
-    fontWeight: '500',
-    color:      '#9E9E9E',
-  },
-  activeTabText: {
-    color:      PURPLE,
-    fontWeight: '800',
-  },
-  activeIndicator: {
-    position:        'absolute',
-    bottom:          4,
-    width:           32,
-    height:          4,
-    borderRadius:    999,
-    backgroundColor: PURPLE,
-  },
-});
 
 export default TabSelector;

@@ -1,3 +1,4 @@
+import { validateEmail, validateNewPassword as validatePassword, validateConfirmPassword } from '../../../utils/validation';
 /**
  * useSignUp Hook
  * Sign Up logic (ViewModel equivalent)
@@ -23,6 +24,7 @@ export const useSignUp = () => {
       ...prev,
       password: value,
       passwordError: validatePassword(value),
+      confirmPasswordError: prev.confirmPassword ? validateConfirmPassword(value, prev.confirmPassword) : prev.confirmPasswordError,
     }));
   }, []);
 
@@ -62,7 +64,7 @@ export const useSignUp = () => {
 
     try {
       const result = await firebaseAuthRepository.signUp(
-        uiState.email,
+        uiState.email.trim(),
         uiState.password
       );
 
@@ -97,37 +99,3 @@ export const useSignUp = () => {
   };
 };
 
-// Validation functions
-const validateEmail = (value: string): string | null => {
-  if (!value.trim()) return 'Email is required';
-  
-  if (!value.includes('@')) {
-    return 'Please enter your email address';
-  }
-  
-  // Simple email regex validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(value)) {
-    return 'Invalid email format';
-  }
-  
-  return null;
-};
-
-const validatePassword = (value: string): string | null => {
-  if (!value.trim()) return 'Password is required';
-  if (value.length < 6) return 'Password must be at least 6 characters';
-  
-  // Optional: Add stronger validation (commented out as in Kotlin)
-  // if (!/[A-Z]/.test(value)) return 'Must contain an uppercase letter';
-  // if (!/[a-z]/.test(value)) return 'Must contain a lowercase letter';
-  // if (!/[0-9]/.test(value)) return 'Must contain a number';
-  
-  return null;
-};
-
-const validateConfirmPassword = (password: string, confirmPassword: string): string | null => {
-  if (!confirmPassword.trim()) return 'Please confirm your password';
-  if (password !== confirmPassword) return 'Passwords do not match';
-  return null;
-};

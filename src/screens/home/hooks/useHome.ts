@@ -89,11 +89,7 @@ export const useHome = () => {
   }, []);
 
   // ✅ Load data on mount — AFTER all functions declared
-  useEffect(() => {
-    loadHomeData();
-    loadGamification();
-    loadRecentEssays();
-  }, []);
+
 
   // ✅ Handle feature click
   const onFeaturePress = useCallback((featureId: string, navigation: any) => {
@@ -166,6 +162,12 @@ export const useHome = () => {
   }, []);
 
   // ✅ Return
+  useEffect(() => {
+    loadHomeData();
+    loadGamification();
+    loadRecentEssays();
+  }, [loadHomeData, loadGamification, loadRecentEssays]);
+
   return {
     uiState,
     onTabSelected,

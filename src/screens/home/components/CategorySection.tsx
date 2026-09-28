@@ -1,10 +1,11 @@
+import { styles } from './CategorySection.styles';
 /**
  * Category Section Component
  * Displays horizontal scrollable category chips
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { CategoryUiModel } from '../../../models/ui/CategoryUiModel';
 
 interface CategorySectionProps {
@@ -57,52 +58,5 @@ const CategorySection: React.FC<CategorySectionProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000000',
-  },
-  seeAllText: {
-    fontSize: 14,
-    color: '#7D55FF',
-    fontWeight: '500',
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-  chip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#F5F5F5',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  chipSelected: {
-    backgroundColor: '#7D55FF',
-    borderColor: '#7D55FF',
-  },
-  chipText: {
-    fontSize: 14,
-    color: '#333333',
-    fontWeight: '500',
-  },
-  chipTextSelected: {
-    color: '#FFFFFF',
-  },
-});
 
 export default CategorySection;

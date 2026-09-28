@@ -2,6 +2,37 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+// Values are generated from root .env; no release passwords live in tracked Gradle files.
+providers.exec {
+    workingDir rootProject.projectDir.parentFile
+    commandLine "node", "scripts/env-config.cjs"
+}.result.get().assertNormalExitValue()
+def releaseSigning = new Properties()
+def signingFile = rootProject.file("signing.generated.properties")
+if (signingFile.exists()) {
+    signingFile.withInputStream { releaseSigning.load(it) }
+}
+gradle.taskGraph.whenReady { graph ->
+    if (graph.allTasks.any { it.project == project && it.name.toLowerCase().contains("release") }) {
+        ["STORE_FILE", "KEY_ALIAS", "STORE_PASSWORD", "KEY_PASSWORD"].each { key ->
+            if (!releaseSigning.getProperty("MYAPP_RELEASE_${key}")) {
+                throw new GradleException("Set BUILD_RELEASE_${key} in root .env and run npm run env:generate")
+            }
+        }
+    }
+}
+
+// Regenerate before native Firebase resources or a JS bundle are compiled.
+def generateEnvironment = tasks.register("generateEnvironment", Exec) {
+    workingDir rootProject.projectDir.parentFile
+    commandLine "node", "scripts/env-config.cjs"
+}
+tasks.configureEach { task ->
+    if (task.name == "preBuild" || task.name.endsWith("GoogleServices") || task.name.startsWith("createBundle")) {
+        task.dependsOn(generateEnvironment)
+    }
+}
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -93,10 +124,12 @@ android {
             keyPassword 'android'
         }
         release {
-            storeFile file(MYAPP_RELEASE_STORE_FILE)
-            storePassword MYAPP_RELEASE_STORE_PASSWORD
-            keyAlias MYAPP_RELEASE_KEY_ALIAS
-            keyPassword MYAPP_RELEASE_KEY_PASSWORD
+            if (releaseSigning.getProperty("MYAPP_RELEASE_STORE_FILE")) {
+                storeFile file(releaseSigning.getProperty("MYAPP_RELEASE_STORE_FILE"))
+            }
+            storePassword releaseSigning.getProperty("MYAPP_RELEASE_STORE_PASSWORD")
+            keyAlias releaseSigning.getProperty("MYAPP_RELEASE_KEY_ALIAS")
+            keyPassword releaseSigning.getProperty("MYAPP_RELEASE_KEY_PASSWORD")
         }
     }
     buildTypes {

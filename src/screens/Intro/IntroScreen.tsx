@@ -1,24 +1,14 @@
+import { styles } from './IntroScreen.styles';
 import ScreenBackground from '../../components/ScreenBackground';
-import { colors } from '../../theme/colors';
+
 /**
  * Intro Screen
  * Onboarding screens with swipe navigation
  */
 
 import React, { useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
-  FlatList,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-} from 'react-native';
+import { View, Text, useWindowDimensions, TouchableOpacity, FlatList, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import PreferencesManager from '../../utils/PreferencesManager';
-
-const { width } = Dimensions.get('window');
 
 interface IntroScreenProps {
   onGetStarted: () => void;
@@ -49,6 +39,7 @@ const INTRO_PAGES: IntroPage[] = [
 ];
 
 const IntroScreen: React.FC<IntroScreenProps> = ({ onGetStarted }) => {
+  const { width } = useWindowDimensions();
   const [currentPage, setCurrentPage] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
@@ -87,7 +78,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onGetStarted }) => {
   };
 
   const renderPage = ({ item }: { item: IntroPage }) => (
-    <View style={styles.page}>
+    <View style={[styles.page, { width }]}>
       <View style={styles.content}>
         {item.title && (
           <Text style={styles.title}>{item.title}</Text>
@@ -118,6 +109,9 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onGetStarted }) => {
     <View style={styles.container}>
       <ScreenBackground />
       <FlatList
+        key={width}
+        initialScrollIndex={currentPage}
+        getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
         ref={flatListRef}
         data={INTRO_PAGES}
         renderItem={renderPage}
@@ -170,72 +164,5 @@ const DotsIndicator: React.FC<DotsIndicatorProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.primary,
-  },
-  page: {
-    width,
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 42,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginTop: 8,
-  },
-  button: {
-    marginTop: 24,
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
-    backgroundColor: 'transparent',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#FFFFFF',
-  },
-  dotsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  dot: {
-    fontSize: 22,
-    color: '#FFFFFF',
-    marginHorizontal: 6,
-  },
-  debugControls: {
-    position: 'absolute',
-    bottom: 16,
-    left: 16,
-    right: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  debugText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-  },
-});
 
 export default IntroScreen;

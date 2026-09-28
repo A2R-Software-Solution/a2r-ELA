@@ -1,5 +1,6 @@
+import { styles } from './SplashScreen.styles';
 import ScreenBackground from '../../components/ScreenBackground';
-import { colors } from '../../theme/colors';
+
 /**
  * Splash Screen
  * Initial loading screen that determines navigation route
@@ -7,7 +8,7 @@ import { colors } from '../../theme/colors';
  * ✅ FIXED: Waits for Firebase Auth to be ready before checking login state
  */
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import PreferencesManager from '../../utils/PreferencesManager';
 import firebaseAuthRepository from '../../auth/FirebaseAuthRepository';
 
@@ -58,19 +59,5 @@ const SplashScreen: React.FC<SplashScreenProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-});
 
 export default SplashScreen;

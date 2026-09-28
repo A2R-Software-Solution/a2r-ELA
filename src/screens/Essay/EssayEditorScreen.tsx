@@ -1,18 +1,12 @@
+import ScreenBackground from '../../components/ScreenBackground';
+import { getWritingPadLayout, styles, PRIMARY, WHITE, TEXT_GRAY } from './EssayEditorScreen.styles';
 /**
  * Essay Editor Screen
  * ✅ Redesigned with new UI matching design system
  */
 
 import React, { useEffect } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  Modal,
-  Alert,
-} from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, Modal, Alert, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEssayEditor } from './hooks/useEssayEditor';
 import EssayWritingPad from './components/EssayWritingPad';
@@ -36,13 +30,6 @@ interface EssayEditorScreenProps {
 // CONSTANTS
 // ============================================================================
 
-const PRIMARY   = '#6C4DFF';
-const BG        = '#F8FAFC';
-const WHITE     = '#FFFFFF';
-const BORDER    = '#E2E8F0';
-const TEXT_DARK = '#0F172A';
-const TEXT_MID  = '#475569';
-const TEXT_GRAY = '#94A3B8';
 const GREEN     = '#22C55E';
 
 // ============================================================================
@@ -53,6 +40,7 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
   onBackClick,
   onPlayNow,
 }) => {
+  const { width } = useWindowDimensions();
   const {
     uiState,
     updateEssayText,
@@ -116,6 +104,7 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
 
   return (
     <View style={styles.container}>
+      <ScreenBackground />
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
@@ -183,7 +172,7 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
       )}
 
       {/* ── Writing Pad ─────────────────────────────────────────────────────── */}
-      <View style={styles.writingPadWrap}>
+      <View style={[styles.writingPadWrap, getWritingPadLayout(width)]}>
         <EssayWritingPad
           text={uiState.essayText}
           onTextChange={updateEssayText}
@@ -343,280 +332,5 @@ const EssayEditorScreen: React.FC<EssayEditorScreenProps> = ({
     </View>
   );
 };
-
-// ============================================================================
-// STYLES
-// ============================================================================
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: BG,
-  },
-
-  // Header
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    backgroundColor: WHITE,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-  },
-  headerBtn: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerBtnIcon: {
-    fontSize: 22,
-    color: TEXT_DARK,
-  },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: TEXT_DARK,
-  },
-  helpText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: PRIMARY,
-  },
-
-  // Meta row
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: WHITE,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-  },
-  categoryPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EDE9FF',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    gap: 6,
-  },
-  categoryText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: PRIMARY,
-  },
-  categoryChevron: {
-    fontSize: 10,
-    color: PRIMARY,
-  },
-  wordCountWrap: {
-    alignItems: 'flex-end',
-  },
-  wordCountLabel: {
-    fontSize: 11,
-    color: TEXT_GRAY,
-    fontWeight: '500',
-  },
-  wordCountValue: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-
-  // File preview
-  filePreviewContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    backgroundColor: WHITE,
-    gap: 4,
-  },
-
-  // Writing pad
-  writingPadWrap: {
-    flex: 1,
-    marginHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 4,
-    backgroundColor: WHITE,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: BORDER,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-
-  // Warning
-  warningRow: {
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-  },
-  warningText: {
-    fontSize: 12,
-    color: '#EF4444',
-    fontWeight: '500',
-  },
-
-  // Toolbar
-  toolbar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    backgroundColor: WHITE,
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-    gap: 10,
-  },
-  toolbarAttachBtn: {
-    flex: 0,
-  },
-  submitBtn: {
-    flex: 1,
-    backgroundColor: PRIMARY,
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: PRIMARY,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  submitBtnDisabled: {
-    backgroundColor: '#C4B5FD',
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  submitBtnText: {
-    color: WHITE,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-
-  // Info modal
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  infoCard: {
-    width: '90%',
-    backgroundColor: WHITE,
-    borderRadius: 20,
-    padding: 24,
-    alignItems: 'center',
-  },
-  infoTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: TEXT_DARK,
-    marginBottom: 12,
-  },
-  infoDesc: {
-    fontSize: 14,
-    textAlign: 'center',
-    color: TEXT_MID,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  rubricList: {
-    alignSelf: 'stretch',
-    marginVertical: 12,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    padding: 12,
-  },
-  rubricHeader: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: TEXT_DARK,
-    marginBottom: 8,
-  },
-  rubricItem: {
-    fontSize: 13,
-    color: TEXT_MID,
-    marginVertical: 3,
-  },
-  wordLimitText: {
-    fontSize: 13,
-    color: PRIMARY,
-    fontWeight: '700',
-    marginVertical: 8,
-  },
-  startBtn: {
-    backgroundColor: PRIMARY,
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 14,
-    width: '100%',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  startBtnText: {
-    color: WHITE,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-
-  // Error modal
-  errorCard: {
-    width: '80%',
-    backgroundColor: WHITE,
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-  },
-  errorIcon: { fontSize: 48, marginBottom: 16 },
-  errorTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: TEXT_DARK,
-    marginBottom: 8,
-  },
-  errorMessage: {
-    fontSize: 14,
-    textAlign: 'center',
-    color: TEXT_MID,
-    marginBottom: 24,
-    lineHeight: 20,
-  },
-  errorBtns: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  retryBtn: {
-    backgroundColor: PRIMARY,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 10,
-  },
-  retryBtnText: {
-    color: WHITE,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  cancelBtn: {
-    backgroundColor: '#F1F5F9',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 10,
-  },
-  cancelBtnText: {
-    color: TEXT_MID,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
 
 export default EssayEditorScreen;

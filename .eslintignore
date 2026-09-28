@@ -1,0 +1,5 @@
+backend/functions/venv/
+backend/functions/.venv/
+android/build/
+android/app/build/
+ios/build/

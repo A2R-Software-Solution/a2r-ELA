@@ -1,3 +1,4 @@
+import { appEnv } from '../config/env.generated';
 /**
  * API Client
  * Axios instance with interceptors (Retrofit equivalent)
@@ -38,7 +39,7 @@ const createApiClient = (): AxiosInstance => {
   );
 
   // Enable request/response logging in development
-  if (__DEV__) {
+  if (__DEV__ && appEnv.API_LOGGING) {
     client.interceptors.request.use((config) => {
       console.log('🚀 Request:', {
         method: config.method?.toUpperCase(),

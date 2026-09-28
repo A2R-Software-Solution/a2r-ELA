@@ -1,3 +1,4 @@
+import { styles } from './ExamProgressCard.styles';
 /**
  * ExamProgressCard Component
  * Card showing the exam title and circular progress ring.
@@ -5,25 +6,13 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
-  Easing,
-} from 'react-native';
+import { View, Text, Animated, Easing } from 'react-native';
 import ProgressRing from './ProgressRing';
 
 interface ExamProgressCardProps {
   examTitle:      string;
   overallPercent: number;
 }
-
-const PURPLE_BORDER   = '#6C4DFF';
-const PURPLE_BRIGHT   = '#A78BFA';
-const PURPLE_BADGE_BG = 'rgba(108, 77, 255, 0.18)';
-const TEXT_PRIMARY    = '#FFFFFF';
-const TEXT_MUTED      = '#C4B5FD';
 
 // Three matte dark bg shades that cycle (A + B + C)
 const BG_A = '#0D0D0D';
@@ -83,7 +72,7 @@ const ExamProgressCard: React.FC<ExamProgressCardProps> = ({
         }),
       ])
     ).start();
-  }, []);
+  }, [bgAnim, glowAnim]);
 
   // Border colour fades from dim purple → vivid purple
   const animatedBorderColor = glowAnim.interpolate({
@@ -150,67 +139,5 @@ const ExamProgressCard: React.FC<ExamProgressCardProps> = ({
     </Animated.View>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    flexDirection:    'row',
-    alignItems:       'center',
-    marginHorizontal: 16,
-    marginTop:        16,
-    marginBottom:     8,
-    borderRadius:     20,
-    padding:          20,
-    borderWidth:      1.5,
-    overflow:         'hidden',
-    shadowColor:      PURPLE_BORDER,
-    shadowOffset:     { width: 0, height: 0 },
-  },
-  topHighlight: {
-    position:        'absolute',
-    top:             0,
-    left:            24,
-    right:           24,
-    height:          1,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius:    999,
-  },
-  leftContent: {
-    flex:         1,
-    paddingRight: 16,
-  },
-  badge: {
-    alignSelf:         'flex-start',
-    backgroundColor:   PURPLE_BADGE_BG,
-    paddingHorizontal: 10,
-    paddingVertical:   4,
-    borderRadius:      999,
-    marginBottom:      10,
-    borderWidth:       1,
-    borderColor:       'rgba(167,139,250,0.30)',
-  },
-  badgeText: {
-    fontSize:      11,
-    fontWeight:    '600',
-    color:         PURPLE_BRIGHT,
-    letterSpacing: 0.4,
-  },
-  examTitle: {
-    fontSize:     16,
-    fontWeight:   '700',
-    color:        TEXT_PRIMARY,
-    lineHeight:   22,
-    marginBottom: 8,
-  },
-  percentLabel: {
-    fontSize:      13,
-    fontWeight:    '600',
-    color:         TEXT_MUTED,
-    letterSpacing: 0.2,
-  },
-  ringContainer: {
-    alignItems:     'center',
-    justifyContent: 'center',
-  },
-});
 
 export default ExamProgressCard;

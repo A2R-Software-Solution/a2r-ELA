@@ -1,3 +1,4 @@
+import { styles } from './RecentActivity.styles';
 /**
  * Recent Activity Component
  * Shows recent essay submissions on the HOME tab
@@ -7,12 +8,7 @@
  */
 
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { RecentEssayUiItem } from '../../../models/ui/ProfileUiModel';
 
 interface RecentActivityProps {
@@ -102,7 +98,7 @@ interface ScoreChipProps {
   color: string;
 }
 
-const ScoreChip: React.FC<ScoreChipProps> = ({ score, letterGrade, color }) => {
+const ScoreChip: React.FC<ScoreChipProps> = ({ score, color }) => {
   const isGood = score >= 70;
   return (
     <View style={styles.chipWrap}>
@@ -128,144 +124,6 @@ const EmptyState: React.FC = () => (
   </View>
 );
 
-// ── Styles ────────────────────────────────────────────────────────────────────
-
-const PURPLE         = '#7D55FF';
-const PURPLE_SURFACE = 'rgba(125, 85, 255, 0.10)';
-const PURPLE_BORDER  = 'rgba(125, 85, 255, 0.28)';
-const ICON_BUBBLE_BG = 'rgba(125, 85, 255, 0.18)';
-const ROW_BORDER     = 'rgba(255, 255, 255, 0.06)';
-const TEXT_PRIMARY   = '#F5F3FF';
-const TEXT_MUTED     = 'rgba(245, 243, 255, 0.45)';
-const GREEN          = '#4ADE80'; // ← brightened for visibility on dark bg
-
-const styles = StyleSheet.create({
-  container: {
-    marginHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 8,
-    backgroundColor: PURPLE_SURFACE, // ← was '#FFFFFF'
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: PURPLE_BORDER, // ← was '#E2E8F0'
-    overflow: 'hidden',
-    // Shadow
-    shadowColor: PURPLE,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-
-  // Header
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: TEXT_PRIMARY, // ← was '#0F172A'
-  },
-  seeAll: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: PURPLE, // ← was '#6C4DFF'
-  },
-
-  // List
-  list: {
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-  },
-
-  // Row
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  rowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: ROW_BORDER, // ← was '#F1F5F9'
-  },
-
-  // Icon bubble
-  iconBubble: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: ICON_BUBBLE_BG, // ← was '#EDE9FF'
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  rowIcon: {
-    fontSize: 18,
-  },
-
-  // Mid text
-  rowMid: {
-    flex: 1,
-    marginRight: 8,
-  },
-  rowTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: TEXT_PRIMARY, // ← was '#0F172A'
-    marginBottom: 3,
-  },
-  rowTime: {
-    fontSize: 12,
-    color: TEXT_MUTED, // ← was '#94A3B8'
-  },
-
-  // Score chip
-  chipWrap: {
-    alignItems: 'flex-end',
-    gap: 4,
-  },
-  chip: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 10,
-  },
-  chipScore: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  chipLabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: GREEN, // ← was '#22C55E'
-  },
-
-  // Empty state
-  emptyContainer: {
-    alignItems: 'center',
-    paddingVertical: 28,
-    paddingHorizontal: 24,
-  },
-  emptyIcon: {
-    fontSize: 32,
-    marginBottom: 10,
-  },
-  emptyTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: TEXT_PRIMARY, // ← was '#0F172A'
-    marginBottom: 4,
-  },
-  emptySubtitle: {
-    fontSize: 12,
-    color: TEXT_MUTED, // ← was '#94A3B8'
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-});
+ // ← brightened for visibility on dark bg
 
 export default RecentActivity;

@@ -1,5 +1,6 @@
+import { styles } from './SignUpScreen.styles';
 import ScreenBackground from '../../components/ScreenBackground';
-import { colors } from '../../theme/colors';
+
 /**
  * Sign Up Screen
  * User registration screen with email/password
@@ -11,18 +12,7 @@ import { colors } from '../../theme/colors';
  */
 
 import React, { useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Image,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSignUp } from './hooks/useSignUp';
 
@@ -67,12 +57,13 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({
         {/* Illustration */}
         <View style={styles.illustrationContainer}>
           <Image
-            source={require('../../assets/images/signup.png')}
+            source={require('../../assets/images/signup-transparent.png')}
             style={styles.illustrationImage}
             resizeMode="contain"
           />
         </View>
 
+        <View style={styles.formCard}>
         {/* Title — matches SignIn font sizes */}
         <View style={styles.titleContainer}>
           <Text style={styles.title}>Create Account</Text>
@@ -166,117 +157,11 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({
             <Text style={styles.signInLink}>Sign In</Text>
           </TouchableOpacity>
         </View>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 };
 
-interface SocialAuthButtonProps {
-  text: string;
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.surface,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  illustrationContainer: {
-    height: 160,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  illustrationImage: {
-    width: '100%',
-    height: 160,
-  },
-  titleContainer: {
-    marginTop: 16,
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    color: colors.text,
-  },
-  subtitle: {
-    fontSize: 25,
-    fontWeight: 'bold',
-    color: colors.muted,
-    marginTop: 4,
-  },
-  inputContainer: {
-    marginBottom: 12,
-  },
-  input: {
-  borderWidth: 1,
-  borderColor: colors.border,
-  borderRadius: 12,
-  paddingHorizontal: 16,
-  paddingVertical: 14,
-  fontSize: 16,
-  backgroundColor: colors.surface,
-  color: colors.text,   // ADD THIS
-},
-  
-  inputError: {
-    borderColor: '#FF8A9A',
-  },
-  errorText: {
-    color: '#FF8A9A',
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 4,
-  },
-  globalError: {
-    color: '#FF8A9A',
-    fontSize: 12,
-    marginBottom: 8,
-  },
-  signUpButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 48,
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  signUpButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  orText: {
-    textAlign: 'center',
-    color: colors.muted,
-    fontSize: 12,
-    marginVertical: 20,
-  },
-  
-  signInContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  signInText: {
-    color: colors.text,
-    fontSize: 14,
-  },
-  signInLink: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-});
 
 export default SignUpScreen;

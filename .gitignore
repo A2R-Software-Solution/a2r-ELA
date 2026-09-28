@@ -8,6 +8,13 @@ Desktop.ini
 .env
 .env.*
 !.env.example
+/src/config/env.generated.ts
+# Firebase registration files are generated from root .env.
+/android/app/google-services.json
+/ios/GoogleService-Info.plist
+/ios/NovelBound/GoogleService-Info.plist
+/backend/.firebaserc
+/android/signing.generated.properties
 
 # Python environments, bytecode, and test caches
 venv/

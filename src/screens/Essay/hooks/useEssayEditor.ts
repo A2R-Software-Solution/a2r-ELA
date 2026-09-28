@@ -1,3 +1,4 @@
+import { appEnv } from '../../../config/env.generated';
 /**
  * useEssayEditor Hook
  * Essay editor logic with backend integration, file upload support,
@@ -58,10 +59,7 @@ export interface UseEssayEditorReturn {
 export const useEssayEditor = (): UseEssayEditorReturn => {
   const [uiState, setUiState] = useState<EssayUiState>(initialEssayUiState);
 
-  useEffect(() => {
-    loadStreak();
-    loadPreferences();
-  }, []);
+
 
   // --------------------------------------------------------------------------
   // PREFERENCES
@@ -159,21 +157,16 @@ export const useEssayEditor = (): UseEssayEditorReturn => {
   }, []);
 
   const updateCategory = useCallback((category: EssayCategory) => {
-    let minWords = 50;
-    let maxWords = 500;
-
-    switch (category) {
-      case EssayCategory.ESSAY_WRITING: minWords = 50;  maxWords = 500; break;
-      case EssayCategory.ELA:           minWords = 50;  maxWords = 400; break;
-      case EssayCategory.MATH:          minWords = 30;  maxWords = 300; break;
-      case EssayCategory.SCIENCE:       minWords = 50;  maxWords = 450; break;
-    }
+    const { min: minWords, max: maxWords } = appEnv.ESSAY_CATEGORIES[category];
 
     setUiState(prev => ({
       ...prev,
       selectedCategory: category,
       minWords,
       maxWords,
+      isWordCountValid: prev.wordCount >= minWords && prev.wordCount <= maxWords,
+      canSubmit: !prev.isEssayEmpty && !prev.isSubmitting && prev.wordCount >= minWords && prev.wordCount <= maxWords,
+      wordCountProgress: Math.min(prev.wordCount / maxWords, 1),
       wordCountText: `${prev.wordCount}/${maxWords}`,
     }));
   }, []);
@@ -242,7 +235,7 @@ export const useEssayEditor = (): UseEssayEditorReturn => {
           // Streak
           currentStreak: data.progress?.current_streak ?? prev.currentStreak,
           maxStreak:     data.progress?.max_streak     ?? prev.maxStreak,
-          streakText:    `${data.progress?.current_streak ?? prev.currentStreak}/365`,
+          streakText:    `${data.progress?.current_streak ?? prev.currentStreak}/${appEnv.MAX_STREAK_DAYS}`,
 
           // ── Gamification (Phase 2 + 3) ──────────────────────────────────
           rewards:        data.rewards        ?? null,   // ← new: XP + badges
@@ -259,7 +252,7 @@ export const useEssayEditor = (): UseEssayEditorReturn => {
           isEssayEmpty:       true,
           isWordCountValid:   false,
           canSubmit:          false,
-          wordCountText:      '0/500',
+          wordCountText:      `0/${prev.maxWords}`,
           wordCountProgress:  0,
         }));
 
@@ -308,7 +301,7 @@ export const useEssayEditor = (): UseEssayEditorReturn => {
           currentStreak:   result.data.current_streak,
           maxStreak:       result.data.max_streak,
           isLoadingStreak: false,
-          streakText:      `${result.data.current_streak}/365`,
+          streakText:      `${result.data.current_streak}/${appEnv.MAX_STREAK_DAYS}`,
         }));
       } else {
         setUiState(prev => ({ ...prev, isLoadingStreak: false }));
@@ -433,7 +426,7 @@ export const useEssayEditor = (): UseEssayEditorReturn => {
             fileUploadError:  errorMessage,
           }));
         }
-      } catch (error) {
+      } catch {
         const failedFile = FileRepository.updateFileStatus(
           fileInfo, FileUploadStatus.FAILED, 'An error occurred while processing the file',
         );
@@ -489,6 +482,11 @@ export const useEssayEditor = (): UseEssayEditorReturn => {
   // --------------------------------------------------------------------------
   // RETURN
   // --------------------------------------------------------------------------
+
+  useEffect(() => {
+    loadStreak();
+    loadPreferences();
+  }, [loadStreak, loadPreferences]);
 
   return {
     uiState,

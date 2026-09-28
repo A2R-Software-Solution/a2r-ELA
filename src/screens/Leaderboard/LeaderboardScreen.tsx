@@ -1,3 +1,5 @@
+import ScreenBackground from '../../components/ScreenBackground';
+import { styles, PURPLE_SOFT, BASE_BG } from './LeaderboardScreen.styles';
 /**
  * Leaderboard Screen
  * Displays the top 10 leaderboard filtered by Grade or State.
@@ -8,17 +10,7 @@
  */
 
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-  ActivityIndicator,
-  TouchableOpacity,
-  SafeAreaView,
-  StatusBar,
-} from 'react-native';
+import { View, Text, ScrollView, RefreshControl, ActivityIndicator, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
 import TabSelector from './components/TabSelector';
 import TopThreeCard from './components/TopThreeCard';
 import LeaderboardRow from './components/LeaderboardRow';
@@ -36,9 +28,9 @@ interface LeaderboardScreenProps {
 // CONSTANTS — matched to HomeScreen palette
 // --------------------------------------------------------------------------
 
-const PURPLE = '#7C5CFC';        // primary accent (matches HomeScreen retry button / icons)
-const PURPLE_SOFT = '#A78BFA';   // secondary accent (matches HomeScreen placeholder text)
-const BASE_BG = '#07050E';       // deepest base — near black with purple tint
+        // primary accent (matches HomeScreen retry button / icons)
+   // secondary accent (matches HomeScreen placeholder text)
+       // deepest base — near black with purple tint
 
 // --------------------------------------------------------------------------
 // COMPONENT
@@ -195,10 +187,7 @@ const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({
   return (
     <View style={styles.root}>
       {/* ── Background color layers (matches HomeScreen C palette) ── */}
-      <View style={styles.bgBase} />
-      <View style={styles.bgOrangeRed} />
-      <View style={styles.bgEmerald} />
-      <View style={styles.bgPurple} />
+      <ScreenBackground />
 
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="light-content" backgroundColor={BASE_BG} />
@@ -249,223 +238,5 @@ const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({
     </View>
   );
 };
-
-// --------------------------------------------------------------------------
-// STYLES
-// --------------------------------------------------------------------------
-
-const styles = StyleSheet.create({
-  // ── Root + background layers ─────────────────────────────────────────
-  root: {
-    flex: 1,
-  },
-  safeArea: {
-    flex:            1,
-    backgroundColor: 'transparent',
-  },
-
-  bgBase: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: BASE_BG,
-  },
-  bgOrangeRed: {
-    position:        'absolute',
-    bottom:          -120,
-    left:            -80,
-    width:           320,
-    height:          320,
-    borderRadius:    160,
-    backgroundColor: '#D93A00',
-    opacity:         0.38,
-  },
-  bgEmerald: {
-    position:        'absolute',
-    bottom:          -100,
-    right:           -60,
-    width:           280,
-    height:          280,
-    borderRadius:    140,
-    backgroundColor: '#005C25',
-    opacity:         0.42,
-  },
-  bgPurple: {
-    position:        'absolute',
-    top:             -100,
-    left:            '25%',
-    width:           300,
-    height:          300,
-    borderRadius:    150,
-    backgroundColor: '#4A007A',
-    opacity:         0.45,
-  },
-
-  // Header
-  header: {
-    flexDirection:     'row',
-    alignItems:        'center',
-    paddingHorizontal: 16,
-    paddingVertical:   12,
-    backgroundColor:   'transparent',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
-  },
-  backButton: {
-    width:           36,
-    height:          36,
-    borderRadius:    10,
-    backgroundColor: 'rgba(124,92,252,0.18)',
-    justifyContent:  'center',
-    alignItems:      'center',
-    marginRight:     12,
-  },
-  backIcon: {
-    fontSize:   18,
-    color:      PURPLE_SOFT,
-    fontWeight: '700',
-  },
-  headerTitleContainer: {
-    flex: 1,
-  },
-  headerTitle: {
-    fontSize:   20,
-    fontWeight: '700',
-    color:      '#FFFFFF',
-  },
-  headerSubtitle: {
-    fontSize:  12,
-    color:     'rgba(255,255,255,0.55)',
-    marginTop: 1,
-  },
-  trophyIcon: {
-    fontSize: 28,
-  },
-
-  // Hero Card
-  heroCard: {
-    marginHorizontal: 16,
-    marginTop:        8,
-    padding:          18,
-    borderRadius:     20,
-    backgroundColor:  'rgba(124,92,252,0.22)',
-    borderWidth:      1,
-    borderColor:      'rgba(167,139,250,0.3)',
-  },
-  heroHeader: {
-    marginBottom: 16,
-  },
-  heroTitle: {
-    fontSize:   20,
-    fontWeight: '700',
-    color:      '#FFFFFF',
-  },
-  heroSubtitle: {
-    color:     'rgba(255,255,255,0.7)',
-    marginTop: 4,
-  },
-  heroStatsRow: {
-    flexDirection: 'row',
-  },
-  heroStat: {
-    flex:       1,
-    alignItems: 'center',
-  },
-  heroValue: {
-    color:      '#FFFFFF',
-    fontWeight: '700',
-    fontSize:   16,
-  },
-  heroLabel: {
-    color:     'rgba(255,255,255,0.6)',
-    fontSize:  11,
-    marginTop: 4,
-  },
-  heroDivider: {
-    width:           1,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-  },
-
-  // Podium
-  podiumContainer: {
-    marginTop:    20,
-    marginBottom: 12,
-  },
-
-  // List
-  listDivider: {
-    height:           1,
-    backgroundColor:  'rgba(255,255,255,0.08)',
-    marginHorizontal: 16,
-    marginTop:        16,
-    marginBottom:     8,
-  },
-  listContainer: {
-    paddingTop: 4,
-  },
-  sectionTitle: {
-    fontSize:         18,
-    fontWeight:       '700',
-    color:            '#FFFFFF',
-    marginHorizontal: 16,
-    marginBottom:     8,
-  },
-
-  // Scroll content
-  scrollContent: {
-    backgroundColor: 'transparent',
-  },
-
-  // Centered states
-  centeredContainer: {
-    flex:              1,
-    justifyContent:    'center',
-    alignItems:        'center',
-    paddingHorizontal: 32,
-    paddingTop:        60,
-    backgroundColor:   'transparent',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize:  14,
-    color:     'rgba(255,255,255,0.55)',
-  },
-  errorEmoji: {
-    fontSize:     48,
-    marginBottom: 12,
-  },
-  errorText: {
-    fontSize:     14,
-    color:        'rgba(255,255,255,0.55)',
-    textAlign:    'center',
-    marginBottom: 16,
-    lineHeight:   20,
-  },
-  emptyText: {
-    fontSize:     18,
-    fontWeight:   '700',
-    color:        '#FFFFFF',
-    marginBottom: 8,
-  },
-  emptySubText: {
-    fontSize:  13,
-    color:     'rgba(255,255,255,0.55)',
-    textAlign: 'center',
-  },
-  retryButton: {
-    backgroundColor:   PURPLE,
-    paddingHorizontal: 24,
-    paddingVertical:   10,
-    borderRadius:      10,
-  },
-  retryText: {
-    color:      '#FFFFFF',
-    fontWeight: '700',
-    fontSize:   14,
-  },
-
-  // Bottom padding
-  bottomPadding: {
-    height: 32,
-  },
-});
 
 export default LeaderboardScreen;

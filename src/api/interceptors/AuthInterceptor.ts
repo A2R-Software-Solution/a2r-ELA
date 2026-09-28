@@ -6,7 +6,7 @@
  */
 
 import auth from '@react-native-firebase/auth';
-import { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
+import { InternalAxiosRequestConfig } from 'axios';
 
 /**
  * Request interceptor to add Firebase ID token
@@ -14,6 +14,10 @@ import { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 export const authRequestInterceptor = async (
   config: InternalAxiosRequestConfig
 ): Promise<InternalAxiosRequestConfig> => {
+  // Retain the same key when Axios retries this request configuration.
+  if (config.method?.toLowerCase() === 'post' && !config.headers['Idempotency-Key']) {
+    config.headers['Idempotency-Key'] = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
   try {
     // Get current Firebase user
     const currentUser = auth().currentUser;

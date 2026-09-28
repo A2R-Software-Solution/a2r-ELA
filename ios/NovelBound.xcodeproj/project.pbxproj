@@ -112,6 +112,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "NovelBound" */;
 			buildPhases = (
+				EA0000000000000000000001 /* Generate environment configuration */,
 				ED34C76EE31308F5EA24ED93 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
@@ -176,6 +177,19 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		EA0000000000000000000001 /* Generate environment configuration */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = ();
+			inputPaths = ();
+			name = "Generate environment configuration";
+			outputPaths = ();
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n[ ! -f \"$SRCROOT/.xcode.env\" ] || . \"$SRCROOT/.xcode.env\"\n[ ! -f \"$SRCROOT/.xcode.env.local\" ] || . \"$SRCROOT/.xcode.env.local\"\n\"${NODE_BINARY:-node}\" \"$SRCROOT/../scripts/env-config.cjs\"\n";
+			showEnvVarsInLog = 0;
+		};
 		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;

@@ -1,3 +1,5 @@
+import ScreenBackground from '../../components/ScreenBackground';
+import { styles } from './PlaygroundScreen.styles';
 /**
  * Playground Screen
  * ✅ Redesigned with new UI matching design system
@@ -5,14 +7,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Modal,
-} from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GameId, GameResult, GameRewards } from '../../models/GameModels';
 import BugCatcherGame from './BugCatcherGame';
@@ -27,15 +22,8 @@ import useGame from '../../hooks/useGame';
 // CONSTANTS — C palette (matches HomeScreen exactly)
 // ============================================================================
 
-const BASE_BG     = '#07050E'; // deepest base — near black with purple tint
-const PRIMARY     = '#7C5CFC'; // violet accent
-const WHITE       = '#FFFFFF';
-const TEXT_LIGHT  = '#FFFFFF';
-const TEXT_MUTED  = 'rgba(255,255,255,0.6)';
-const TEXT_SUBTLE = 'rgba(255,255,255,0.35)';
-const CARD_BG     = 'rgba(255,255,255,0.07)';
-const CARD_BORDER = 'rgba(255,255,255,0.10)';
-const ORANGE      = '#F97316';
+ // deepest base — near black with purple tint
+ // violet accent
 
 // ============================================================================
 // GAME DATA
@@ -264,10 +252,7 @@ const PlaygroundScreen: React.FC = () => {
     <View style={styles.wrapper}>
 
       {/* ── Background color layers (C palette) ── */}
-      <View style={styles.bgBase} />
-      <View style={styles.bgOrangeRed} />
-      <View style={styles.bgEmerald} />
-      <View style={styles.bgPurple} />
+      <ScreenBackground />
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
@@ -338,7 +323,7 @@ const PlaygroundScreen: React.FC = () => {
           </View>
         </View>
 
-        <View style={{ height: 20 }} />
+        <View style={styles.viewHeight} />
       </ScrollView>
 
       {/* Reward dialogs */}
@@ -414,351 +399,5 @@ const GameListRow: React.FC<GameListRowProps> = ({
     </View>
   </TouchableOpacity>
 );
-
-// ============================================================================
-// STYLES
-// ============================================================================
-
-const styles = StyleSheet.create({
-
-  // ── Root wrapper ────────────────────────────────────────────────────────
-  wrapper: {
-    flex:            1,
-    backgroundColor: BASE_BG,
-  },
-
-  // ── Background layers (C palette: red-orange + emerald + deep purple) ───
-  bgBase: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: BASE_BG,
-  },
-
-  // Red-orange bloom — bottom-left corner
-  bgOrangeRed: {
-    position:        'absolute',
-    bottom:          -120,
-    left:            -80,
-    width:           320,
-    height:          320,
-    borderRadius:    160,
-    backgroundColor: '#D93A00',
-    opacity:         0.38,
-  },
-
-  // Emerald bloom — bottom-right corner
-  bgEmerald: {
-    position:        'absolute',
-    bottom:          -100,
-    right:           -60,
-    width:           280,
-    height:          280,
-    borderRadius:    140,
-    backgroundColor: '#005C25',
-    opacity:         0.42,
-  },
-
-  // Deep purple bloom — top center
-  bgPurple: {
-    position:        'absolute',
-    top:             -100,
-    left:            '25%',
-    width:           300,
-    height:          300,
-    borderRadius:    150,
-    backgroundColor: '#4A007A',
-    opacity:         0.45,
-  },
-
-  // ── Header ──────────────────────────────────────────────────────────────
-  header: {
-    flexDirection:     'row',
-    alignItems:        'center',
-    justifyContent:    'space-between',
-    paddingHorizontal: 20,
-    paddingBottom:     16,
-    backgroundColor:   'rgba(7, 5, 14, 0.75)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
-  },
-  headerTitle: {
-    fontSize:   24,
-    fontWeight: '800',
-    color:      TEXT_LIGHT,
-  },
-  headerSub: {
-    fontSize:  13,
-    color:     TEXT_MUTED,
-    marginTop: 2,
-  },
-  streakBadge: {
-    backgroundColor:   'rgba(249,115,22,0.15)',
-    paddingHorizontal: 12,
-    paddingVertical:   6,
-    borderRadius:      20,
-    borderWidth:       1,
-    borderColor:       'rgba(249,115,22,0.35)',
-  },
-  streakText: {
-    fontSize:   13,
-    fontWeight: '700',
-    color:      ORANGE,
-  },
-
-  // ── Scroll ──────────────────────────────────────────────────────────────
-  scrollContent: {
-    paddingTop: 16,
-  },
-
-  // ── Section ─────────────────────────────────────────────────────────────
-  section: {
-    paddingHorizontal: 20,
-    marginBottom:      20,
-  },
-  sectionTitle: {
-    fontSize:     18,
-    fontWeight:   '700',
-    color:        TEXT_LIGHT,
-    marginBottom: 4,
-  },
-  sectionSub: {
-    fontSize:     13,
-    color:        TEXT_MUTED,
-    marginBottom: 12,
-  },
-
-  // ── Recommended card ────────────────────────────────────────────────────
-  recommendedCard: {
-    borderRadius:  20,
-    padding:       16,
-    flexDirection: 'row',
-    alignItems:    'center',
-    justifyContent: 'space-between',
-    borderWidth:   1,
-    borderColor:   CARD_BORDER,
-  },
-  recommendedLeft: {
-    flexDirection: 'row',
-    alignItems:    'center',
-    flex:          1,
-    gap:           12,
-  },
-  recommendedEmoji: {
-    fontSize: 40,
-  },
-  recommendedInfo: {
-    flex: 1,
-  },
-  recommendedTitle: {
-    fontSize:     17,
-    fontWeight:   '800',
-    marginBottom: 2,
-  },
-  recommendedDomain: {
-    fontSize:     12,
-    color:        TEXT_MUTED,
-    marginBottom: 6,
-  },
-  starRow: {
-    flexDirection: 'row',
-    gap:           2,
-  },
-  star: {
-    fontSize: 12,
-  },
-  recommendedRight: {
-    alignItems: 'flex-end',
-    gap:        8,
-  },
-  recommendedXp: {
-    fontSize:   13,
-    fontWeight: '700',
-    color:      PRIMARY,
-  },
-  playNowBtn: {
-    paddingHorizontal: 16,
-    paddingVertical:    8,
-    borderRadius:      12,
-  },
-  playNowBtnText: {
-    color:      WHITE,
-    fontSize:   13,
-    fontWeight: '700',
-  },
-
-  // ── Game list ───────────────────────────────────────────────────────────
-  gameList: {
-    backgroundColor: CARD_BG,
-    borderRadius:    16,
-    borderWidth:     1,
-    borderColor:     CARD_BORDER,
-    overflow:        'hidden',
-  },
-  gameRow: {
-    flexDirection:     'row',
-    alignItems:        'center',
-    paddingVertical:   14,
-    paddingHorizontal: 16,
-    gap:               12,
-  },
-  gameRowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.07)',
-  },
-
-  // ── Icon bubble ─────────────────────────────────────────────────────────
-  gameIconBubble: {
-    width:          48,
-    height:         48,
-    borderRadius:   14,
-    justifyContent: 'center',
-    alignItems:     'center',
-  },
-  gameEmoji: {
-    fontSize: 24,
-  },
-
-  // ── Game info ───────────────────────────────────────────────────────────
-  gameInfo: {
-    flex: 1,
-  },
-  gameInfoTop: {
-    flexDirection: 'row',
-    alignItems:    'center',
-    gap:           6,
-    marginBottom:  3,
-  },
-  gameTitle: {
-    fontSize:   15,
-    fontWeight: '700',
-    color:      TEXT_LIGHT,
-  },
-  gameTagRow: {
-    flexDirection: 'row',
-    gap:           4,
-  },
-  aiTag: {
-    backgroundColor:   'rgba(14,165,233,0.2)',
-    paddingHorizontal: 6,
-    paddingVertical:   2,
-    borderRadius:      6,
-  },
-  aiTagText: {
-    fontSize:   10,
-    fontWeight: '700',
-    color:      '#38BDF8',
-  },
-  weeklyTag: {
-    backgroundColor:   'rgba(245,158,11,0.2)',
-    paddingHorizontal: 6,
-    paddingVertical:   2,
-    borderRadius:      6,
-  },
-  weeklyTagText: {
-    fontSize:   10,
-    fontWeight: '700',
-    color:      '#FCD34D',
-  },
-  gameDomain: {
-    fontSize:   12,
-    fontWeight: '600',
-  },
-
-  // ── Game right ──────────────────────────────────────────────────────────
-  gameRight: {
-    alignItems: 'flex-end',
-    gap:        4,
-  },
-  gameBestXp: {
-    fontSize:   12,
-    fontWeight: '600',
-    color:      TEXT_SUBTLE,
-  },
-  gameChevron: {
-    fontSize: 20,
-    color:    TEXT_MUTED,
-  },
-
-  // ── Modal ───────────────────────────────────────────────────────────────
-  modalOverlay: {
-    flex:            1,
-    backgroundColor: 'rgba(0,0,0,0.75)',
-    justifyContent:  'center',
-    alignItems:      'center',
-  },
-  rewardCard: {
-    width:           '85%',
-    backgroundColor: '#12102A',
-    borderRadius:    24,
-    padding:         28,
-    alignItems:      'center',
-    gap:             8,
-    borderWidth:     1,
-    borderColor:     CARD_BORDER,
-  },
-  rewardEmoji:  { fontSize: 48 },
-  rewardXp: {
-    fontSize:   32,
-    fontWeight: '800',
-    color:      PRIMARY,
-  },
-  rewardTotal: {
-    fontSize: 14,
-    color:    TEXT_MUTED,
-  },
-  levelUpBadge: {
-    backgroundColor:   'rgba(245,158,11,0.15)',
-    borderRadius:      12,
-    paddingHorizontal: 16,
-    paddingVertical:   8,
-    marginTop:         4,
-    borderWidth:       1,
-    borderColor:       'rgba(245,158,11,0.3)',
-  },
-  levelUpText: {
-    fontSize:   14,
-    fontWeight: '700',
-    color:      '#FCD34D',
-  },
-  badgesSection: {
-    alignSelf: 'stretch',
-    marginTop: 8,
-    gap:       8,
-  },
-  badgesTitle: {
-    fontSize:   14,
-    fontWeight: '700',
-    color:      TEXT_LIGHT,
-  },
-  badgeRow: {
-    flexDirection:   'row',
-    alignItems:      'center',
-    backgroundColor: 'rgba(124,92,252,0.12)',
-    borderRadius:    12,
-    padding:         10,
-    gap:             10,
-  },
-  badgeIcon: { fontSize: 28 },
-  badgeName: {
-    fontSize:   14,
-    fontWeight: '700',
-    color:      TEXT_LIGHT,
-  },
-  badgeDesc: {
-    fontSize: 12,
-    color:    TEXT_MUTED,
-  },
-  rewardCloseBtn: {
-    backgroundColor:   PRIMARY,
-    borderRadius:      14,
-    paddingVertical:   14,
-    paddingHorizontal: 48,
-    marginTop:         8,
-  },
-  rewardCloseBtnText: {
-    color:      WHITE,
-    fontSize:   16,
-    fontWeight: '700',
-  },
-});
 
 export default PlaygroundScreen;

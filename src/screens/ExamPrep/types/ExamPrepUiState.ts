@@ -79,3 +79,11 @@ export interface ExamPrepUiState {
   isLoading:     boolean;      // Pull-to-refresh loading state
   errorMessage:  string | null;
 }
+export type SectionStatus = 'complete' | 'in_progress' | 'not_started';
+export interface ExamSection {
+  id: string;
+  title: string;
+  status: SectionStatus;
+  completed: number;
+  total: number;
+}

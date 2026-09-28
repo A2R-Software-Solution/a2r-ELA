@@ -1,17 +1,11 @@
+import { styles } from './EssayWritingPad.styles';
 /**
  * EssayWritingPad Component
  * Clean text editor with styled placeholder and proper typography
  */
 
 import React, { useRef } from 'react';
-import {
-  View,
-  TextInput,
-  StyleSheet,
-  Platform,
-  TouchableOpacity,
-  Text,
-} from 'react-native';
+import { TextInput, TouchableOpacity } from 'react-native';
 
 interface EssayWritingPadProps {
   text: string;
@@ -25,8 +19,6 @@ const EssayWritingPad: React.FC<EssayWritingPadProps> = ({
   text,
   onTextChange,
   minWords,
-  maxWords,
-  wordCount,
 }) => {
   const inputRef = useRef<TextInput>(null);
 
@@ -58,27 +50,5 @@ const EssayWritingPad: React.FC<EssayWritingPadProps> = ({
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 16,
-    lineHeight: 26,
-    color: '#0F172A',
-    minHeight: 300,
-    ...Platform.select({
-      ios: {
-        fontFamily: 'Georgia',
-      },
-      android: {
-        fontFamily: 'serif',
-      },
-    }),
-  },
-});
 
 export default EssayWritingPad;

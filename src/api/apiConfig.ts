@@ -1,65 +1,67 @@
+import { appEnv } from '../config/env.generated';
+
 /**
  * API Configuration
  * Contains base URL, endpoints, and timeout settings
  */
 
 export const ApiConfig = {
-  BASE_URL: 'https://us-central1-e-learning-app-9d86f.cloudfunctions.net/',
+  BASE_URL: appEnv.API_BASE_URL,
 
   // API Endpoints
   Endpoints: {
     // Essay
-    SUBMIT_ESSAY:         'submit_essay',
-    GET_ESSAY_SUBMISSION: 'get_essay_submission',
-    GET_USER_SUBMISSIONS: 'get_user_submissions',
+    SUBMIT_ESSAY: appEnv.ENDPOINT_SUBMIT_ESSAY,
+    GET_ESSAY_SUBMISSION: appEnv.ENDPOINT_GET_ESSAY_SUBMISSION,
+    GET_USER_SUBMISSIONS: appEnv.ENDPOINT_GET_USER_SUBMISSIONS,
 
     // Progress
-    GET_STREAK:           'get_streak',
-    GET_PROGRESS_STATS:   'get_progress_stats',
-    GET_CATEGORY_STATS:   'get_category_stats',
+    GET_STREAK: appEnv.ENDPOINT_GET_STREAK,
+    GET_PROGRESS_STATS: appEnv.ENDPOINT_GET_PROGRESS_STATS,
+    GET_CATEGORY_STATS: appEnv.ENDPOINT_GET_CATEGORY_STATS,
 
     // Gamification
-    GET_GAMIFICATION:     'get_gamification',
+    GET_GAMIFICATION: appEnv.ENDPOINT_GET_GAMIFICATION,
 
     // User Preferences — state & grade
-    SAVE_USER_PREFERENCES: 'save_user_preferences',
-    GET_USER_PREFERENCES:  'get_user_preferences',
+    SAVE_USER_PREFERENCES: appEnv.ENDPOINT_SAVE_USER_PREFERENCES,
+    GET_USER_PREFERENCES: appEnv.ENDPOINT_GET_USER_PREFERENCES,
 
     // File
-    EXTRACT_PDF_TEXT: 'extract_pdf_text',
+    EXTRACT_PDF_TEXT: appEnv.ENDPOINT_EXTRACT_PDF_TEXT,
 
     // Health
-    HEALTH_CHECK: 'health_check',
+    HEALTH_CHECK: appEnv.ENDPOINT_HEALTH_CHECK,
 
     // User Profile
-    GET_USER_PROFILE:    'get_user_profile',
-    UPDATE_USER_PROFILE: 'update_user_profile',
-    DELETE_ACCOUNT:      'delete_account',       // ← NEW
+    GET_USER_PROFILE: appEnv.ENDPOINT_GET_USER_PROFILE,
+    UPDATE_USER_PROFILE: appEnv.ENDPOINT_UPDATE_USER_PROFILE,
+    DELETE_ACCOUNT: appEnv.ENDPOINT_DELETE_ACCOUNT,       // ← NEW
 
     // Games (no AI)
-    SUBMIT_GAME_RESULT: 'submit_game_result',
+    SUBMIT_GAME_RESULT: appEnv.ENDPOINT_SUBMIT_GAME_RESULT,
 
     // Games (AI)
-    DETAIL_DETECTIVE_EVALUATE: 'detail_detective_evaluate',
-    BOSS_BATTLE_SUBMIT:        'boss_battle_submit',
+    DETAIL_DETECTIVE_EVALUATE: appEnv.ENDPOINT_DETAIL_DETECTIVE_EVALUATE,
+    BOSS_BATTLE_SUBMIT: appEnv.ENDPOINT_BOSS_BATTLE_SUBMIT,
 
     // Leaderboard
-    GET_GRADE_LEADERBOARD: 'get_grade_leaderboard',
-    GET_STATE_LEADERBOARD: 'get_state_leaderboard',
+    GET_GRADE_LEADERBOARD: appEnv.ENDPOINT_GET_GRADE_LEADERBOARD,
+    GET_STATE_LEADERBOARD: appEnv.ENDPOINT_GET_STATE_LEADERBOARD,
 
     // Vocabulary
-    GET_DAILY_VOCAB: 'get_daily_vocab',
+    GET_DAILY_VOCAB: appEnv.ENDPOINT_GET_DAILY_VOCAB,
 
     // PSSA Practice
-    GENERATE_PSSA_QUESTIONS: 'generate_pssa_questions',   // ← NEW
-    EVALUATE_PSSA_WRITING:   'evaluate_pssa_writing',     // ← NEW
+    GENERATE_PSSA_QUESTIONS: appEnv.ENDPOINT_GENERATE_PSSA_QUESTIONS,   // ← NEW
+    EVALUATE_PSSA_WRITING: appEnv.ENDPOINT_EVALUATE_PSSA_WRITING,     // ← NEW
   },
 
   // Request Timeouts (in milliseconds)
   Timeouts: {
-    CONNECT_TIMEOUT: 30000, // 30 seconds
-    READ_TIMEOUT: 120000, // 120 seconds — sequential AI calls need more time
-    WRITE_TIMEOUT:   30000,
+    CONNECT_TIMEOUT: appEnv.CONNECT_TIMEOUT_MS, // 30 seconds
+    READ_TIMEOUT: appEnv.READ_TIMEOUT_MS, // 120 seconds — sequential AI calls need more time
+    WRITE_TIMEOUT: appEnv.WRITE_TIMEOUT_MS,
   },
 } as const;
 

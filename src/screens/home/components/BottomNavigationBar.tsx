@@ -1,12 +1,14 @@
+import { styles } from './BottomNavigationBar.styles';
 /**
  * Bottom Navigation Bar Component
  * 5 tabs: Home, Exam Prep, Games, Profile
  * ✅ FIXED: Dark theme colors, proper positioning, no overlap
- * Active tab: purple pill background + colored icon + purple label
+ * Active tab: translucent highlight with a bright label
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HomeTab } from '../types/HomeUiState';
 
@@ -36,12 +38,20 @@ const BottomNavigationBar: React.FC<BottomNavigationBarProps> = ({
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+    <View style={[styles.container, { paddingBottom: 8, marginBottom: Math.max(insets.bottom, 12) }]}>
+      <LinearGradient
+        pointerEvents="none"
+        colors={['rgba(255,255,255,0.12)', 'rgba(255,255,255,0)']}
+        style={styles.sheen}
+      />
       {TABS.map(tab => {
         const isSelected = tab.key === selectedTab;
         return (
           <TouchableOpacity
             key={tab.key}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: isSelected }}
+            accessibilityLabel={tab.label}
             style={styles.tab}
             onPress={() => onTabSelected(tab.key)}
             activeOpacity={0.7}
@@ -63,54 +73,5 @@ const BottomNavigationBar: React.FC<BottomNavigationBarProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    backgroundColor: '#12102A',           // ← FIX: Dark background matching theme
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)', // ← Subtle dark border
-    paddingTop: 12,                       // ← Increased padding
-    paddingHorizontal: 4,
-    paddingRight: 4,
-    paddingLeft: 4,
-    elevation: 8,                         // Android shadow
-    shadowColor: '#000000',               // iOS shadow
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-  },
-  tab: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 4,
-  },
-  iconWrap: {
-    width: 44,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 4,
-    backgroundColor: 'transparent', // ← Transparent when inactive
-  },
-  iconWrapActive: {
-    backgroundColor: '#6D28D9',           // ← FIX: Dark purple pill
-  },
-  icon: {
-    fontSize: 20,
-  },
-  label: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: '#8B7BA8',                     // ← FIX: Muted light color for inactive
-    marginTop: 2,
-  },
-  labelSelected: {
-    color: '#C4B5FD',                     // ← FIX: Bright purple for active
-    fontWeight: '700',
-  },
-});
 
 export default BottomNavigationBar;

@@ -106,6 +106,8 @@ export const useCreateTest = (
   }, []);
 
   const onMcqChange = useCallback((count: number) => {
+    if (!Number.isFinite(count)) return;
+    count = Math.min(MAX_QUESTIONS, Math.max(MIN_QUESTIONS, Math.round(count)));
     setUiState(prev => {
       const totals = computeTotals(count, prev.comprehensionCount, prev.writingCount);
       return { ...prev, mcqCount: count, ...totals };
@@ -113,6 +115,8 @@ export const useCreateTest = (
   }, []);
 
   const onComprehensionChange = useCallback((count: number) => {
+    if (!Number.isFinite(count)) return;
+    count = Math.min(MAX_QUESTIONS, Math.max(MIN_QUESTIONS, Math.round(count)));
     setUiState(prev => {
       const totals = computeTotals(prev.mcqCount, count, prev.writingCount);
       return { ...prev, comprehensionCount: count, ...totals };
@@ -120,6 +124,8 @@ export const useCreateTest = (
   }, []);
 
   const onWritingChange = useCallback((count: number) => {
+    if (!Number.isFinite(count)) return;
+    count = Math.min(MAX_QUESTIONS, Math.max(MIN_QUESTIONS, Math.round(count)));
     setUiState(prev => {
       const totals = computeTotals(prev.mcqCount, prev.comprehensionCount, count);
       return { ...prev, writingCount: count, ...totals };
@@ -144,6 +150,7 @@ export const useCreateTest = (
   }, []);
 
   const onConfirmStart = useCallback(() => {
+    if (uiState.totalQuestions <= 0) return;
     setUiState(prev => ({ ...prev, showConfirmSheet: false }));
     onNavigateToInstructions({
       difficulty:    uiState.selectedDifficulty,

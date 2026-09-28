@@ -1,3 +1,4 @@
+import { styles } from './ExamSectionRow.styles';
 /**
  * ExamSectionRow Component
  * A single topic/section row in the exam prep checklist.
@@ -5,11 +6,7 @@
  */
 
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-} from 'react-native';
+import { View, Text } from 'react-native';
 import { ExamSection, SectionStatus } from '../types/ExamPrepUiState';
 
 interface ExamSectionRowProps {
@@ -28,11 +25,11 @@ const WARNING_BG      = 'rgba(245, 158, 11, 0.12)';
 const GREY            = '#64748B';
 const GREY_BG         = 'rgba(100, 116, 139, 0.12)';
 
-const ROW_BG          = '#0E0B1A';   // same dark-purple-black as card (C)
-const ROW_BORDER      = 'rgba(108, 77, 255, 0.18)'; // very subtle purple rim
-const PROGRESS_TRACK  = 'rgba(255,255,255,0.08)';   // near-invisible track
-const TEXT_PRIMARY    = '#F1F5F9';   // off-white
-const TEXT_MUTED      = '#94A3B8';   // cool grey
+   // same dark-purple-black as card (C)
+ // very subtle purple rim
+   // near-invisible track
+   // off-white
+   // cool grey
 
 // --------------------------------------------------------------------------
 // STATUS HELPERS
@@ -98,75 +95,5 @@ const ExamSectionRow: React.FC<ExamSectionRowProps> = ({ section }) => {
     </View>
   );
 };
-
-// --------------------------------------------------------------------------
-// STYLES
-// --------------------------------------------------------------------------
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection:    'row',
-    alignItems:       'center',
-    backgroundColor:  ROW_BG,
-    marginHorizontal: 16,
-    marginVertical:   5,
-    borderRadius:     14,
-    padding:          14,
-    borderWidth:      1,
-    borderColor:      ROW_BORDER,
-    shadowColor:      '#6C4DFF',
-    shadowOffset:     { width: 0, height: 2 },
-    shadowOpacity:    0.10,
-    shadowRadius:     8,
-    elevation:        3,
-  },
-
-  iconContainer: {
-    width:          40,
-    height:         40,
-    borderRadius:   12,
-    justifyContent: 'center',
-    alignItems:     'center',
-    marginRight:    14,
-  },
-  icon: {
-    fontSize:   18,
-    fontWeight: '700',
-    lineHeight: 22,
-  },
-
-  middleContent: {
-    flex: 1,
-  },
-  titleRow: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    justifyContent: 'space-between',
-    marginBottom:   8,
-  },
-  title: {
-    flex:        1,
-    fontSize:    14,
-    fontWeight:  '600',
-    color:       TEXT_PRIMARY,
-    marginRight: 8,
-  },
-  count: {
-    fontSize:   13,
-    fontWeight: '600',
-    color:      TEXT_MUTED,
-  },
-
-  progressTrack: {
-    height:          6,
-    backgroundColor: PROGRESS_TRACK,
-    borderRadius:    999,
-    overflow:        'hidden',
-  },
-  progressFill: {
-    height:       6,
-    borderRadius: 999,
-  },
-});
 
 export default ExamSectionRow;

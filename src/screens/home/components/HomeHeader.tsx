@@ -1,10 +1,11 @@
+import { styles } from './HomeHeader.styles';
 /**
  * Home Header Component — REDESIGNED
  * Dark theme, glassmorphism avatar, dynamic gradient glow
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -34,7 +35,7 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
       {/* Avatar with gradient ring */}
       <View style={styles.avatarRing}>
         <LinearGradient
-          colors={['#A78BFA', '#6C4DFF', '#4F46E5']}
+          colors={['rgba(255,255,255,0.45)', 'rgba(165,230,235,0.20)', 'rgba(255,255,255,0.08)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.avatarGradient}
@@ -58,7 +59,7 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
         activeOpacity={0.7}
       >
         <LinearGradient
-          colors={['rgba(124,92,252,0.18)', 'rgba(79,70,229,0.10)']}
+          colors={['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.04)']}
           style={styles.bellGradient}
         >
           <Text style={styles.bellIcon}>🔔</Text>
@@ -75,92 +76,5 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection:     'row',
-    alignItems:        'center',
-    paddingHorizontal: 20,
-    paddingBottom:     14,
-    backgroundColor:   'transparent',
-  },
-
-  // Avatar
-  avatarRing: {
-    marginRight: 12,
-  },
-  avatarGradient: {
-    width:        50,
-    height:       50,
-    borderRadius: 25,
-    padding:      2,
-    justifyContent: 'center',
-    alignItems:     'center',
-  },
-  avatarInner: {
-    width:           46,
-    height:          46,
-    borderRadius:    23,
-    backgroundColor: '#1A1535',
-    justifyContent:  'center',
-    alignItems:      'center',
-  },
-  avatarEmoji: {
-    fontSize: 22,
-  },
-
-  // Greeting
-  greetingWrap: {
-    flex: 1,
-  },
-  greeting: {
-    fontSize:   13,
-    color:      'rgba(167,139,250,0.75)',
-    fontWeight: '400',
-    letterSpacing: 0.2,
-  },
-  username: {
-    fontSize:      17,
-    fontWeight:    '700',
-    color:         '#F1EDFF',
-    letterSpacing: 0.1,
-  },
-
-  // Bell
-  bellWrap: {
-    position: 'relative',
-  },
-  bellGradient: {
-    width:         42,
-    height:        42,
-    borderRadius:  21,
-    justifyContent: 'center',
-    alignItems:    'center',
-    borderWidth:   1,
-    borderColor:   'rgba(124,92,252,0.30)',
-  },
-  bellIcon: {
-    fontSize: 18,
-  },
-  badge: {
-    position:          'absolute',
-    top:               4,
-    right:             4,
-    minWidth:          16,
-    height:            16,
-    borderRadius:      8,
-    backgroundColor:   '#F97316',
-    justifyContent:    'center',
-    alignItems:        'center',
-    paddingHorizontal: 3,
-    borderWidth:       1.5,
-    borderColor:       '#12102A',
-  },
-  badgeText: {
-    fontSize:   9,
-    fontWeight: '700',
-    color:      '#FFFFFF',
-  },
-});
 
 export default HomeHeader;

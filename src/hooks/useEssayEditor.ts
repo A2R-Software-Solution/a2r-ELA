@@ -1,10 +1,11 @@
+import { appEnv } from '../config/env.generated';
 /**
  * useEssayEditor Hook
  * Essay editor logic with backend integration + file upload support
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { DocumentPickerResponse } from 'react-native-document-picker';
+import { DocumentPickerResponse } from '@react-native-documents/picker';
 import {
   EssayUiState,
   initialEssayUiState,
@@ -54,33 +55,16 @@ export const useEssayEditor = () => {
    * Update selected category and adjust word limits
    */
   const updateCategory = useCallback((category: EssayCategory) => {
-    let minWords = 50;
-    let maxWords = 500;
-
-    switch (category) {
-      case EssayCategory.ESSAY_WRITING:
-        minWords = 50;
-        maxWords = 500;
-        break;
-      case EssayCategory.ELA:
-        minWords = 50;
-        maxWords = 400;
-        break;
-      case EssayCategory.MATH:
-        minWords = 30;
-        maxWords = 300;
-        break;
-      case EssayCategory.SCIENCE:
-        minWords = 50;
-        maxWords = 450;
-        break;
-    }
+    const { min: minWords, max: maxWords } = appEnv.ESSAY_CATEGORIES[category];
 
     setUiState((prev: EssayUiState) => ({
       ...prev,
       selectedCategory: category,
       minWords,
       maxWords,
+      isWordCountValid: prev.wordCount >= minWords && prev.wordCount <= maxWords,
+      canSubmit: !prev.isEssayEmpty && !prev.isSubmitting && prev.wordCount >= minWords && prev.wordCount <= maxWords,
+      wordCountProgress: Math.min(prev.wordCount / maxWords, 1),
       wordCountText: `${prev.wordCount}/${maxWords}`,
     }));
   }, []);
@@ -134,7 +118,7 @@ export const useEssayEditor = () => {
         name: file.name || 'unknown.pdf',
         size: file.size || 0,
         type: file.type || 'application/pdf',
-        uri: file.fileCopyUri || file.uri,
+        uri: file.uri,
       });
 
       // Add file to state with UPLOADING status
@@ -148,7 +132,7 @@ export const useEssayEditor = () => {
       // Extract text from PDF
       try {
         const result = await FileRepository.uploadAndExtractPdf(
-          file.fileCopyUri || file.uri,
+          file.uri,
           file.name || 'unknown.pdf',
         );
 
@@ -296,6 +280,8 @@ export const useEssayEditor = () => {
       const result = await essayRepository.submitEssay(
         currentState.essayText,
         currentState.selectedCategory,
+        appEnv.DEFAULT_STATE,
+        appEnv.DEFAULT_GRADE,
       );
 
       if (Result.isSuccess(result)) {
@@ -321,7 +307,7 @@ export const useEssayEditor = () => {
           aiResponse,
           streakText: `${
             data.progress?.current_streak ?? prev.currentStreak
-          }/365`,
+          }/${appEnv.MAX_STREAK_DAYS}`,
           // CLEAR essay and files after successful submission
           essayText: '',
           wordCount: 0,
@@ -330,7 +316,7 @@ export const useEssayEditor = () => {
           isEssayEmpty: true,
           isWordCountValid: false,
           canSubmit: false,
-          wordCountText: '0/500',
+          wordCountText: `0/${prev.maxWords}`,
           wordCountProgress: 0,
         }));
       } else if (Result.isError(result)) {
@@ -368,7 +354,7 @@ export const useEssayEditor = () => {
           currentStreak: result.data.current_streak,
           maxStreak: result.data.max_streak,
           isLoadingStreak: false,
-          streakText: `${result.data.current_streak}/365`,
+          streakText: `${result.data.current_streak}/${appEnv.MAX_STREAK_DAYS}`,
         }));
       } else {
         // Silently fail for streak loading

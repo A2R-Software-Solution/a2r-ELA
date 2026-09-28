@@ -1,10 +1,11 @@
+import { styles } from './InputToolbar.styles';
 /**
  * InputToolbar Component
  * Bottom toolbar containing the file upload button
  */
 
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { FileUploadButton } from './FileUploadButton';
 import { DocumentPickerResponse } from '@react-native-documents/picker';
 
@@ -32,10 +33,3 @@ export const InputToolbar: React.FC<InputToolbarProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-});

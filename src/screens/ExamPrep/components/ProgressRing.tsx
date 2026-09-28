@@ -1,3 +1,4 @@
+import { styles } from './ProgressRing.styles';
 /**
  * ProgressRing Component
  * Circular progress ring showing overall exam completion percentage.
@@ -5,11 +6,7 @@
  */
 
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-} from 'react-native';
+import { View, Text } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 // --------------------------------------------------------------------------
 // PROPS
@@ -27,8 +24,6 @@ interface ProgressRingProps {
 
 const PURPLE       = '#6C4DFF';
 const TRACK_COLOR  = '#E5E7EB';
-const TEXT_PRIMARY = '#c8f610';
-const TEXT_MUTED   = '#475569';
 
 // --------------------------------------------------------------------------
 // COMPONENT
@@ -85,38 +80,5 @@ const ProgressRing: React.FC<ProgressRingProps> = ({
     </View>
   );
 };
-
-// --------------------------------------------------------------------------
-// STYLES
-// --------------------------------------------------------------------------
-
-const styles = StyleSheet.create({
-  container: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  // Absolutely centered label on top of SVG
-  labelContainer: {
-    position:       'absolute',
-    top:            0,
-    left:           0,
-    alignItems:     'center',
-    justifyContent: 'center',
-  },
-  percentText: {
-    fontSize:   24,
-    fontWeight: '800',
-    color:      TEXT_PRIMARY,
-    lineHeight: 28,
-  },
-  completeText: {
-    fontSize:   11,
-    fontWeight: '500',
-    color:      TEXT_MUTED,
-    marginTop:  2,
-  },
-});
 
 export default ProgressRing;

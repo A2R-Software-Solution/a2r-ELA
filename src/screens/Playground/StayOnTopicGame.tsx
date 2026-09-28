@@ -1,14 +1,7 @@
+import ScreenBackground from '../../components/ScreenBackground';
+import { styles } from './StayOnTopicGame.styles';
 import React, { useState, useRef, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Animated,
-  ScrollView,
-  SafeAreaView,
-  StatusBar,
-} from 'react-native';
+import { View, Text, TouchableOpacity, Animated, ScrollView, SafeAreaView, StatusBar } from 'react-native';
 import {  GameResult } from '../../models/GameModels';
 
 // ─────────────────────────────────────────
@@ -172,7 +165,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
       friction: 7,
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [scaleAnim]);
 
   const accuracy = result.accuracy ?? 0;
   const xpEarned = result.xpEarned ?? result.score;
@@ -211,13 +204,13 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
           </View>
           <View style={styles.statRow}>
             <Text style={styles.statLabel}>Correct</Text>
-            <Text style={[styles.statValue, { color: '#22c55e' }]}>
+            <Text style={[styles.statValue, styles.textColor]}>
               ✓ {result.correctRemovals ?? 0}
             </Text>
           </View>
           <View style={styles.statRow}>
             <Text style={styles.statLabel}>Wrong</Text>
-            <Text style={[styles.statValue, { color: '#ef4444' }]}>
+            <Text style={[styles.statValue, styles.textColor2]}>
               ✗ {result.wrongRemovals ?? 0}
             </Text>
           </View>
@@ -295,7 +288,7 @@ const feedbackHint = !isAnswered
     setSelected(null);
     setResult(null);
     feedbackAnim.setValue(0);
-  }, []);
+  }, [feedbackAnim]);
 
  const startGame = () => {
   console.log("START GAME CLICKED");
@@ -378,6 +371,7 @@ const feedbackHint = !isAnswered
   if (gameState === 'intro') {
     return (
       <SafeAreaView style={styles.safeArea}>
+      <ScreenBackground />
         <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
         <View style={styles.introContainer}>
           <View style={styles.introIconWrap}>
@@ -431,6 +425,7 @@ const feedbackHint = !isAnswered
   if (gameState === 'result' && result) {
     return (
       <SafeAreaView style={styles.safeArea}>
+      <ScreenBackground />
         <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
         <ResultScreen
           result={result}
@@ -448,6 +443,7 @@ const feedbackHint = !isAnswered
   // ─────────────────────────────────────────
   return (
     <SafeAreaView style={styles.safeArea}>
+      <ScreenBackground />
       <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
 
       {/* ── Header ── */}
@@ -471,7 +467,7 @@ const feedbackHint = !isAnswered
         current={currentIndex}
         answers={answers}
       />
-      // ─── FEEDBACK FIX (IMPORTANT) ─────────────────
+
 
       {/* ── Sentence card ── */}
       <View style={styles.sentenceWrapper}>
@@ -562,351 +558,5 @@ const feedbackHint = !isAnswered
     </SafeAreaView>
   );
 };
-
-// ─────────────────────────────────────────
-// STYLES
-// ─────────────────────────────────────────
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#0f172a' },
-
-  // ── Intro ──
-  introContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 28,
-    paddingVertical: 20,
-  },
-  introIconWrap: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: '#1e293b',
-    borderWidth: 2,
-    borderColor: '#3b82f6',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 18,
-  },
-  introIcon: { fontSize: 44 },
-  introTitle: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#f1f5f9',
-    letterSpacing: -0.5,
-  },
-  introSubtitle: {
-    fontSize: 14,
-    color: '#64748b',
-    marginTop: 4,
-    fontWeight: '600',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  introDivider: {
-    width: 48,
-    height: 3,
-    backgroundColor: '#3b82f6',
-    borderRadius: 2,
-    marginVertical: 20,
-  },
-  introDescription: {
-    fontSize: 16,
-    color: '#94a3b8',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 24,
-  },
-  introHighlight: { color: '#f59e0b', fontWeight: '700' },
-  introRules: {
-    width: '100%',
-    backgroundColor: '#1e293b',
-    borderRadius: 16,
-    padding: 18,
-    gap: 14,
-    marginBottom: 28,
-  },
-  ruleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  ruleEmoji: { fontSize: 20, width: 28 },
-  ruleText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#cbd5e1',
-    lineHeight: 20,
-    fontWeight: '500',
-  },
-  startButton: {
-    width: '100%',
-    backgroundColor: '#3b82f6',
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: 'center',
-    shadowColor: '#3b82f6',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  startButtonText: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  backLink: { marginTop: 16, padding: 8 },
-  backLinkText: { color: '#64748b', fontSize: 14, fontWeight: '600' },
-
-  // ── Game Header ──
-  gameHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingTop: 12,
-    paddingBottom: 8,
-  },
-  topicLabel: {
-    fontSize: 11,
-    color: '#64748b',
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  topicName: {
-    fontSize: 18,
-    color: '#f1f5f9',
-    fontWeight: '800',
-    marginTop: 2,
-  },
-  counterBadge: {
-    backgroundColor: '#1e293b',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  counterText: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#f59e0b',
-  },
-
-  // ── Progress Dots ──
-  dotsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 18,
-    gap: 6,
-    marginBottom: 16,
-  },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  dotActive: {
-    backgroundColor: '#3b82f6',
-    width: 24,
-    borderRadius: 5,
-  },
-
-  // ── Sentence area ──
-  sentenceWrapper: {
-    flex: 1,
-    paddingHorizontal: 18,
-    gap: 14,
-  },
-  questionLabel: {
-    fontSize: 13,
-    color: '#64748b',
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  sentenceCard: {
-    backgroundColor: '#1e293b',
-    borderRadius: 16,
-    padding: 22,
-    borderWidth: 1,
-    borderColor: '#334155',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  sentenceText: {
-    fontSize: 17,
-    color: '#f1f5f9',
-    lineHeight: 26,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-
-  // ── Feedback banner ──
-  feedbackBanner: {
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    gap: 4,
-  },
-  feedbackLabel: {
-    fontSize: 17,
-    fontWeight: '800',
-    letterSpacing: 0.3,
-  },
-  feedbackHint: {
-    fontSize: 13,
-    fontWeight: '600',
-    opacity: 0.85,
-  },
-
-  // ── Answer buttons ──
-  answerButtons: {
-    flexDirection: 'row',
-    paddingHorizontal: 18,
-    paddingBottom: 24,
-    paddingTop: 16,
-    gap: 12,
-  },
-  onTopicBtn: {
-    flex: 1,
-    backgroundColor: '#166534',
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#22c55e',
-  },
-  onTopicBtnText: {
-    color: '#22c55e',
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  offTopicBtn: {
-    flex: 1,
-    backgroundColor: '#7f1d1d',
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ef4444',
-  },
-  offTopicBtnText: {
-    color: '#ef4444',
-    fontSize: 16,
-    fontWeight: '800',
-  },
-
-  // ── Next button ──
-  nextBtn: {
-    marginHorizontal: 18,
-    marginBottom: 24,
-    marginTop: 16,
-    backgroundColor: '#3b82f6',
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: 'center',
-    shadowColor: '#3b82f6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  nextBtnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '800',
-    letterSpacing: 0.3,
-  },
-
-  // ── Result ──
-  resultOverlay: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 30,
-    backgroundColor: '#0f172a',
-  },
-  resultCard: {
-    backgroundColor: '#1e293b',
-    borderRadius: 24,
-    padding: 28,
-    width: '100%',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#334155',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 12,
-  },
-  resultEmoji: { fontSize: 56, marginBottom: 8 },
-  resultGrade: {
-    fontSize: 28,
-    fontWeight: '900',
-    letterSpacing: -0.5,
-    marginBottom: 4,
-  },
-  resultTopic: {
-    fontSize: 15,
-    color: '#94a3b8',
-    fontWeight: '600',
-    marginBottom: 20,
-  },
-  resultStats: { width: '100%', gap: 10, marginBottom: 20 },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    backgroundColor: '#0f172a',
-    borderRadius: 10,
-  },
-  statLabel: { fontSize: 13, color: '#64748b', fontWeight: '600' },
-  statValue: { fontSize: 15, color: '#f1f5f9', fontWeight: '800' },
-  statValueXP: { fontSize: 17, color: '#f59e0b', fontWeight: '900' },
-  badgeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#f59e0b22',
-    borderWidth: 1,
-    borderColor: '#f59e0b66',
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    marginBottom: 20,
-    width: '100%',
-    justifyContent: 'center',
-  },
-  badgeEmoji: { fontSize: 22 },
-  badgeText: { fontSize: 14, color: '#f59e0b', fontWeight: '800' },
-  resultButtons: { flexDirection: 'row', gap: 12, width: '100%' },
-  replayBtn: {
-    flex: 1,
-    backgroundColor: '#3b82f6',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  replayBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
-  exitBtn: {
-    flex: 1,
-    backgroundColor: '#1e293b',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  exitBtnText: { color: '#94a3b8', fontSize: 15, fontWeight: '700' },
-});
 
 export default StayOnTopicGame;

@@ -1,3 +1,5 @@
+import ScreenBackground from '../../components/ScreenBackground';
+import { styles } from './BugCatcherGame.styles';
 /**
  * Bug Catcher Game (Game 5)
  * Domain: Conventions
@@ -7,15 +9,7 @@
  */
 
 import React, { useState, useCallback, useRef } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  Animated,
-  Alert,
-} from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { BugCatcherLevel, GameResult } from '../../models/GameModels';
 
 // ─── Pre-seeded Levels ────────────────────────────────────────────────────────
@@ -85,7 +79,6 @@ interface BugCatcherGameProps {
 const BugCatcherGame: React.FC<BugCatcherGameProps> = ({ onGameComplete, onExit }) => {
   const levelIndex   = useRef(0);
   const level        = LEVELS[levelIndex.current];
-  const errorIndices = new Set(level.errors.map(e => e.wordIndex));
 
   const [wordStates, setWordStates]       = useState<WordState[]>(
     Array(level.words.length).fill('default')
@@ -100,17 +93,18 @@ const BugCatcherGame: React.FC<BugCatcherGameProps> = ({ onGameComplete, onExit 
   const totalBugs = level.errors.length;
 
   // ── Shake animation for wrong tap ────────────────────────────────────────
-  const triggerShake = () => {
+  const triggerShake = useCallback(() => {
     Animated.sequence([
       Animated.timing(shakeAnim, { toValue: 8,  duration: 60, useNativeDriver: true }),
       Animated.timing(shakeAnim, { toValue: -8, duration: 60, useNativeDriver: true }),
       Animated.timing(shakeAnim, { toValue: 4,  duration: 60, useNativeDriver: true }),
       Animated.timing(shakeAnim, { toValue: 0,  duration: 60, useNativeDriver: true }),
     ]).start();
-  };
+  }, [shakeAnim]);
 
   // ── Handle word tap ───────────────────────────────────────────────────────
   const handleWordTap = useCallback((wordIndex: number) => {
+    const errorIndices = new Set(level.errors.map(e => e.wordIndex));
     if (gameOver || gameWon) return;
     if (wordStates[wordIndex] !== 'default') return;
 
@@ -182,11 +176,12 @@ const BugCatcherGame: React.FC<BugCatcherGameProps> = ({ onGameComplete, onExit 
         }, 1200);
       }
     }
-  }, [gameOver, gameWon, wordStates, caughtCount, lives, totalBugs, errorIndices]);
+  }, [gameOver, gameWon, wordStates, caughtCount, lives, totalBugs, level.errors, onGameComplete, triggerShake]);
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <View style={styles.container}>
+      <ScreenBackground />
 
       {/* Header */}
       <View style={styles.header}>
@@ -264,90 +259,5 @@ const BugCatcherGame: React.FC<BugCatcherGameProps> = ({ onGameComplete, onExit 
     </View>
   );
 };
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFBF0',
-    paddingTop: 48,
-  },
-  header: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginBottom: 12,
-  },
-  exitButton: {
-    width: 36, height: 36,
-    borderRadius: 18,
-    backgroundColor: '#F0E6FF',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  exitText:    { fontSize: 16, color: '#7D55FF' },
-  title:       { fontSize: 20, fontWeight: '700', color: '#1A1A2E' },
-  placeholder: { width: 36 },
-  livesRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 8,
-    gap: 4,
-  },
-  livesLabel:   { fontSize: 15, color: '#444', fontWeight: '600' },
-  heart:        { fontSize: 20 },
-  progressText: { marginLeft: 'auto', fontSize: 13, color: '#7D55FF', fontWeight: '600' },
-  instruction: {
-    fontSize: 13,
-    color: '#666',
-    paddingHorizontal: 20,
-    marginBottom: 16,
-    lineHeight: 18,
-  },
-  feedbackToast: {
-    alignSelf: 'center',
-    backgroundColor: '#1A1A2E',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 20,
-    marginBottom: 8,
-  },
-  feedbackToastText: { color: '#FFF', fontSize: 13, fontWeight: '600' },
-  paragraphContainer: { paddingHorizontal: 20, paddingBottom: 24 },
-  wordsWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  wordChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: '#DDD',
-    backgroundColor: '#FFF',
-  },
-  word_default:  { borderColor: '#DDD',    backgroundColor: '#FFF'    },
-  word_caught:   { borderColor: '#22C55E', backgroundColor: '#DCFCE7' },
-  word_wrong:    { borderColor: '#EF4444', backgroundColor: '#FEE2E2' },
-  word_missed:   { borderColor: '#F97316', backgroundColor: '#FFEDD5' },
-  wordText:           { fontSize: 15, color: '#1A1A2E' },
-  wordText_default:   { color: '#1A1A2E' },
-  wordText_caught:    { color: '#16A34A', fontWeight: '600' },
-  wordText_wrong:     { color: '#DC2626', fontWeight: '600' },
-  wordText_missed:    { color: '#EA580C', fontWeight: '600' },
-  banner: {
-    margin: 20,
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: '#FEE2E2',
-    alignItems: 'center',
-  },
-  bannerWin:  { backgroundColor: '#DCFCE7' },
-  bannerText: { fontSize: 18, fontWeight: '700', color: '#1A1A2E' },
-  bannerSub:  { fontSize: 13, color: '#666', marginTop: 4 },
-} as any);
 
 export default BugCatcherGame;
