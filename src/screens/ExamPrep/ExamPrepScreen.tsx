@@ -1,16 +1,5 @@
 import ScreenBackground from '../../components/ScreenBackground';
 import { styles, PRIMARY } from './ExamPrepScreen.styles';
-/**
- * ExamPrepScreen
- * ✅ Redesigned with new UI matching design system
- * ✅ Camera notch/dynamic island filled with dark header color
- * ✅ Tabs centered with bigger text
- * ✅ Background matched to HomeScreen C palette (Red-Orange + Emerald + Deep Purple)
- * ✅ UPDATED: "Your Progress" hardcoded list + 54% progress ring removed.
- *    Replaced with a real Grade + Domain selector that drives backend
- *    PSSA question generation via useExamPrep / ExamRepository.
- */
-
 import React from 'react';
 import { View, Text, ScrollView, RefreshControl, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,9 +9,6 @@ import { ExamTab }        from './types/ExamPrepUiState';
 import { StateSelectorSheet } from '../Essay/components/StateSelectorSheet';
 import { PreloadedSessionData } from '../Practice/types/PracticeSessionUiState';
 
-// ============================================================================
-// PROPS
-// ============================================================================
 
 interface ExamPrepScreenProps {
   onBackClick?:      () => void;
@@ -30,17 +16,6 @@ interface ExamPrepScreenProps {
   onViewProgress?:   () => void;
 }
 
-// ============================================================================
-// CONSTANTS — C palette (matches HomeScreen exactly)
-// ============================================================================
-
- // deepest base — near black with purple tint
- // violet accent (matches Home retry button)
-
-
-// ============================================================================
-// SCREEN
-// ============================================================================
 
 const ExamPrepScreen: React.FC<ExamPrepScreenProps> = ({
   onBackClick,
@@ -112,13 +87,10 @@ const ExamPrepScreen: React.FC<ExamPrepScreenProps> = ({
   return (
     <View style={styles.wrapper}>
 
-      {/* ── Background color layers (C palette) ── */}
       <ScreenBackground />
 
-      {/* ── Header ─────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
 
-        {/* Top row */}
         <View style={styles.headerTopRow}>
           {onBackClick ? (
             <TouchableOpacity
@@ -157,7 +129,6 @@ const ExamPrepScreen: React.FC<ExamPrepScreenProps> = ({
 
       </View>
 
-      {/* ── Content ──────────────────────────────────────────────────────── */}
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}

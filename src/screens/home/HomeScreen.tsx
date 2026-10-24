@@ -9,7 +9,9 @@ import { styles } from './HomeScreen.styles';
  * ✅ UPDATED: Background color to C — Red-Orange + Emerald + Deep Purple
  */
 
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
+import { promptSignIn } from '../../utils/guestAccess';
+import { useNotificationSetup, useNotificationInbox } from '../../notifications/useNotifications';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useHome } from './hooks/useHome';
 import { useProfile } from './hooks/useProfile';
@@ -40,7 +42,9 @@ import { PreloadedSessionData } from '../Practice/types/PracticeSessionUiState';
 // ============================================================================
 
 interface HomeScreenProps {
-  onLogoutClick?:             () => void;
+  onNotificationsClick?:      () => void;
+  onLoginRequired?:           () => void;
+  onLogoutClick?:            () => void;
   onDeleteAccountClick?:      () => void;
   onCourseClick?:             (course: CourseUiModel) => void;
   onFeatureClick?:            (feature: FeatureUiModel) => void;
@@ -56,14 +60,31 @@ interface HomeScreenProps {
 // ============================================================================
 
 const HomeScreen: React.FC<HomeScreenProps> = ({
-  onLogoutClick            = () => {},
+  onNotificationsClick     = () => {},
+  onLoginRequired          = () => {},
+  onLogoutClick          = () => {},
   onDeleteAccountClick     = () => {},
   onFeatureClick           = () => {},
   onEssayWritingClick      = () => {},
   onSeeAllEssaysClick      = () => {},
   onStartPssaPractice  = () => {},
 }) => {
-  const { uiState, onTabSelected, onFeaturePress } = useHome();
+  const { uiState, isAnonymous, onTabSelected: selectTab, onFeaturePress } = useHome();
+
+  useNotificationSetup();
+  const { unreadCount } = useNotificationInbox();
+
+  // Guests only get Home + Playground (free games); the rest needs an account.
+  const onTabSelected = useCallback((tab: HomeTab) => {
+    if (isAnonymous && (tab === HomeTab.EXAM_PREP || tab === HomeTab.PROFILE)) {
+      promptSignIn(
+        onLoginRequired,
+        tab === HomeTab.EXAM_PREP ? 'Exam Prep' : 'Your profile',
+      );
+      return;
+    }
+    selectTab(tab);
+  }, [isAnonymous, selectTab, onLoginRequired]);
 
   const profile = useProfile({
     onLogoutSuccess:        onLogoutClick,
@@ -87,6 +108,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   }, [onTabSelected]);
 
   const handleFeatureClick = (feature: FeatureUiModel) => {
+    if (isAnonymous && (feature.id === 'rank' || feature.id === 'essay')) {
+      promptSignIn(onLoginRequired, feature.title);
+      return;
+    }
+    if (feature.id === 'ExPrep') {
+      onTabSelected(HomeTab.EXAM_PREP); // guests are prompted inside onTabSelected
+      return;
+    }
     onFeaturePress(feature.id, {
       navigate: (screen: string) => {
         if (screen === 'Leaderboard') {
@@ -118,11 +147,16 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             level={uiState.level}
             levelName={uiState.levelName}
             isLoadingXp={uiState.isLoadingXp}
+            notificationCount={unreadCount}
+            onNotificationClick={onNotificationsClick}
           />
         )}
 
         {uiState.selectedTab === HomeTab.PLAYGROUND && (
-          <PlaygroundContent />
+          <PlaygroundScreen
+            isGuest={isAnonymous}
+            onLoginRequired={onLoginRequired}
+          />
         )}
 
         {uiState.selectedTab === HomeTab.INBOX && (
@@ -167,6 +201,8 @@ interface HomeContentProps {
   level:            number;
   levelName:        string;
   isLoadingXp:      boolean;
+  notificationCount: number;
+  onNotificationClick: () => void;
 }
 
 const HomeContent: React.FC<HomeContentProps> = ({
@@ -179,6 +215,8 @@ const HomeContent: React.FC<HomeContentProps> = ({
   level,
   levelName,
   isLoadingXp,
+  notificationCount,
+  onNotificationClick,
 }) => (
   <ScrollView
     style={styles.scrollView}
@@ -186,7 +224,11 @@ const HomeContent: React.FC<HomeContentProps> = ({
     contentContainerStyle={styles.scrollContent}
     scrollEventThrottle={16}
   >
-    <HomeHeader username={username} />
+    <HomeHeader
+      username={username}
+      notificationCount={notificationCount}
+      onNotificationClick={onNotificationClick}
+    />
     <StreakCard
       xp={xp}
       level={level}
@@ -224,8 +266,6 @@ const ExamPrepContent: React.FC<ExamPrepContentProps> = ({
 // ============================================================================
 // PLACEHOLDER TABS
 // ============================================================================
-
-const PlaygroundContent: React.FC = () => <PlaygroundScreen />;
 
 const InboxContent: React.FC = () => (
   <View style={styles.placeholderContainer}>

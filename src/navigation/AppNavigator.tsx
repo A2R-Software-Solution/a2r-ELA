@@ -19,7 +19,8 @@ import SignUpScreen               from '../screens/auth/SignUpScreen';
 import HomeScreen                from '../screens/home/HomeScreen';
 import EssayEditorScreen         from '../screens/Essay/EssayEditorScreen';
 import LeaderboardScreen         from '../screens/Leaderboard/LeaderboardScreen';
-import ExamPrepScreen            from '../screens/ExamPrep/ExamPrepScreen';
+import NotificationsScreen       from '../screens/Notifications/NotificationsScreen';
+import ExamPrepScreen         from '../screens/ExamPrep/ExamPrepScreen';
 import CreateCustomTestScreen    from '../screens/Practice/CreateCustomTestScreen';
 import TestInstructionsScreen    from '../screens/Practice/TestInstructionsScreen';
 import PracticeSessionScreen     from '../screens/Practice/PracticeSessionScreen';
@@ -80,6 +81,8 @@ const AppNavigator = () => {
           <Stack.Screen name={Routes.MAIN}>
             {({ navigation }) => (
               <HomeScreen
+                onNotificationsClick={()       => navigation.navigate(Routes.NOTIFICATIONS)}
+                onLoginRequired={()            => navigation.replace(Routes.SIGN_IN)}
                 onLogoutClick={()              => navigation.replace(Routes.SIGN_IN)}
                 onDeleteAccountClick={()       => navigation.replace(Routes.SIGN_IN)}
                 onFeatureClick={feature        => {
@@ -101,6 +104,13 @@ const AppNavigator = () => {
                 onBackClick={() => navigation.goBack()}
                 onPlayNow={()   => navigation.goBack()}
               />
+            )}
+          </Stack.Screen>
+
+          {/* Notifications (bell icon) */}
+          <Stack.Screen name={Routes.NOTIFICATIONS}>
+            {({ navigation }) => (
+              <NotificationsScreen onBackClick={() => navigation.goBack()} />
             )}
           </Stack.Screen>
 

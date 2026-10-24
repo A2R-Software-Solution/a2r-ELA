@@ -71,6 +71,12 @@ from file.file_routes import (
     extract_pdf_text_authenticated,
 )
 from vocab.vocab_routes import get_daily_vocab
+# Notification functions
+from notifications.notification_routes import (
+    register_device_token,
+    unregister_device_token,
+    streak_at_risk_reminder,
+)
 # PSSA Practice functions
 from pssa.pssa_routes import (
     generate_pssa_questions,
@@ -130,6 +136,9 @@ def health_check(req: https_fn.Request) -> https_fn.Response:
             "get_state_leaderboard":     "GET  /get_state_leaderboard",
             # Vocabulary
             "get_daily_vocab": "GET /get_daily_vocab",
+            # Notifications
+            "register_device_token":   "POST /register_device_token",
+            "unregister_device_token": "POST /unregister_device_token",
             # PSSA Practice
             "generate_pssa_questions": "POST /generate_pssa_questions",
             "evaluate_pssa_writing":   "POST /evaluate_pssa_writing",

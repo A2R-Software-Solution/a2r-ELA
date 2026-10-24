@@ -221,6 +221,10 @@ class UserService:
 
         print(f"Deleted gamification data for user: {user_id}")
 
+        # Device tokens live under users/{uid}/devices — delete before the doc
+        from notifications.notification_service import notification_service
+        notification_service.delete_all_tokens(user_id)
+
         # ------------------------------------------------------------------
         # Step 5: Delete user profile document
         # ------------------------------------------------------------------

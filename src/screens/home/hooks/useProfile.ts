@@ -42,6 +42,7 @@ import {
   EMPTY_BADGE_PROGRESS,
 } from '../../../models/GamificationModels';
 import firebaseAuthRepository from '../../../auth/FirebaseAuthRepository';
+import { notificationService } from '../../../notifications/NotificationService';
 
 // ============================================================================
 // CONSTANTS
@@ -484,6 +485,7 @@ export const useProfile = ({
   const onLogoutClick = useCallback(async () => {
     try {
       isLoggingOutRef.current = true;
+      await notificationService.stop(); // needs the session, so before signOut
       await signOut();
       onLogoutSuccess?.();
     } catch (error) {
@@ -503,6 +505,7 @@ export const useProfile = ({
       isLoggingOutRef.current = true;
       setUiState(prev => ({ ...prev, isLoading: true }));
 
+      await notificationService.stop();
       const result = await firebaseAuthRepository.deleteAccount();
 
       if (!result.success) {

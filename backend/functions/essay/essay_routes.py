@@ -128,6 +128,21 @@ def submit_essay(req: https_fn.Request, user_id: str) -> https_fn.Response:
                     "newly_unlocked_badges": all_new_badges,
                 }
 
+        # Push so the user sees the result if they left the app while waiting.
+        # A notification failure must never fail the submission.
+        try:
+            from notifications.notification_service import notification_service
+            grade = result.get("grade")
+            notification_service.send_to_user(
+                user_id,
+                "Your essay feedback is ready ✍️",
+                f"You got a {grade}. Tap to see the full feedback." if grade
+                else "Tap to see your feedback.",
+                {"type": "essay_feedback", "submission_id": str(result.get("submission_id", ""))},
+            )
+        except Exception as e:
+            print(f"Essay feedback push failed: {e}")
+
         return response_builder.success(
             data=result,
             message="Essay submitted and evaluated successfully"

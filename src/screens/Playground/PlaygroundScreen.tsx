@@ -17,6 +17,7 @@ import BossBattleGame from './BossBattleGame';
 import StayOnTopicGame from './StayOnTopicGame';
 import WordSwapGame from './WordSwapGame';
 import useGame from '../../hooks/useGame';
+import { isGameFree, promptSignIn } from '../../utils/guestAccess';
 
 // ============================================================================
 // CONSTANTS — C palette (matches HomeScreen exactly)
@@ -170,8 +171,25 @@ const RewardDialog: React.FC<RewardDialogProps> = ({ visible, rewards, onClose }
 // MAIN SCREEN
 // ============================================================================
 
-const PlaygroundScreen: React.FC = () => {
+interface PlaygroundScreenProps {
+  isGuest?:         boolean;
+  onLoginRequired?: () => void;
+}
+
+const PlaygroundScreen: React.FC<PlaygroundScreenProps> = ({
+  isGuest         = false,
+  onLoginRequired = () => {},
+}) => {
   const [activeGame, setActiveGame] = useState<GameId | null>(null);
+
+  // Guests can only start the free games
+  const startGame = useCallback((card: GameCard) => {
+    if (isGuest && !isGameFree(card.id)) {
+      promptSignIn(onLoginRequired, card.title);
+      return;
+    }
+    setActiveGame(card.id);
+  }, [isGuest, onLoginRequired]);
   const insets = useSafeAreaInsets();
 
   const {
@@ -297,7 +315,7 @@ const PlaygroundScreen: React.FC = () => {
               <Text style={styles.recommendedXp}>+50 XP</Text>
               <TouchableOpacity
                 style={[styles.playNowBtn, { backgroundColor: recommended.color }]}
-                onPress={() => setActiveGame(recommended.id)}
+                onPress={() => startGame(recommended)}
                 activeOpacity={0.8}
               >
                 <Text style={styles.playNowBtnText}>Play Now</Text>
@@ -316,7 +334,8 @@ const PlaygroundScreen: React.FC = () => {
                 key={game.id}
                 game={game}
                 isLast={index === GAME_CARDS.length - 1}
-                onPress={() => setActiveGame(game.id)}
+                onPress={() => startGame(game)}
+                locked={isGuest && !isGameFree(game.id)}
                 disabled={isSubmitting}
               />
             ))}
@@ -347,6 +366,7 @@ interface GameListRowProps {
   game:     GameCard;
   isLast:   boolean;
   onPress:  () => void;
+  locked:   boolean;
   disabled: boolean;
 }
 
@@ -354,6 +374,7 @@ const GameListRow: React.FC<GameListRowProps> = ({
   game,
   isLast,
   onPress,
+  locked,
   disabled,
 }) => (
   <TouchableOpacity
@@ -392,7 +413,9 @@ const GameListRow: React.FC<GameListRowProps> = ({
 
       {/* Best XP + chevron */}
       <View style={styles.gameRight}>
-        <Text style={styles.gameBestXp}>Best: {game.bestXp} XP</Text>
+        <Text style={styles.gameBestXp}>
+          {locked ? '🔒 Sign in' : `Best: ${game.bestXp} XP`}
+        </Text>
         <Text style={styles.gameChevron}>›</Text>
       </View>
 

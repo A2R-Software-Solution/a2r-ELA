@@ -9,6 +9,7 @@ import {
   getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInAnonymously as firebaseSignInAnonymously,
   signOut as firebaseSignOut,
   onAuthStateChanged,
 } from '@react-native-firebase/auth';
@@ -64,6 +65,24 @@ class FirebaseAuthRepository implements AuthRepository {
       return { success: true, data: undefined };
     } catch (error: any) {
       const errorMessage = this.getSignUpErrorMessage(error.code);
+      return { success: false, error: new Error(errorMessage) };
+    }
+  }
+
+  /**
+   * Continue as guest using Firebase anonymous auth
+   */
+  async signInAnonymously(): Promise<Result<void>> {
+    try {
+      await firebaseSignInAnonymously(this.auth);
+      return { success: true, data: undefined };
+    } catch (error: any) {
+      const errorMessage =
+        error.code === 'auth/operation-not-allowed'
+          ? 'Guest access is not enabled'
+          : error.code === 'auth/network-request-failed'
+          ? 'Network error. Check your connection'
+          : 'Could not continue as guest. Please try again';
       return { success: false, error: new Error(errorMessage) };
     }
   }

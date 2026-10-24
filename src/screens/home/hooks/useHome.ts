@@ -25,7 +25,7 @@ import {
 } from '../../../models/EssayModels';
 
 export const useHome = () => {
-  const { user } = useAuth();
+  const { user, isAnonymous } = useAuth();
   const [uiState, setUiState] = useState<HomeUiState>(initialHomeUiState);
 
   // ✅ Sync username
@@ -35,7 +35,7 @@ export const useHome = () => {
       const freshName =
         currentUser?.displayName ??
         currentUser?.email?.split('@')[0] ??
-        'Student';
+        (currentUser?.isAnonymous ? 'Guest' : 'Student');
       setUiState(prev => ({ ...prev, username: freshName }));
     };
 
@@ -170,6 +170,7 @@ export const useHome = () => {
 
   return {
     uiState,
+    isAnonymous,
     onTabSelected,
     onCategorySelected,
     onFeaturePress,

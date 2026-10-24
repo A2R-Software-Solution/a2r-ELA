@@ -30,7 +30,7 @@ const SignInScreen: React.FC<SignInScreenProps> = ({
   onLoginSuccess,
   onBackClick,
 }) => {
-  const { uiState, onUsernameChange, onPasswordChange, onSignInClick } =
+  const { uiState, onUsernameChange, onPasswordChange, onSignInClick, onGuestClick } =
     useSignIn();
 
   // ✅ FIX: Safe area insets for dynamic island / notch
@@ -141,6 +141,13 @@ const SignInScreen: React.FC<SignInScreenProps> = ({
             <Text style={styles.signInButtonText}>Sign In</Text>
           )}
         </TouchableOpacity>
+
+        {/* Guest */}
+        <View style={styles.signUpContainer}>
+          <TouchableOpacity onPress={onGuestClick} disabled={uiState.isLoading}>
+            <Text style={styles.signUpLink}>Continue as Guest</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Sign Up */}
         <View style={styles.signUpContainer}>

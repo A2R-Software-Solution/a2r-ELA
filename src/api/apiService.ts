@@ -318,6 +318,28 @@ class ApiService {
   }
 
   // --------------------------------------------------------------------------
+  // NOTIFICATIONS
+  // --------------------------------------------------------------------------
+
+  async registerDeviceToken(
+    token: string,
+    platform: 'android' | 'ios',
+    streakAlerts: boolean,
+  ): Promise<AxiosResponse<ApiResponse<null>>> {
+    return apiClient.post(ApiConfig.Endpoints.REGISTER_DEVICE_TOKEN, {
+      token,
+      platform,
+      streak_alerts: streakAlerts,
+    });
+  }
+
+  async unregisterDeviceToken(
+    token: string,
+  ): Promise<AxiosResponse<ApiResponse<null>>> {
+    return apiClient.post(ApiConfig.Endpoints.UNREGISTER_DEVICE_TOKEN, { token });
+  }
+
+  // --------------------------------------------------------------------------
   // FILE
   // --------------------------------------------------------------------------
 

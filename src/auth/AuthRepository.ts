@@ -15,6 +15,12 @@ export interface AuthRepository {
   signUp(username: string, password: string): Promise<Result<void>>;
 
   /**
+   * Continue as a guest (Firebase anonymous auth). Guests only get the
+   * free tier of the app — see utils/guestAccess.ts.
+   */
+  signInAnonymously(): Promise<Result<void>>;
+
+  /**
    * Check if user is currently logged in
    */
   isUserLoggedIn(): boolean;

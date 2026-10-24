@@ -11,6 +11,7 @@ interface UseAuthReturn {
   user: FirebaseAuthTypes.User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isAnonymous: boolean;
   error: string | null;
   signIn: (email: string, password: string) => Promise<boolean>;
   signUp: (email: string, password: string) => Promise<boolean>;
@@ -108,6 +109,7 @@ export const useAuth = (): UseAuthReturn => {
     user,
     isLoading,
     isAuthenticated: user !== null,
+    isAnonymous: user?.isAnonymous ?? false,
     error,
     signIn,
     signUp,

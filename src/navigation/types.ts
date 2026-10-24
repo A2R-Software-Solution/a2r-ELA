@@ -14,6 +14,7 @@ export type RootStackParamList = {
   Main:        undefined;
   Essay:       undefined;
   Leaderboard: undefined; // ← Added Leaderboard route
+  Notifications: undefined;
   ExamPrep:    undefined;  // ← ADD
   Progress:    undefined;
   CreateCustomTest:     undefined;           // ← ADD
@@ -57,4 +58,5 @@ export const Routes = {
   HOME:        'Home'        as const,
   PROFILE:     'Profile'     as const,
   LEADERBOARD: 'Leaderboard' as const, // ← Added Leaderboard route
+  NOTIFICATIONS: 'Notifications' as const,
 };

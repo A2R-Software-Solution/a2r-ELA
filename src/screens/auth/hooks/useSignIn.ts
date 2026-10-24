@@ -76,11 +76,26 @@ export const useSignIn = () => {
     }
   }, [uiState.username, uiState.password, uiState.isLoading]);
 
+  const onGuestClick = useCallback(async () => {
+    if (uiState.isLoading) return;
+
+    setUiState((prev) => ({ ...prev, isLoading: true, errorMessage: null }));
+
+    const result = await firebaseAuthRepository.signInAnonymously();
+
+    setUiState((prev) =>
+      result.success
+        ? { ...prev, isLoading: false, isLoginSuccessful: true }
+        : { ...prev, isLoading: false, errorMessage: result.error.message },
+    );
+  }, [uiState.isLoading]);
+
   return {
     uiState,
     onUsernameChange,
     onPasswordChange,
     onSignInClick,
+    onGuestClick,
   };
 };
 
